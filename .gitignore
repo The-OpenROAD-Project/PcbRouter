@@ -9,6 +9,16 @@ bin/
 cases/
 *.output
 
+# CMake and make files
+Makefile
+CMakeCache.txt
+*.cmake
+CMakeFiles
+install_manifest.txt
+
+# Backup files
+*.bk
+
 # Prerequisites
 *.d
 
