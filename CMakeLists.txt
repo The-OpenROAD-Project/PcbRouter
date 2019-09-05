@@ -16,26 +16,13 @@ set(KICADPCB_HOME
 
 add_subdirectory(${KICADPCB_HOME})
 
-# set(ENV{TYPE_CALL} library)
-
-## configure settings
-#find_package(GoogleHash)
-#find_package(MKL REQUIRED)
-#find_package(TCL REQUIRED)
-#find_package(Boost REQUIRED)
-#find_package(Threads REQUIRED)
 
 set (PCBROUTER_SRC 
   src/BoardGrid.cpp
-#  src/kicadPcbDataBase.cpp
-  src/main.cpp
   )
 
 set (PCBROUTER_HEADER
   src/BoardGrid.h
-#  src/kicadPcbDataBase.h
-#  src/mymath.h
-#  src/router.h
   )
 
 ############################################################
@@ -43,24 +30,6 @@ set (PCBROUTER_HEADER
 ############################################################
 include_directories(
   ${KICADPCB_HOME}/src
-
-  ${X11_INCLUDE_DIR}
-  ${MKL_INCLUDE_DIR}
-  ${Boost_INCLUDE_DIR}
-
-  ${EIGEN_HOME}
-  ${CIMG_HOME}
-
-  ${DEFLIB_HOME}/def
-  ${DEFLIB_HOME}/defzlib
-  ${DEFLIB_HOME}/cdef
-  ${DEFLIB_HOME}/cdefzlib
-
-  ${LEFLIB_HOME}/lef
-  ${LEFLIB_HOME}/lefzlib
-  ${LEFLIB_HOME}/clef
-  ${LEFLIB_HOME}/clefzlib
-
   )
 
 ############################################################
@@ -82,22 +51,13 @@ set_target_properties( pcbrouterlib
 ############################################################
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PCBROUTER_HOME}/bin)
 
-add_executable( pcbrouter
-  ${PCBROUTER_SRC}
-)
+add_executable( pcbrouter src/main.cpp )
 
-add_dependencies( pcbrouter kicadpcbparser )
-#add_dependencies(  flute )
-#add_dependencies( replace def )
-#add_dependencies( replace lef )
-
-#add_dependencies( replacelib sta )
-#add_dependencies( replacelib flute )
-#add_dependencies( replacelib def )
-#add_dependencies( replacelib lef )
+add_dependencies( pcbrouter kicadpcbparserlib )
 
 target_link_libraries( pcbrouter
   PUBLIC
+  pcbrouterlib
   kicadpcbparserlib
 )
 
