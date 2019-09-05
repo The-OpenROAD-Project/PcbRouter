@@ -6,6 +6,7 @@
 
 # Binary, testcases and test output
 bin/
+lib/
 cases/
 *.output
 
