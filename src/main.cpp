@@ -63,7 +63,7 @@ void test_router(kicadPcbDataBase& db){
   const int max_ripups = 20000;
   std::vector<Route> twoPinNets;
   std::vector<MultipinRoute> multipinNets;
-  std::ofstream ofs ("routerOutput", std::ofstream::out);
+  std::ofstream ofs ("router.output", std::ofstream::out);
 
   ofs<<std::fixed<<std::setprecision(5);
 
