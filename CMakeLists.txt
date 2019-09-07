@@ -20,10 +20,15 @@ add_subdirectory(${KICADPCB_HOME})
 
 set (PCBROUTER_SRC 
   src/BoardGrid.cpp
+  src/plotter.cpp
+  src/globalParam.cpp
   )
 
 set (PCBROUTER_HEADER
   src/BoardGrid.h
+  src/plotter.h
+  src/globalParam.h
+  src/util.h
   )
 
 ############################################################
