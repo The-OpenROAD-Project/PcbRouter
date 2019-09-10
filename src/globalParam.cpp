@@ -8,16 +8,17 @@ double GlobalParam::gHalfWireWidth = 0;
 double GlobalParam::gHWidthAndSpace = 0;
 double GlobalParam::gHWidthAndWPSpace = 0;
 double GlobalParam::gWire2Wire = 0;
-double GlobalParam::gDisBetweenWire= 0;
+double GlobalParam::gDisBetweenWire = 0;
 double GlobalParam::gEpsilon = 0.00000000000001;
 bool GlobalParam::g90DegreeMode = true;
-int GlobalParam::gSeed = 1470295829;//time(NULL);
+int GlobalParam::gSeed = 1470295829; //time(NULL);
 const double GlobalParam::gSqrt2 = sqrt(2);
-const double GlobalParam::gTan22_5 = tan ( 22.5 * PI / 180.0 );
+const double GlobalParam::gTan22_5 = tan(22.5 * PI / 180.0);
 
 util::TimeUsage GlobalParam::runTime = util::TimeUsage();
 
-void GlobalParam::showParam(){
+void GlobalParam::showParam()
+{
     cout << "=============PARAM============"
          << "\nDesign Related:"
          << "\ngLayerNum: " << gLayerNum
@@ -35,24 +36,28 @@ void GlobalParam::showParam(){
          << "\ngSeed: " << gSeed << endl;
 }
 
-void GlobalParam::setDesignRule(){
+void GlobalParam::setDesignRule()
+{
     gHalfWireWidth = gWireWidth / 2.0;
     gHWidthAndSpace = gHalfWireWidth + gWireSpace;
     gHWidthAndWPSpace = gHalfWireWidth + gWirePadSpace;
     gWire2Wire = gWireWidth + gWireSpace;
     gDisBetweenWire = gWireWidth + gWireSpace;
 
-    srand (GlobalParam::gSeed);
+    srand(GlobalParam::gSeed);
 }
 
-void GlobalParam::showCurrentUsage(const string comment){
+void GlobalParam::showCurrentUsage(const string comment)
+{
     runTime.showUsage(comment, util::TimeUsage::PARTIAL);
 }
 
-void GlobalParam::showFinalUsage(const string comment){
+void GlobalParam::showFinalUsage(const string comment)
+{
     runTime.showUsage(comment, util::TimeUsage::FULL);
 }
 
-void GlobalParam::setUsageStart(){
+void GlobalParam::setUsageStart()
+{
     runTime.start(util::TimeUsage::PARTIAL);
 }

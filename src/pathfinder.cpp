@@ -5,8 +5,6 @@
 
 #include "BoardGrid.h"
 
-
-
 /*********************************************************************************
 This is a maze router program
 
@@ -45,12 +43,8 @@ TODO:
 
 *********************************************************************************/
 
-
-
-
-
-
-void test_two_pin_routing() {
+void test_two_pin_routing()
+{
     std::cout << "test_two_pin_routing starting\n";
 
     // height, width, layers
@@ -60,35 +54,35 @@ void test_two_pin_routing() {
     const float grid_factor = 1.0;
     const int max_ripups = 20000;
 
+    std::vector<Route> nets{
+        Route(Location(0, 0, 0), Location(w - 1, h - 1, 0)),
+        Route(Location(0, h - 1, 0), Location(w - 1, 0, 0)),
+        Route(Location(0, h / 2, 0), Location(w - 1, h / 2, 0)),
+        Route(Location(w / 2, 0, 0), Location(w / 2, h - 1, 0)),
+        Route(Location(0, h / 4, 0), Location(w - 1, h / 4, 0)),
+        Route(Location(0, 3 * h / 4, 0), Location(w - 1, 3 * h / 4, 0)),
+        Route(Location(w / 4, h - 1, 0), Location(w / 4, 0, 0)),
+        Route(Location(3 * w / 4, h - 1, 0), Location(3 * w / 4, 0, 0))};
 
-    std::vector<Route> nets {
-        Route(Location(0, 0, 0), Location(w-1, h-1, 0)),
-        Route(Location(0, h-1, 0), Location(w-1, 0, 0)),
-        Route(Location(0, h/2, 0), Location(w-1, h/2, 0)),
-        Route(Location(w/2, 0, 0), Location(w/2, h-1, 0)),
-        Route(Location(0, h/4, 0), Location(w-1, h/4, 0)),
-        Route(Location(0, 3*h/4, 0), Location(w-1, 3*h/4, 0)),
-        Route(Location(w/4, h-1, 0), Location(w/4, 0, 0)),
-        Route(Location(3*w/4, h-1, 0), Location(3*w/4, 0, 0))
-    };
-
-
-    BoardGrid bg(w,h,l);
+    BoardGrid bg(w, h, l);
     bg.base_cost_fill(0.0);
 
     std::cout << "Initial routing" << std::endl;
     // initial route
-    for (int i = 0; i < nets.size(); i += 1) {
+    for (int i = 0; i < nets.size(); i += 1)
+    {
         bg.add_route(nets[i]);
         // std::cout << "Printing route" << std::endl;
         // bg.print_route(nets[i].came_from, nets[i].end);
         // std::cout << "Printing route done" << std::endl;
     }
 
-
-    for (Route route : nets){
-        for (Location l : route.features) {
-            if (l.x > bg.w || l.y > bg.h || l.z > bg.l) {
+    for (Route route : nets)
+    {
+        for (Location l : route.features)
+        {
+            if (l.x > bg.w || l.y > bg.h || l.z > bg.l)
+            {
                 std::cout << "Bad route initial: " << l << std::endl;
                 exit(-1);
             }
@@ -97,10 +91,11 @@ void test_two_pin_routing() {
 
     // ripup loop
     std::cout << "Doing ripups" << std::endl;
-    std::random_device rd; // obtain a random number from hardware
-    std::mt19937 eng(rd()); // seed the generator
+    std::random_device rd;                                 // obtain a random number from hardware
+    std::mt19937 eng(rd());                                // seed the generator
     std::uniform_int_distribution<> distr(0, nets.size()); // define the range
-    for (int i = 0; i < max_ripups; i += 1) {
+    for (int i = 0; i < max_ripups; i += 1)
+    {
         int rand_index = distr(eng);
         bg.ripup_route(nets[rand_index]);
         bg.add_route(nets[rand_index]);
@@ -110,21 +105,26 @@ void test_two_pin_routing() {
     bg.pprint();
     std::cout << "Printing costs done" << std::endl;
 
-    for (int r = 0; r < nets.size(); r += 1) {
+    for (int r = 0; r < nets.size(); r += 1)
+    {
         // std::cout << std::endl;
-        std::cout << "<signal name=\"" << char ('A' + r) <<"\">" << std::endl;
+        std::cout << "<signal name=\"" << char('A' + r) << "\">" << std::endl;
         Location last_location = nets[r].features[0];
 
-        for (int i = 1; i < nets[r].features.size(); i += 1) {
+        for (int i = 1; i < nets[r].features.size(); i += 1)
+        {
             int layer = nets[r].features[i].z;
-            if (layer == 0) {
+            if (layer == 0)
+            {
                 layer = 1;
             }
-            else if (layer == 1) {
+            else if (layer == 1)
+            {
                 layer = 16;
             }
 
-            std::cout << "\t" << "<wire ";
+            std::cout << "\t"
+                      << "<wire ";
             std::cout << "x1=\"" << grid_factor * last_location.x << "\" y1=\"" << grid_factor * last_location.y << "\" ";
             std::cout << "x2=\"" << grid_factor * nets[r].features[i].x << "\" y2=\"" << grid_factor * nets[r].features[i].y << "\" ";
             std::cout << "width=\"" << 0.6096 << "\" layer=\"" << layer << "\"";
@@ -140,9 +140,8 @@ void test_two_pin_routing() {
     std::cout << "test_two_pin_routing exiting\n";
 }
 
-
-
-void test_multipin() {
+void test_multipin()
+{
     std::cout << "test_two_pin_routing starting\n";
 
     // height, width, layers
@@ -152,11 +151,11 @@ void test_multipin() {
     const float grid_factor = 1.0;
     const int max_ripups = 20000;
 
-    BoardGrid bg(w,h,l);
+    BoardGrid bg(w, h, l);
     bg.base_cost_fill(0.0);
 
     std::cout << "Initial routing" << std::endl;
-    
+
     //Skip doing multipin net
     /*
     std::vector<Location> pins = {
@@ -174,26 +173,30 @@ void test_multipin() {
     */
 
     // five 2-pins nets
-    std::vector<Route> nets {
-        Route(Location(w/2, 0, 0), Location(0, h-1, 0)),
-        Route(Location(0, h/4, 0), Location(w-1, h/4, 0)),
-        Route(Location(0, 3*h/4, 0), Location(w-1, 3*h/4, 0)),
-        Route(Location(w/4, h-1, 0), Location(w/4, 0, 0)),
-        Route(Location(3*w/4, h-1, 0), Location(3*w/4, 0, 0))
-    };
+    std::vector<Route> nets{
+        Route(Location(w / 2, 0, 0), Location(0, h - 1, 0)),
+        Route(Location(0, h / 4, 0), Location(w - 1, h / 4, 0)),
+        Route(Location(0, 3 * h / 4, 0), Location(w - 1, 3 * h / 4, 0)),
+        Route(Location(w / 4, h - 1, 0), Location(w / 4, 0, 0)),
+        Route(Location(3 * w / 4, h - 1, 0), Location(3 * w / 4, 0, 0))};
 
-    for (int i = 0; i < nets.size(); i += 1) {
+    for (int i = 0; i < nets.size(); i += 1)
+    {
         // Add net and route immediately
         bg.add_route(nets[i]);
-        std::cout << std::endl << "============Printing route " << i <<" ============" << std::endl;
+        std::cout << std::endl
+                  << "============Printing route " << i << " ============" << std::endl;
         std::cout << "Start: " << nets.at(i).start << ", End: " << nets.at(i).end << std::endl;
         bg.print_route(nets[i].came_from, nets[i].end);
-        std::cout << std::endl << "============Printing route " << i <<" done============" << std::endl;
+        std::cout << std::endl
+                  << "============Printing route " << i << " done============" << std::endl;
     }
 
-    std::cout << std::endl << "============Printing final costs============" << std::endl;
+    std::cout << std::endl
+              << "============Printing final costs============" << std::endl;
     bg.pprint();
-    std::cout << std::endl << "============Printing final costs done============" << std::endl;
+    std::cout << std::endl
+              << "============Printing final costs done============" << std::endl;
 
     /*
     
@@ -264,8 +267,8 @@ void test_multipin() {
     */
 }
 
-
-void mixed_test() {
+void mixed_test()
+{
     std::cout << "mixed_test starting\n";
 
     // height, width, layers
@@ -275,29 +278,23 @@ void mixed_test() {
     const float grid_factor = 1.0;
     const int max_ripups = 20000;
 
-
-
-    BoardGrid bg(w,h,l);
+    BoardGrid bg(w, h, l);
     bg.base_cost_fill(0.0);
 
-
-
     std::cout << "Initial routing" << std::endl;
-    
+
     std::vector<Location> pins = {
         Location(0, 0, 0),
         Location(9, 5, 0),
         Location(5, 9, 0),
         Location(9, 9, 0),
-        Location(4, 4, 1)
-    };
+        Location(4, 4, 1)};
 
     MultipinRoute mp(pins);
     bg.add_route(mp);
 
     std::cout << "mixed_test exiting\n";
 }
-
 
 /*
 int main() {
