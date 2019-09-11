@@ -47,161 +47,161 @@ void BoardGrid::working_cost_set(float value, const Location &l)
 	this->working_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
 }
 
-void BoardGrid::breadth_first_search(const Location &start, const Location &end)
-{
-	// Location start(sx, sy, sz);
-	// Location end(ex, ey, ez);
+// void BoardGrid::breadth_first_search(const Location &start, const Location &end)
+// {
+// 	// Location start(sx, sy, sz);
+// 	// Location end(ex, ey, ez);
 
-	std::queue<Location> frontier;
-	frontier.push(start);
+// 	std::queue<Location> frontier;
+// 	frontier.push(start);
 
-	std::unordered_set<Location> visited;
-	visited.insert(start);
+// 	std::unordered_set<Location> visited;
+// 	visited.insert(start);
 
-	while (!frontier.empty())
-	{
-		Location current = frontier.front();
-		frontier.pop();
+// 	while (!frontier.empty())
+// 	{
+// 		Location current = frontier.front();
+// 		frontier.pop();
 
-		std::cout << "Visiting " << current << std::endl;
+// 		std::cout << "Visiting " << current << std::endl;
 
-		for (std::pair<float, Location> next : this->neighbors(current))
-		{
-			if (
-				(next.second.x < 0) || (next.second.x >= this->w) ||
-				(next.second.y < 0) || (next.second.y >= this->h) ||
-				(next.second.z < 0) || (next.second.z >= this->l))
-			{
-				continue; // continue if out of bounds
-			}
-			if (visited.find(next.second) == visited.end())
-			{ // next not in visited
-				frontier.push(next.second);
-				visited.insert(next.second);
-			}
-		}
-	}
-}
+// 		for (std::pair<float, Location> next : this->neighbors(current))
+// 		{
+// 			if (
+// 				(next.second.x < 0) || (next.second.x >= this->w) ||
+// 				(next.second.y < 0) || (next.second.y >= this->h) ||
+// 				(next.second.z < 0) || (next.second.z >= this->l))
+// 			{
+// 				continue; // continue if out of bounds
+// 			}
+// 			if (visited.find(next.second) == visited.end())
+// 			{ // next not in visited
+// 				frontier.push(next.second);
+// 				visited.insert(next.second);
+// 			}
+// 		}
+// 	}
+// }
 
-std::unordered_map<Location, Location> BoardGrid::breadth_first_search_with_came_from(const Location &start, const Location &end)
-{
-	// Location start(sx, sy, sz);
-	// Location end(ex, ey, ez);
+// std::unordered_map<Location, Location> BoardGrid::breadth_first_search_with_came_from(const Location &start, const Location &end)
+// {
+// 	// Location start(sx, sy, sz);
+// 	// Location end(ex, ey, ez);
 
-	std::cout << "Starting breadth_first_search_with_came_from start: " << start << " end: " << end << std::endl;
+// 	std::cout << "Starting breadth_first_search_with_came_from start: " << start << " end: " << end << std::endl;
 
-	std::queue<Location> frontier;
-	frontier.push(start);
+// 	std::queue<Location> frontier;
+// 	frontier.push(start);
 
-	// std::unordered_set<Location> visited; // we can keep track of visited set with the came from map
-	// visited.insert(start);
+// 	// std::unordered_set<Location> visited; // we can keep track of visited set with the came from map
+// 	// visited.insert(start);
 
-	std::unordered_map<Location, Location> came_from;
-	came_from[start] = start;
+// 	std::unordered_map<Location, Location> came_from;
+// 	came_from[start] = start;
 
-	while (!frontier.empty())
-	{
-		Location current = frontier.front();
-		frontier.pop();
+// 	while (!frontier.empty())
+// 	{
+// 		Location current = frontier.front();
+// 		frontier.pop();
 
-		std::cout << "Visiting " << current << std::endl;
+// 		std::cout << "Visiting " << current << std::endl;
 
-		if (current == end)
-		{
-			std::cout << "Found goal, exiting early" << std::endl;
-			break;
-		}
+// 		if (current == end)
+// 		{
+// 			std::cout << "Found goal, exiting early" << std::endl;
+// 			break;
+// 		}
 
-		for (std::pair<float, Location> next : this->neighbors(current))
-		{
-			if (
-				(next.second.x < 0) || (next.second.x >= this->w) ||
-				(next.second.y < 0) || (next.second.y >= this->h) ||
-				(next.second.z < 0) || (next.second.z >= this->l))
-			{
-				continue; // continue if out of bounds
-			}
-			// if (visited.find(next) == visited.end()) { // next not in visited
-			// if (came_from.find(next.second) == came_from.end()) { // next not in visited
-			if (came_from.find(next.second) == came_from.end())
-			{ // next not in visited
-				frontier.push(next.second);
-				// visited.insert(next);
-				came_from[next.second] = current;
-			}
-		}
-	}
+// 		for (std::pair<float, Location> next : this->neighbors(current))
+// 		{
+// 			if (
+// 				(next.second.x < 0) || (next.second.x >= this->w) ||
+// 				(next.second.y < 0) || (next.second.y >= this->h) ||
+// 				(next.second.z < 0) || (next.second.z >= this->l))
+// 			{
+// 				continue; // continue if out of bounds
+// 			}
+// 			// if (visited.find(next) == visited.end()) { // next not in visited
+// 			// if (came_from.find(next.second) == came_from.end()) { // next not in visited
+// 			if (came_from.find(next.second) == came_from.end())
+// 			{ // next not in visited
+// 				frontier.push(next.second);
+// 				// visited.insert(next);
+// 				came_from[next.second] = current;
+// 			}
+// 		}
+// 	}
 
-	return came_from;
-}
+// 	return came_from;
+// }
 
-std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(const Location &start)
-{
-	// Location start(sx, sy, sz);
-	// Location end(ex, ey, ez);
+// std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(const Location &start)
+// {
+// 	// Location start(sx, sy, sz);
+// 	// Location end(ex, ey, ez);
 
-	//std::cout << "Starting dijkstras_with_came_from start: " << start << " end: " << end << std::endl;
-	std::cout << "Starting dijkstras_with_came_from ==TwoPin== start: " << start << std::endl;
+// 	//std::cout << "Starting dijkstras_with_came_from start: " << start << " end: " << end << std::endl;
+// 	std::cout << "Starting dijkstras_with_came_from ==TwoPin== start: " << start << std::endl;
 
-	// this->working_cost_fill(0.1);
-	this->working_cost_fill(std::numeric_limits<float>::infinity());
-	this->working_cost_set(0.0, start);
+// 	// this->working_cost_fill(0.1);
+// 	this->working_cost_fill(std::numeric_limits<float>::infinity());
+// 	this->working_cost_set(0.0, start);
 
-	LocationQueue<Location, float> frontier;
-	frontier.push(start, 0.0);
+// 	LocationQueue<Location, float> frontier;
+// 	frontier.push(start, 0.0);
 
-	std::unordered_map<Location, Location> came_from;
-	came_from[start] = start;
+// 	std::unordered_map<Location, Location> came_from;
+// 	came_from[start] = start;
 
-	while (!frontier.empty())
-	{
-		Location current = frontier.front();
-		frontier.pop();
+// 	while (!frontier.empty())
+// 	{
+// 		Location current = frontier.front();
+// 		frontier.pop();
 
-		//std::cout << "Visiting " << current << ", frontierSize: "<< frontier.size() << std::endl;
+// 		//std::cout << "Visiting " << current << ", frontierSize: "<< frontier.size() << std::endl;
 
-		// if (current == end) {
-		// std::cout << "Found goal, exiting early" << std::endl;
-		// break;
-		// }
+// 		// if (current == end) {
+// 		// std::cout << "Found goal, exiting early" << std::endl;
+// 		// break;
+// 		// }
 
-		//std::cout << "Got " << this->neighbors(current).size() << " neighbors" << std::endl;
-		std::array<std::pair<float, Location>, 10> &&aNeighbors = this->neighbors(current);
+// 		//std::cout << "Got " << this->neighbors(current).size() << " neighbors" << std::endl;
+// 		std::array<std::pair<float, Location>, 10> &&aNeighbors = this->neighbors(current);
 
-		//for (std::pair<float, Location> next : this->neighbors(current)) {
-		for (std::pair<float, Location> next : aNeighbors)
-		{
-			if (
-				(next.second.x < 0) || (next.second.x >= this->w) ||
-				(next.second.y < 0) || (next.second.y >= this->h) ||
-				(next.second.z < 0) || (next.second.z >= this->l))
-			{
-				// std::cout << "\tOut of bounds neighbor " < next.second << std::endl;
-				continue; // continue if out of bounds
-			}
+// 		//for (std::pair<float, Location> next : this->neighbors(current)) {
+// 		for (std::pair<float, Location> next : aNeighbors)
+// 		{
+// 			if (
+// 				(next.second.x < 0) || (next.second.x >= this->w) ||
+// 				(next.second.y < 0) || (next.second.y >= this->h) ||
+// 				(next.second.z < 0) || (next.second.z >= this->l))
+// 			{
+// 				// std::cout << "\tOut of bounds neighbor " < next.second << std::endl;
+// 				continue; // continue if out of bounds
+// 			}
 
-			//std::cout << "\tWorking on neighbor " << next.second << std::endl;
+// 			//std::cout << "\tWorking on neighbor " << next.second << std::endl;
 
-			// this->at(Location l) give the cost of moving to l
-			// this->working_cost_at(Location l) gives the current best cost to get to l
-			float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) + next.first;
+// 			// this->at(Location l) give the cost of moving to l
+// 			// this->working_cost_at(Location l) gives the current best cost to get to l
+// 			float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) + next.first;
 
-			// std::cout << "\t\tnew_cost: " << new_cost << std::endl;
-			// std::cout << "\t\t\twc: " << this->working_cost_at(current) <<  " bc: " << this->base_cost_at(next.second) << " n.f: " << next.first << std::endl;
+// 			// std::cout << "\t\tnew_cost: " << new_cost << std::endl;
+// 			// std::cout << "\t\t\twc: " << this->working_cost_at(current) <<  " bc: " << this->base_cost_at(next.second) << " n.f: " << next.first << std::endl;
 
-			// std::cout << "\t\told cost: " << this->working_cost_at(next.second) << std::endl;
+// 			// std::cout << "\t\told cost: " << this->working_cost_at(next.second) << std::endl;
 
-			if (new_cost < this->working_cost_at(next.second))
-			{
-				this->working_cost_set(new_cost, next.second);
-				came_from[next.second] = current;
-				frontier.push(next.second, new_cost);
-			}
-		}
-	}
+// 			if (new_cost < this->working_cost_at(next.second))
+// 			{
+// 				this->working_cost_set(new_cost, next.second);
+// 				came_from[next.second] = current;
+// 				frontier.push(next.second, new_cost);
+// 			}
+// 		}
+// 	}
 
-	return came_from;
-}
+// 	return came_from;
+// }
 
 std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 	const std::vector<Location> &route)
@@ -349,6 +349,12 @@ void BoardGrid::pprint()
 	}
 }
 
+
+float BoardGrid::cost_of_via_at(const Location &l){
+	return 10.0;
+}
+
+
 void BoardGrid::print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end)
 {
 	// Location end(ex, ey, ez);
@@ -416,37 +422,61 @@ void BoardGrid::print_came_from(const std::unordered_map<Location, Location> &ca
 	}
 }
 
-void BoardGrid::add_route_to_base_cost(const Route &route, int radius, float cost)
-{
-	// std::vector<Location> features = route.features;
-	for (Location l : route.features)
-	{
-		// std::cout << "setting cost for feature " << l << std::endl;
-		int layer = l.z;
+// void BoardGrid::add_route_to_base_cost(const Route &route, int radius, float cost)
+// {
+// 	// std::vector<Location> features = route.features;
+// 	for (Location l : route.features)
+// 	{
+// 		// std::cout << "setting cost for feature " << l << std::endl;
+// 		int layer = l.z;
 
-		for (int current_radius = 0; current_radius <= radius; current_radius += 1)
-		{
-			float current_cost = cost - current_radius;
-			if (current_cost <= 0)
-				break;
+// 		for (int current_radius = 0; current_radius <= radius; current_radius += 1)
+// 		{
+// 			float current_cost = cost - current_radius;
+// 			if (current_cost <= 0)
+// 				break;
 
-			for (int r = l.y - current_radius; r <= l.y + current_radius; r += 1)
-			{
-				if (r < 0)
-					continue;
-				if (r >= this->h)
-					continue;
-				for (int c = l.x - current_radius; c <= l.x + current_radius; c += 1)
-				{
-					if (c < 0)
-						continue;
-					if (c >= this->w)
-						continue;
-					// std::cout << "\tsetting cost at " << Location(c, r, layer) << std::endl;
-					this->base_cost_set(this->base_cost_at(Location(c, r, layer)) +
-											current_cost,
-										Location(c, r, layer));
-				}
+// 			for (int r = l.y - current_radius; r <= l.y + current_radius; r += 1)
+// 			{
+// 				if (r < 0)
+// 					continue;
+// 				if (r >= this->h)
+// 					continue;
+// 				for (int c = l.x - current_radius; c <= l.x + current_radius; c += 1)
+// 				{
+// 					if (c < 0)
+// 						continue;
+// 					if (c >= this->w)
+// 						continue;
+// 					// std::cout << "\tsetting cost at " << Location(c, r, layer) << std::endl;
+// 					this->base_cost_set(this->base_cost_at(Location(c, r, layer)) +
+// 											current_cost,
+// 										Location(c, r, layer));
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+void BoardGrid::add_via_cost(const Location &l) {
+	int radius = 10;
+	float cost = 10.0;
+	for (int z = 0; z < this->l; z += 1) {
+		for (int y = -radius; y < radius; y += 1) {
+			for (int x = -radius; x <= radius; x += 1){
+				this->via_cost[(l.x+x) + (l.y+y) * this->w + (l.z+z) * this->w * this->h] += cost;
+			}
+		}
+	}
+}
+
+void BoardGrid::remove_via_cost(const Location &l) {
+	int radius = 10;
+	float cost = 10.0;
+	for (int z = 0; z < this->l; z += 1) {
+		for (int y = -radius; y < radius; y += 1) {
+			for (int x = -radius; x <= radius; x += 1){
+				this->via_cost[(l.x+x) + (l.y+y) * this->w + (l.z+z) * this->w * this->h] -= cost;
 			}
 		}
 	}
@@ -455,10 +485,14 @@ void BoardGrid::add_route_to_base_cost(const Route &route, int radius, float cos
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, float cost)
 {
 	// std::vector<Location> features = route.features;
+	Location last_location = route.features[0];
 	for (Location l : route.features)
 	{
 		// std::cout << "setting cost for feature " << l << std::endl;
 		int layer = l.z;
+		if ((l.z != last_location.z) && (l.x == last_location.x) && (l.y == last_location.y)) {
+			this->add_via_cost(l);
+		}
 
 		for (int current_radius = 0; current_radius <= radius; current_radius += 1)
 		{
@@ -479,16 +513,60 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 					if (c >= this->w)
 						continue;
 					// std::cout << "\tsetting cost at " << Location(c, r, layer) << std::endl;
-					this->base_cost_set(this->base_cost_at(Location(c, r, layer)) +
-											current_cost,
-										Location(c, r, layer));
+					this->base_cost_set(
+						this->base_cost_at(Location(c, r, layer)) + current_cost,
+						Location(c, r, layer)
+					);
 				}
 			}
 		}
 	}
 }
 
-void BoardGrid::remove_route_from_base_cost(const Route &route, int radius, float cost)
+// void BoardGrid::remove_route_from_base_cost(const Route &route, int radius, float cost)
+// {
+// 	// std::vector<Location> features = route.features;
+// 	std::cout << "Starting remove_route_from_base_cost" << std::endl;
+// 	for (Location l : route.features)
+// 	{
+// 		// std::cout << "setting cost for feature " << l << std::endl;
+// 		int layer = l.z;
+
+// 		if (layer > 2)
+// 		{
+// 			std::cout << "Bad layer: " << l << std::endl;
+// 			exit(-1);
+// 		}
+
+// 		for (int current_radius = 0; current_radius <= radius; current_radius += 1)
+// 		{
+// 			float current_cost = cost - current_radius;
+// 			if (current_cost <= 0)
+// 				break;
+
+// 			for (int r = l.y - current_radius; r <= l.y + current_radius; r += 1)
+// 			{
+// 				if (r < 0)
+// 					continue;
+// 				if (r >= this->h)
+// 					continue;
+// 				for (int c = l.x - current_radius; c <= l.x + current_radius; c += 1)
+// 				{
+// 					if (c < 0)
+// 						continue;
+// 					if (c >= this->w)
+// 						continue;
+// 					std::cout << "\tSetting cost at " << Location(c, r, layer) << std::endl;
+// 					this->base_cost_set(this->base_cost_at(Location(c, r, layer)) - current_cost, Location(c, r, layer));
+// 					std::cout << "\tFinised setting cost" << std::endl;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	std::cout << "Finished remove_route_from_base_cost" << std::endl;
+// }
+
+void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost)
 {
 	// std::vector<Location> features = route.features;
 	std::cout << "Starting remove_route_from_base_cost" << std::endl;
@@ -564,7 +642,7 @@ void BoardGrid::came_from_to_features(
 
 	for (Location l : features)
 	{
-		std::cout << "\t" << l << std::endl;
+		//std::cout << "\t" << l << std::endl;
 		if (l.z > 2)
 		{
 			exit(-1);
@@ -677,26 +755,26 @@ void BoardGrid::print_features(std::vector<Location> features)
 	}
 }
 
-void BoardGrid::add_route(Route &route)
-{
-	std::cout << "add_route: Start: " << route.start << ", End: " << route.end << std::endl;
-	route.came_from = this->dijkstras_with_came_from(route.start);
-	route.features.clear();
-	this->came_from_to_features(route.came_from, route.end, route.features);
-	// std::cout << "Net: " << route.features.size() << std::endl;
+// void BoardGrid::add_route(Route &route)
+// {
+// 	std::cout << "add_route: Start: " << route.start << ", End: " << route.end << std::endl;
+// 	route.came_from = this->dijkstras_with_came_from(route.start);
+// 	route.features.clear();
+// 	this->came_from_to_features(route.came_from, route.end, route.features);
+// 	// std::cout << "Net: " << route.features.size() << std::endl;
 
-	this->add_route_to_base_cost(route, 1, 10);
+// 	this->add_route_to_base_cost(route, 1, 10);
 
-	// Check if out of boundary
-	for (Location l : route.features)
-	{
-		if (l.x > this->w || l.y > this->h || l.z > this->l)
-		{
-			std::cout << "Bad route added: " << l << std::endl;
-			exit(-1);
-		}
-	}
-}
+// 	// Check if out of boundary
+// 	for (Location l : route.features)
+// 	{
+// 		if (l.x > this->w || l.y > this->h || l.z > this->l)
+// 		{
+// 			std::cout << "Bad route added: " << l << std::endl;
+// 			exit(-1);
+// 		}
+// 	}
+// }
 
 void BoardGrid::add_route(MultipinRoute &route)
 {
@@ -729,7 +807,25 @@ void BoardGrid::add_route(MultipinRoute &route)
 	}
 }
 
-void BoardGrid::ripup_route(Route &route)
+// void BoardGrid::ripup_route(Route &route)
+// {
+// 	std::cout << "Doing ripup" << std::endl;
+// 	for (Location l : route.features)
+// 	{
+// 		if (l.x > this->w || l.y > this->h || l.z > this->l)
+// 		{
+// 			std::cout << "Bad route to ripup: " << l << std::endl;
+// 			exit(-1);
+// 		}
+// 	}
+// 	this->remove_route_from_base_cost(route, 1, 10);
+// 	std::cout << "Clearing features" << std::endl;
+
+// 	route.features.clear();
+// 	std::cout << "Finished ripup" << std::endl;
+// }
+
+void BoardGrid::ripup_route(MultipinRoute &route)
 {
 	std::cout << "Doing ripup" << std::endl;
 	for (Location l : route.features)

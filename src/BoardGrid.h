@@ -156,15 +156,18 @@ class BoardGrid
 {
   float *base_cost;
   float *working_cost;
+  float *via_cost;
+
   int size; // total number of cells
 
   void working_cost_fill(float value);
   float working_cost_at(const Location &l) const;
   void working_cost_set(float value, const Location &l);
 
-  void add_route_to_base_cost(const Route &route, int radius, float cost);
+  // void add_route_to_base_cost(const Route &route, int radius, float cost);
   void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost);
-  void remove_route_from_base_cost(const Route &route, int radius, float cost);
+  // void remove_route_from_base_cost(const Route &route, int radius, float cost);
+  void remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost);
 
   void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
   std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
@@ -186,9 +189,16 @@ public:
   void base_cost_set(float value, const Location &l);
   bool validate_location(const Location &l) const;
 
-  void add_route(Route &route);
+  // void add_route(Route &route);
   void add_route(MultipinRoute &route);
-  void ripup_route(Route &route);
+  // void ripup_route(Route &route);
+  void ripup_route(MultipinRoute &route);
+
+
+  float cost_of_via_at(const Location &l);
+  void add_via_cost(const Location &l);
+  void remove_via_cost(const Location &l);
+
 
   void pprint();
   void print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end);
@@ -201,7 +211,20 @@ public:
     this->l = l;
     this->size = w * h * l;
     this->base_cost = new float[this->size];
+    if (this->base_cost == nullptr) {
+      std::cout << "Could not allocate base_cost" << std::endl;
+      exit(-1);
+    }
     this->working_cost = new float[this->size];
+    if (this->working_cost == nullptr) {
+      std::cout << "Could not allocate working_cost" << std::endl;
+      exit(-1);
+    }
+    this->via_cost = new float[this->size];
+    if (this->via_cost == nullptr) {
+      std::cout << "Could not allocate via_cost" << std::endl;
+      exit(-1);
+    }
   }
   ~BoardGrid()
   {
@@ -209,6 +232,8 @@ public:
     this->base_cost = NULL;
     delete[] this->working_cost;
     this->working_cost = NULL;
+    delete[] this->via_cost;
+    this->via_cost = NULL;
   }
 };
 

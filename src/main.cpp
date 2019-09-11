@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
 
   std::string designName = argv[1];
-
+  std::cout << "Parsing design: " << designName << std::endl;
   //auto db = kicadPcbDataBase{designName};
   kicadPcbDataBase db(designName);
 
@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
   db.printPcbRouterInfo();
 
   //test_multipin();
+  //
+  std::cout << "Starting router" << std::endl;
   test_router(db);
 
   return 0;
@@ -91,13 +93,13 @@ void test_router(kicadPcbDataBase &db)
       std::cout << " location in grid: " << pins.back() << std::endl;
     }
 
-    if (netDegree == 2)
-    {
+    // if (netDegree == 2)
+    // {
       //Route route = Route(pins.at(0), pins.at(1));
-      twoPinNets.push_back(Route(pins.at(0), pins.at(1), i));
-      bg.add_route(twoPinNets.back());
-    }
-    else
+      // twoPinNets.push_back(Route(pins.at(0), pins.at(1), i));
+      // bg.add_route(twoPinNets.back());
+    // }
+    // else // let's just keep everything as a multipin net and forget about two pin nets
     {
       //continue;
       //MultipinRoute mpRoute(pins);
