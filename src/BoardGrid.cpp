@@ -11,6 +11,20 @@ std::ostream &operator<<(std::ostream &os, Location const &l)
 	return os << "Location(" << l.x << ", " << l.y << ", " << l.z << ")";
 }
 
+void BoardGrid::initilization(int w, int h, int l)
+{
+    this->w = w;
+    this->h = h;
+    this->l = l;
+    this->size = w * h * l;
+	
+	assert(this->base_cost==NULL);
+	assert(this->working_cost==NULL);
+    
+	this->base_cost = new float[this->size];
+    this->working_cost = new float[this->size];
+}
+
 void BoardGrid::base_cost_fill(float value)
 {
 	for (int i = 0; i < this->size; i++)
@@ -206,7 +220,7 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(const
 std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 	const std::vector<Location> &route)
 {
-	std::cout << "Starting dijkstras_with_came_from ==Multipin== nets: route.size() = " << route.size() << std::endl;
+	std::cout << "Starting dijkstras_with_came_from ==Multipin== nets: route.features.size() = " << route.size() << std::endl;
 
 	// For path to multiple points
 	// Searches from the multiple points to every other point
@@ -221,7 +235,7 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 		came_from[start] = start;
 	}
 
-	std::cout << "came_from.size() = " << came_from.size() << std::endl;
+	std::cout << "came_from.size() = " << came_from.size() << ", frontier.size(): "<< frontier.size() << std::endl;
 
 	while (!frontier.empty())
 	{
@@ -313,6 +327,34 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 	ns[9].second.z = l.z;
 
 	return ns;
+}
+
+void BoardGrid::printGnuPlot()
+{
+	float max_val = 0.0;
+	for (int i = 0; i < this->size; i += 1)
+	{
+		if (this->base_cost[i] > max_val)
+			max_val = this->base_cost[i];
+	}
+
+	std::cout << "printGnuPlot()::Max Cost: " << max_val << std::endl;
+
+	for (int l = 0; l < this->l; ++l)
+	{
+		std::string outFileName = "layer" + std::to_string(l) + "_baseCost.dat";
+		std::ofstream ofs(outFileName, std::ofstream::out);
+		ofs << std::fixed << std::setprecision(5);
+
+		for (int r = 0; r < this->h; ++r)
+		{
+			for (int c = 0; c < this->w; ++c)
+			{
+				ofs << this->base_cost_at(Location(c, r, l)) << " ";
+			}
+			ofs << std::endl;
+		}
+	}
 }
 
 void BoardGrid::pprint()

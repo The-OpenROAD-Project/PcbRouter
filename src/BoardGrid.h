@@ -12,6 +12,8 @@
 #include <queue>
 #include <limits>
 #include <algorithm>
+#include <fstream>
+#include <string>
 
 #define DIAGONAL_COST 1.41421356237
 // #define DIAGONAL_COST 1.4
@@ -181,6 +183,7 @@ public:
   int w; // width
   int h; // height
   int l; // layers
+  void initilization(int w, int h, int l);
   void base_cost_fill(float value);
   float base_cost_at(const Location &l) const;
   void base_cost_set(float value, const Location &l);
@@ -190,10 +193,18 @@ public:
   void add_route(MultipinRoute &route);
   void ripup_route(Route &route);
 
+  void printGnuPlot();
   void pprint();
   void print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end);
   void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);
   void print_features(std::vector<Location> features);
+
+  //ctor
+  BoardGrid()
+  {
+    this->working_cost = NULL;
+    this->base_cost = NULL;
+  }
   BoardGrid(int w, int h, int l)
   {
     this->w = w;
@@ -203,6 +214,7 @@ public:
     this->base_cost = new float[this->size];
     this->working_cost = new float[this->size];
   }
+  //dtor
   ~BoardGrid()
   {
     delete[] this->base_cost;
