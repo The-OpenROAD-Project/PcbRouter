@@ -14,10 +14,7 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
-
-#define DIAGONAL_COST 1.41421356237
-// #define DIAGONAL_COST 1.4
-#define LAYER_CHANGE_COST 10.0
+#include "globalParam.h"
 
 // custom Location priority queue class for search
 template <typename T, typename priority_t>
@@ -156,9 +153,9 @@ public:
 
 class BoardGrid
 {
-  float *base_cost;
-  float *working_cost;
-  int size; // total number of cells
+  float *base_cost = nullptr;     //Initialize to nullptr
+  float *working_cost = nullptr;  //Initialize to nullptr
+  int size = 0;                   //Total number of cells
 
   void working_cost_fill(float value);
   float working_cost_at(const Location &l) const;
@@ -200,11 +197,7 @@ public:
   void print_features(std::vector<Location> features);
 
   //ctor
-  BoardGrid()
-  {
-    this->working_cost = NULL;
-    this->base_cost = NULL;
-  }
+  BoardGrid(){ }
   BoardGrid(int w, int h, int l)
   {
     this->w = w;

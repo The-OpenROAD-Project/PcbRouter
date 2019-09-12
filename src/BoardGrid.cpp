@@ -292,36 +292,36 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 	ns[3].second.z = l.z;
 
 	// up
-	ns[4].first = LAYER_CHANGE_COST;
+	ns[4].first = GlobalParam::gLayerChangeCost;
 	ns[4].second.x = l.x;
 	ns[4].second.y = l.y;
 	ns[4].second.z = l.z + 1;
 	// down
-	ns[5].first = LAYER_CHANGE_COST;
+	ns[5].first = GlobalParam::gLayerChangeCost;
 	ns[5].second.x = l.x;
 	ns[5].second.y = l.y;
 	ns[5].second.z = l.z - 1;
 
 	//lf
-	ns[6].first = DIAGONAL_COST;
+	ns[6].first = GlobalParam::gDiagonalCost;
 	ns[6].second.x = l.x - 1;
 	ns[6].second.y = l.y + 1;
 	ns[6].second.z = l.z;
 
 	//lb
-	ns[7].first = DIAGONAL_COST;
+	ns[7].first = GlobalParam::gDiagonalCost;
 	ns[7].second.x = l.x - 1;
 	ns[7].second.y = l.y - 1;
 	ns[7].second.z = l.z;
 
 	//rf
-	ns[8].first = DIAGONAL_COST;
+	ns[8].first = GlobalParam::gDiagonalCost;
 	ns[8].second.x = l.x + 1;
 	ns[8].second.y = l.y + 1;
 	ns[8].second.z = l.z;
 
 	//rb
-	ns[9].first = DIAGONAL_COST;
+	ns[9].first = GlobalParam::gDiagonalCost;
 	ns[9].second.x = l.x + 1;
 	ns[9].second.y = l.y - 1;
 	ns[9].second.z = l.z;

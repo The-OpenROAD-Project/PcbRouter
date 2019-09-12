@@ -48,12 +48,6 @@ void GridBasedRouter::test_router(kicadPcbDataBase &db)
   ofs << std::fixed << std::setprecision(5);
 
   std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
-
-  /*
-  // failed at dtor
-  BoardGrid bg2(w, h, l);
-  bg = bg2;
-  */
   
   bg.initilization(w, h, l);
   bg.base_cost_fill(0.0);
