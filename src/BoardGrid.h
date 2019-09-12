@@ -12,10 +12,9 @@
 #include <queue>
 #include <limits>
 #include <algorithm>
-
-#define DIAGONAL_COST 1.41421356237
-// #define DIAGONAL_COST 1.4
-#define LAYER_CHANGE_COST 10.0
+#include <fstream>
+#include <string>
+#include "globalParam.h"
 
 // custom Location priority queue class for search
 template <typename T, typename priority_t>
@@ -154,11 +153,10 @@ public:
 
 class BoardGrid
 {
-  float *base_cost;
-  float *working_cost;
-  float *via_cost;
-
-  int size; // total number of cells
+  float *base_cost = nullptr;    //Initialize to nullptr
+  float *working_cost = nullptr; //Initialize to nullptr
+  float *via_cost = nullptr;     //Initialize to nullptr
+  int size = 0;                  //Total number of cells
 
   void working_cost_fill(float value);
   float working_cost_at(const Location &l) const;
@@ -184,6 +182,7 @@ public:
   int w; // width
   int h; // height
   int l; // layers
+  void initilization(int w, int h, int l);
   void base_cost_fill(float value);
   float base_cost_at(const Location &l) const;
   void base_cost_set(float value, const Location &l);
@@ -200,10 +199,15 @@ public:
   void remove_via_cost(const Location &l);
 
 
+  void printGnuPlot();
+  void printMatPlot();
   void pprint();
   void print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end);
   void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);
   void print_features(std::vector<Location> features);
+
+  //ctor
+  BoardGrid() {}
   BoardGrid(int w, int h, int l)
   {
     this->w = w;
@@ -226,6 +230,7 @@ public:
       exit(-1);
     }
   }
+  //dtor
   ~BoardGrid()
   {
     delete[] this->base_cost;

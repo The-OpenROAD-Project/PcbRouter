@@ -40,6 +40,10 @@ public:
   static double gEpsilon;
   static bool g90DegreeMode;
 
+  //BoardGrid
+  static double gDiagonalCost;
+  static double gLayerChangeCost;
+
   const static double gSqrt2;
   const static double gTan22_5;
 

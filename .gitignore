@@ -11,6 +11,9 @@ tmp/
 cases/
 build/
 *.output
+*.plt
+*.dat
+*.py
 
 # CMake and make files
 Makefile

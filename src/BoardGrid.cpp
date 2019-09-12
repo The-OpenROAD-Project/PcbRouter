@@ -11,6 +11,20 @@ std::ostream &operator<<(std::ostream &os, Location const &l)
 	return os << "Location(" << l.x << ", " << l.y << ", " << l.z << ")";
 }
 
+void BoardGrid::initilization(int w, int h, int l)
+{
+	this->w = w;
+	this->h = h;
+	this->l = l;
+	this->size = w * h * l;
+
+	assert(this->base_cost == nullptr);
+	assert(this->working_cost == nullptr);
+
+	this->base_cost = new float[this->size];
+	this->working_cost = new float[this->size];
+}
+
 void BoardGrid::base_cost_fill(float value)
 {
 	for (int i = 0; i < this->size; i++)
@@ -206,7 +220,7 @@ void BoardGrid::working_cost_set(float value, const Location &l)
 std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 	const std::vector<Location> &route)
 {
-	std::cout << "Starting dijkstras_with_came_from ==Multipin== nets: route.size() = " << route.size() << std::endl;
+	std::cout << "Starting dijkstras_with_came_from ==Multipin== nets: route.features.size() = " << route.size() << std::endl;
 
 	// For path to multiple points
 	// Searches from the multiple points to every other point
@@ -221,7 +235,7 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 		came_from[start] = start;
 	}
 
-	std::cout << "came_from.size() = " << came_from.size() << std::endl;
+	std::cout << "came_from.size() = " << came_from.size() << ", frontier.size(): " << frontier.size() << std::endl;
 
 	while (!frontier.empty())
 	{
@@ -278,41 +292,129 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 	ns[3].second.z = l.z;
 
 	// up
-	ns[4].first = LAYER_CHANGE_COST;
+	ns[4].first = GlobalParam::gLayerChangeCost;
 	ns[4].second.x = l.x;
 	ns[4].second.y = l.y;
 	ns[4].second.z = l.z + 1;
 	// down
-	ns[5].first = LAYER_CHANGE_COST;
+	ns[5].first = GlobalParam::gLayerChangeCost;
 	ns[5].second.x = l.x;
 	ns[5].second.y = l.y;
 	ns[5].second.z = l.z - 1;
 
 	//lf
-	ns[6].first = DIAGONAL_COST;
+	ns[6].first = GlobalParam::gDiagonalCost;
 	ns[6].second.x = l.x - 1;
 	ns[6].second.y = l.y + 1;
 	ns[6].second.z = l.z;
 
 	//lb
-	ns[7].first = DIAGONAL_COST;
+	ns[7].first = GlobalParam::gDiagonalCost;
 	ns[7].second.x = l.x - 1;
 	ns[7].second.y = l.y - 1;
 	ns[7].second.z = l.z;
 
 	//rf
-	ns[8].first = DIAGONAL_COST;
+	ns[8].first = GlobalParam::gDiagonalCost;
 	ns[8].second.x = l.x + 1;
 	ns[8].second.y = l.y + 1;
 	ns[8].second.z = l.z;
 
 	//rb
-	ns[9].first = DIAGONAL_COST;
+	ns[9].first = GlobalParam::gDiagonalCost;
 	ns[9].second.x = l.x + 1;
 	ns[9].second.y = l.y - 1;
 	ns[9].second.z = l.z;
 
 	return ns;
+}
+
+void BoardGrid::printGnuPlot()
+{
+	float max_val = 0.0;
+	for (int i = 0; i < this->size; i += 1)
+	{
+		if (this->base_cost[i] > max_val)
+			max_val = this->base_cost[i];
+	}
+
+	std::cout << "printGnuPlot()::Max Cost: " << max_val << std::endl;
+
+	for (int l = 0; l < this->l; ++l)
+	{
+		std::string outFileName = "layer" + std::to_string(l) + "_baseCost.dat";
+		std::ofstream ofs(outFileName, std::ofstream::out);
+		ofs << std::fixed << std::setprecision(5);
+
+		for (int r = 0; r < this->h; ++r)
+		{
+			for (int c = 0; c < this->w; ++c)
+			{
+				ofs << this->base_cost_at(Location(c, r, l)) << " ";
+			}
+			ofs << std::endl;
+		}
+	}
+}
+
+void BoardGrid::printMatPlot()
+{
+	float maxCost = std::numeric_limits<float>::min();
+	float minCost = std::numeric_limits<float>::max();
+	for (int i = 0; i < this->size; i += 1)
+	{
+		if (this->base_cost[i] > maxCost)
+		{
+			maxCost = this->base_cost[i];
+		}
+		else if (this->base_cost[i] < minCost)
+		{
+			minCost = this->base_cost[i];
+		}
+	}
+
+	std::cout << "printGnuPlot()::Max Cost: " << maxCost << ", Min Cost: " << minCost << std::endl;
+
+	for (int l = 0; l < this->l; ++l)
+	{
+		std::string outFileName = "layer" + std::to_string(l) + "_baseCost.py";
+		std::ofstream ofs(outFileName, std::ofstream::out);
+		std::cout << "outFileName: " << outFileName << std::endl;
+
+		ofs << std::fixed << std::setprecision(5);
+		ofs << "import numpy as np\n";
+		ofs << "import matplotlib.pyplot as plt\n";
+		ofs << "plt.close()\n";
+		ofs << "viridis = plt.get_cmap('viridis', 12)\n";
+		ofs << "data = np.array([[";
+
+		for (int r = 0; r < this->h; ++r)
+		{
+			for (int c = 0; c < this->w; ++c)
+			{
+				ofs << this->base_cost_at(Location(c, r, l)) << " ";
+				if (c < this->w - 1)
+				{
+					ofs << ", ";
+				}
+				else
+				{
+					ofs << "]";
+				}
+			}
+
+			if (r < this->h - 1)
+			{
+				ofs << ", [";
+			}
+		}
+
+		ofs << "])\n";
+		ofs << "plt.pcolormesh(data, cmap=viridis, vmin=data.min(), vmax=data.max())\n";
+		ofs << "plt.title('test123')\n";
+		ofs << "plt.colorbar()\n";
+		ofs << "plt.show()\n";
+	}
 }
 
 void BoardGrid::pprint()
