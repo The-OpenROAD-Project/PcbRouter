@@ -153,9 +153,9 @@ public:
 
 class BoardGrid
 {
-  float *base_cost = nullptr;     //Initialize to nullptr
-  float *working_cost = nullptr;  //Initialize to nullptr
-  int size = 0;                   //Total number of cells
+  float *base_cost = nullptr;    //Initialize to nullptr
+  float *working_cost = nullptr; //Initialize to nullptr
+  int size = 0;                  //Total number of cells
 
   void working_cost_fill(float value);
   float working_cost_at(const Location &l) const;
@@ -191,13 +191,14 @@ public:
   void ripup_route(Route &route);
 
   void printGnuPlot();
+  void printMatPlot();
   void pprint();
   void print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end);
   void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);
   void print_features(std::vector<Location> features);
 
   //ctor
-  BoardGrid(){ }
+  BoardGrid() {}
   BoardGrid(int w, int h, int l)
   {
     this->w = w;

@@ -48,7 +48,7 @@ void GridBasedRouter::test_router(kicadPcbDataBase &db)
   ofs << std::fixed << std::setprecision(5);
 
   std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
-  
+
   bg.initilization(w, h, l);
   bg.base_cost_fill(0.0);
 
@@ -87,6 +87,7 @@ void GridBasedRouter::test_router(kicadPcbDataBase &db)
   // Routing has done
   // Print the final base cost
   bg.printGnuPlot();
+  bg.printMatPlot();
 
   // Print KiCad file format
   // 2-pins

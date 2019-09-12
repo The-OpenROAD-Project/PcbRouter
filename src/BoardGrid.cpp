@@ -13,16 +13,16 @@ std::ostream &operator<<(std::ostream &os, Location const &l)
 
 void BoardGrid::initilization(int w, int h, int l)
 {
-    this->w = w;
-    this->h = h;
-    this->l = l;
-    this->size = w * h * l;
-	
-	assert(this->base_cost==NULL);
-	assert(this->working_cost==NULL);
-    
+	this->w = w;
+	this->h = h;
+	this->l = l;
+	this->size = w * h * l;
+
+	assert(this->base_cost == nullptr);
+	assert(this->working_cost == nullptr);
+
 	this->base_cost = new float[this->size];
-    this->working_cost = new float[this->size];
+	this->working_cost = new float[this->size];
 }
 
 void BoardGrid::base_cost_fill(float value)
@@ -235,7 +235,7 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 		came_from[start] = start;
 	}
 
-	std::cout << "came_from.size() = " << came_from.size() << ", frontier.size(): "<< frontier.size() << std::endl;
+	std::cout << "came_from.size() = " << came_from.size() << ", frontier.size(): " << frontier.size() << std::endl;
 
 	while (!frontier.empty())
 	{
@@ -354,6 +354,66 @@ void BoardGrid::printGnuPlot()
 			}
 			ofs << std::endl;
 		}
+	}
+}
+
+void BoardGrid::printMatPlot()
+{
+	float maxCost = std::numeric_limits<float>::min();
+	float minCost = std::numeric_limits<float>::max();
+	for (int i = 0; i < this->size; i += 1)
+	{
+		if (this->base_cost[i] > maxCost)
+		{
+			maxCost = this->base_cost[i];
+		}
+		else if (this->base_cost[i] < minCost)
+		{
+			minCost = this->base_cost[i];
+		}
+	}
+
+	std::cout << "printGnuPlot()::Max Cost: " << maxCost << ", Min Cost: " << minCost << std::endl;
+
+	for (int l = 0; l < this->l; ++l)
+	{
+		std::string outFileName = "layer" + std::to_string(l) + "_baseCost.py";
+		std::ofstream ofs(outFileName, std::ofstream::out);
+		std::cout << "outFileName: " << outFileName << std::endl;
+
+		ofs << std::fixed << std::setprecision(5);
+		ofs << "import numpy as np\n";
+		ofs << "import matplotlib.pyplot as plt\n";
+		ofs << "plt.close()\n";
+		ofs << "viridis = plt.get_cmap('viridis', 12)\n";
+		ofs << "data = np.array([[";
+
+		for (int r = 0; r < this->h; ++r)
+		{
+			for (int c = 0; c < this->w; ++c)
+			{
+				ofs << this->base_cost_at(Location(c, r, l)) << " ";
+				if (c < this->w - 1)
+				{
+					ofs << ", ";
+				}
+				else
+				{
+					ofs << "]";
+				}
+			}
+
+			if (r < this->h - 1)
+			{
+				ofs << ", [";
+			}
+		}
+
+		ofs << "])\n";
+		ofs << "plt.pcolormesh(data, cmap=viridis, vmin=data.min(), vmax=data.max())\n";
+		ofs << "plt.title('test123')\n";
+		ofs << "plt.colorbar()\n";
+		ofs << "plt.show()\n";
 	}
 }
 
