@@ -14,6 +14,12 @@ bool GlobalParam::g90DegreeMode = true;
 // BoardGrid
 double GlobalParam::gDiagonalCost = 1.41421356237;
 double GlobalParam::gLayerChangeCost = 10.0;
+// Outputfile
+int GlobalParam::gOutputPrecision = 5;
+string GlobalParam::gOutputFolder = "output";
+// logfile
+string GlobalParam::gLogFolder = "log";
+
 int GlobalParam::gSeed = 1470295829; //time(NULL);
 const double GlobalParam::gSqrt2 = sqrt(2);
 const double GlobalParam::gTan22_5 = tan(22.5 * PI / 180.0);
@@ -48,6 +54,16 @@ void GlobalParam::setDesignRule()
     gDisBetweenWire = gWireWidth + gWireSpace;
 
     srand(GlobalParam::gSeed);
+}
+
+void GlobalParam::setFolders()
+{
+    if(!util::createDirectory(gOutputFolder)){
+        gOutputFolder = "";
+    }
+    if(!util::createDirectory(gLogFolder)){
+        gLogFolder = "";
+    }
 }
 
 void GlobalParam::showCurrentUsage(const string comment)

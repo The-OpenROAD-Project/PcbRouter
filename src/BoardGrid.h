@@ -1,6 +1,6 @@
 // BoarGrid.h
-#ifndef BOARD_GRID_H
-#define BOARD_GRID_H
+#ifndef PCBROUTER_BOARD_GRID_H
+#define PCBROUTER_BOARD_GRID_H
 
 #include <iostream>
 #include <iomanip>
@@ -193,11 +193,9 @@ public:
   // void ripup_route(Route &route);
   void ripup_route(MultipinRoute &route);
 
-
   float cost_of_via_at(const Location &l);
   void add_via_cost(const Location &l);
   void remove_via_cost(const Location &l);
-
 
   void printGnuPlot();
   void printMatPlot();
@@ -215,17 +213,20 @@ public:
     this->l = l;
     this->size = w * h * l;
     this->base_cost = new float[this->size];
-    if (this->base_cost == nullptr) {
+    if (this->base_cost == nullptr)
+    {
       std::cout << "Could not allocate base_cost" << std::endl;
       exit(-1);
     }
     this->working_cost = new float[this->size];
-    if (this->working_cost == nullptr) {
+    if (this->working_cost == nullptr)
+    {
       std::cout << "Could not allocate working_cost" << std::endl;
       exit(-1);
     }
     this->via_cost = new float[this->size];
-    if (this->via_cost == nullptr) {
+    if (this->via_cost == nullptr)
+    {
       std::cout << "Could not allocate via_cost" << std::endl;
       exit(-1);
     }

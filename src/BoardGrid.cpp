@@ -343,6 +343,7 @@ void BoardGrid::printGnuPlot()
 	for (int l = 0; l < this->l; ++l)
 	{
 		std::string outFileName = "layer" + std::to_string(l) + "_baseCost.dat";
+		outFileName = util::appendDirectory(GlobalParam::gOutputFolder,outFileName);
 		std::ofstream ofs(outFileName, std::ofstream::out);
 		ofs << std::fixed << std::setprecision(5);
 
@@ -378,6 +379,7 @@ void BoardGrid::printMatPlot()
 	for (int l = 0; l < this->l; ++l)
 	{
 		std::string outFileName = "layer" + std::to_string(l) + "_baseCost.py";
+		outFileName = util::appendDirectory(GlobalParam::gOutputFolder,outFileName);
 		std::ofstream ofs(outFileName, std::ofstream::out);
 		std::cout << "outFileName: " << outFileName << std::endl;
 

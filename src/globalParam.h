@@ -1,5 +1,5 @@
-#ifndef GLOBALPARAM_H
-#define GLOBALPARAM_H
+#ifndef PCBROUTER_GLOBALPARAM_H
+#define PCBROUTER_GLOBALPARAM_H
 
 #include <string>
 #include <math.h>
@@ -44,6 +44,13 @@ public:
   static double gDiagonalCost;
   static double gLayerChangeCost;
 
+  //Outputfile
+  static int gOutputPrecision;
+  static string gOutputFolder;
+
+  //Log
+  static string gLogFolder;
+
   const static double gSqrt2;
   const static double gTan22_5;
 
@@ -51,6 +58,7 @@ public:
 
   static util::TimeUsage runTime;
 
+  static void setFolders();
   static void setDesignRule();
   static void setLayerNum(int l) { gLayerNum = l; }
 

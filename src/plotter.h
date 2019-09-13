@@ -1,6 +1,6 @@
 
-#ifndef PLOTTER_H
-#define PLOTTER_H
+#ifndef PCBROUTER_PLOTTER_H
+#define PCBROUTER_PLOTTER_H
 
 #include <iostream>
 #include <stdio.h>

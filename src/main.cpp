@@ -1,17 +1,21 @@
 
 #include "kicadPcbDataBase.h"
 #include "GridBasedRouter.h"
+#include "util.h"
 
 int main(int argc, char *argv[])
 {
-  if(argc < 2) {
+  if (argc < 2)
+  {
     std::cout << "Please provide input testcase filename.";
     return 0;
   }
 
+  util::showSysInfoComdLine(argc, argv);
+  GlobalParam::setFolders();
+
   std::string designName = argv[1];
   std::cout << "Parsing design: " << designName << std::endl;
-  //auto db = kicadPcbDataBase{designName};
   kicadPcbDataBase db(designName);
 
   db.printComp();
@@ -19,11 +23,9 @@ int main(int argc, char *argv[])
   db.printNet();
   db.printPcbRouterInfo();
 
-  //test_multipin();
-  std::cout << "Starting router" << std::endl;
-  //test_router(db);
-  GridBasedRouter router;
-  router.test_router(db);
+  std::cout << "Starting router..." << std::endl;
+  GridBasedRouter router(db);
+  router.test_router();
 
   return 0;
 }

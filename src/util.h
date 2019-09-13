@@ -1,8 +1,6 @@
-// **************************************************************************
-// // from wlkb83
-// // ***********************************************************************
-#ifndef UTIL_H
-#define UTIL_H
+//util.h
+#ifndef PCBROUTER_UTIL_H
+#define PCBROUTER_UTIL_H
 
 #include <cstdlib>  // atof
 #include <cassert>  // assert
@@ -14,6 +12,8 @@
 #include <string>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <sys/stat.h>  // Unix-only. Create Folder, change to <filesystem> when C++17 is ready
+#include <sys/types.h> // Unix-only. Create Folder, change to <filesystem> when C++17 is ready
 
 using namespace std;
 
@@ -42,10 +42,10 @@ inline void showSysInfoComdLine(int argc, char *argv[])
 // =====================================================
 // filename --------------------------------------------
 // =====================================================
-inline string getFileDirname(const string filePathName)
+inline string getFileDirName(const string filePathName)
 {
     string retStr = filePathName;
-    string::size_type pos = retStr.rfind("/");
+    string::size_type pos = retStr.find_last_of("/\\");
     if (pos != string::npos)
         retStr = retStr.substr(0, pos);
     return retStr;
@@ -53,9 +53,61 @@ inline string getFileDirname(const string filePathName)
 inline string getFileName(const string filePathName)
 {
     string retStr = filePathName;
-    string::size_type pos = retStr.rfind("/");
+    string::size_type pos = retStr.find_last_of("/\\");
     if (pos != string::npos)
         retStr = retStr.substr(pos + 1);
+    return retStr;
+}
+inline string getFileNameWoExtension(const string filePathName)
+{
+    string retStr = filePathName;
+    string::size_type pos = retStr.find_last_of("/\\");
+    if (pos != string::npos)
+        retStr = retStr.substr(pos + 1);
+    pos = retStr.find_last_of(".");
+    if (pos != string::npos)
+        retStr = retStr.substr(0, pos);
+    return retStr;
+}
+inline string getFileExtension(const string filePathName)
+{
+    string retStr = filePathName;
+    string::size_type pos = retStr.rfind(".");
+    if (pos != string::npos)
+        retStr = retStr.substr(pos + 1);
+    return retStr;
+}
+
+// =====================================================
+// Directory Unix-only (TODO: std::filesystem in C++17)-
+// =====================================================
+inline bool createDirectory(const string dirName)
+{
+    // Creating a directory
+    struct stat info;
+
+    if (stat(dirName.c_str(), &info) != 0)
+    {
+        cerr << "Cannot access directory " << dirName << endl;
+    }
+    else if (info.st_mode & S_IFDIR)
+    {
+        cout << dirName << " dirctory already exists" << endl;
+    }
+    else
+    {
+        if (mkdir(dirName.c_str(), 0777) == -1)
+        {
+            cerr << "Error creating directory " << dirName << " :  " << strerror(errno) << endl;
+            return false;
+        }
+        cout << "Directory created: " << dirName << endl;
+    }
+    return true;
+}
+inline string appendDirectory(const string dirName, const string fileName)
+{
+    string retStr = dirName + "/" + fileName;
     return retStr;
 }
 
