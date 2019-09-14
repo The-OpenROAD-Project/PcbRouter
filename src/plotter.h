@@ -51,7 +51,7 @@ private:
 
 private:
   ofstream _outFile;
-  size_t _objCounter;
+  //size_t _objCounter;
 };
 
 //Congestion color map

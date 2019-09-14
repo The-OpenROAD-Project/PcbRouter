@@ -1,7 +1,8 @@
 #include "plotter.h"
 
-Plotter::Plotter(char *outputFileName) : _objCounter(1)
+Plotter::Plotter(char *outputFileName)
 {
+    //_objCounter = 1;
     _outFile.open(outputFileName, ofstream::out);
     _outFile << fixed;
     if (!_outFile.is_open())
