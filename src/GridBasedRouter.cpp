@@ -33,7 +33,7 @@ bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets)
   std::string fileNameWoExtension = util::getFileNameWoExtension(mDb.getFileName());
   std::string outputFileName = fileNameWoExtension + ".routed.ours." + fileExtension;
   outputFileName = util::appendDirectory(GlobalParam::gOutputFolder, outputFileName);
-  std::cout << "outputResults2KiCadFile:: outputFileName: "<< outputFileName << std::endl;
+  std::cout << "outputResults2KiCadFile:: outputFileName: " << outputFileName << std::endl;
 
   std::ofstream ofs;
   ofs.open(outputFileName, std::ofstream::out);
@@ -54,7 +54,8 @@ bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets)
     }
   }
   // Paste inputs to outputs
-  for(auto str : fileLines){
+  for (auto str : fileLines)
+  {
     ofs << str << std::endl;
   }
 
@@ -73,7 +74,8 @@ bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets)
 
 bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs)
 {
-  if(!ofs) return false;
+  if (!ofs)
+    return false;
 
   // Set output precision
   ofs << std::fixed << std::setprecision(GlobalParam::gOutputPrecision);
@@ -159,10 +161,6 @@ void GridBasedRouter::test_router()
 {
   std::vector<std::set<std::pair<double, double>>> routerInfo;
   mDb.getPcbRouterInfo(&routerInfo);
-  //double min_x = std::numeric_limits<double>::max();
-  //double max_x = std::numeric_limits<double>::min();
-  //double min_y = std::numeric_limits<double>::max();
-  //double max_y = std::numeric_limits<double>::min();
 
   std::cout << std::fixed << std::setprecision(5);
   std::cout << "=================test_router==================" << std::endl;
@@ -195,7 +193,7 @@ void GridBasedRouter::test_router()
   //const int max_ripups = 20000;
   std::vector<Route> twoPinNets;
   std::vector<MultipinRoute> multipinNets;
-  
+
   //std::ofstream ofs("router.output", std::ofstream::out);
   //ofs << std::fixed << std::setprecision(5);
 

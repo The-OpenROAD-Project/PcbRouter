@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 #include <cstdio>
-#include <iostream> 
+#include <iostream>
 #include "BoardGrid.h"
 #include "kicadPcbDataBase.h"
 #include "globalParam.h"
@@ -32,7 +32,7 @@ private:
   kicadPcbDataBase &mDb;
 
   // TODO
-  // Put below stuff to globalParam::
+  // Put below stuff to globalParam:: ??
   double min_x = std::numeric_limits<double>::max();
   double max_x = std::numeric_limits<double>::min();
   double min_y = std::numeric_limits<double>::max();
@@ -40,7 +40,7 @@ private:
   // Take const to below?
   const unsigned int inputScale = 10;
   const unsigned int enlargeBoundary = 10;
-  const float grid_factor = 0.1;            //For outputing
+  const float grid_factor = 0.1; //For outputing
 };
 
 #endif
