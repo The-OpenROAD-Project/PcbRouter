@@ -21,7 +21,7 @@ public:
   ~GridBasedRouter() {}
 
   void test_router();
-  bool outputResults2KiCadFile(std::vector<Route> &nets); // If needed
+  // bool outputResults2KiCadFile(std::vector<Route> &nets); // If needed
   bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets);
 
 private:

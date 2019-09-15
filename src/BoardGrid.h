@@ -104,30 +104,30 @@ struct greater<std::pair<float, Location>>
 };
 } // namespace std
 
-class Route
-{
-public:
-  Location start;
-  Location end;
-  std::unordered_map<Location, Location> came_from;
-  std::vector<Location> features;
-  int netId;
-  Route()
-  {
-  }
-  Route(Location start, Location end)
-  {
-    this->start = start;
-    this->end = end;
-    this->netId = 0;
-  }
-  Route(Location start, Location end, int netId)
-  {
-    this->start = start;
-    this->end = end;
-    this->netId = netId;
-  }
-};
+// class Route
+// {
+// public:
+//   Location start;
+//   Location end;
+//   std::unordered_map<Location, Location> came_from;
+//   std::vector<Location> features;
+//   int netId;
+//   Route()
+//   {
+//   }
+//   Route(Location start, Location end)
+//   {
+//     this->start = start;
+//     this->end = end;
+//     this->netId = 0;
+//   }
+//   Route(Location start, Location end, int netId)
+//   {
+//     this->start = start;
+//     this->end = end;
+//     this->netId = netId;
+//   }
+// };
 
 class MultipinRoute
 {
@@ -135,6 +135,7 @@ public:
   std::vector<Location> pins;
   std::vector<std::unordered_map<Location, Location>> came_from;
   std::vector<Location> features;
+  std::vector<Location> vias;
   int netId;
   MultipinRoute()
   {
@@ -163,18 +164,18 @@ class BoardGrid
   void working_cost_set(float value, const Location &l);
 
   // void add_route_to_base_cost(const Route &route, int radius, float cost);
-  void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost);
+  void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size);
   // void remove_route_from_base_cost(const Route &route, int radius, float cost);
   void remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost);
 
   void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
   std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
 
-  std::array<std::pair<float, Location>, 10> neighbors(const Location &l) const;
+  std::array<std::pair<float, Location>, 10> neighbors(const Location &l, int via_size) const;
 
   // std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, const Location &end);
-  std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start);
-  std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route);
+  std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
+  std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
   void breadth_first_search(const Location &start, const Location &end);
   std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
 
@@ -182,6 +183,9 @@ public:
   int w; // width
   int h; // height
   int l; // layers
+
+  float cost_to_occupy(const Location &l) const;
+
   void initilization(int w, int h, int l);
   void base_cost_fill(float value);
   float base_cost_at(const Location &l) const;
@@ -193,7 +197,8 @@ public:
   // void ripup_route(Route &route);
   void ripup_route(MultipinRoute &route);
 
-  float cost_of_via_at(const Location &l);
+  float sized_via_cost_at(const Location &l, int via_size) const;
+  float via_cost_at(const Location &l) const;
   void add_via_cost(const Location &l);
   void remove_via_cost(const Location &l);
 

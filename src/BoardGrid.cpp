@@ -41,9 +41,19 @@ void BoardGrid::working_cost_fill(float value)
 	}
 }
 
+float BoardGrid::cost_to_occupy(const Location &l) const
+{
+	return this->base_cost_at(l) + this->via_cost_at(l);
+}
+
 float BoardGrid::base_cost_at(const Location &l) const
 {
 	return this->base_cost[l.x + l.y * this->w + l.z * this->w * this->h];
+}
+
+float BoardGrid::via_cost_at(const Location &l) const
+{
+	return this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h];
 }
 
 float BoardGrid::working_cost_at(const Location &l) const
@@ -218,7 +228,9 @@ void BoardGrid::working_cost_set(float value, const Location &l)
 // }
 
 std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
-	const std::vector<Location> &route)
+	const std::vector<Location> &route,
+	int via_size
+)
 {
 	std::cout << "Starting dijkstras_with_came_from ==Multipin== nets: route.features.size() = " << route.size() << std::endl;
 
@@ -244,7 +256,7 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 
 		//std::cout << "Visiting " << current << ", frontierSize: "<< frontier.size() << std::endl;
 
-		for (std::pair<float, Location> next : this->neighbors(current))
+		for (std::pair<float, Location> next : this->neighbors(current, via_size))
 		{
 			if (
 				(next.second.x < 0) || (next.second.x >= this->w) ||
@@ -265,7 +277,7 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 	return came_from;
 }
 
-std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &l) const
+std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &l, int via_size) const
 {
 	std::array<std::pair<float, Location>, 10> ns;
 
@@ -292,12 +304,12 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 	ns[3].second.z = l.z;
 
 	// up
-	ns[4].first = GlobalParam::gLayerChangeCost;
+	ns[4].first = GlobalParam::gLayerChangeCost + this->sized_via_cost_at(l, via_size);
 	ns[4].second.x = l.x;
 	ns[4].second.y = l.y;
 	ns[4].second.z = l.z + 1;
 	// down
-	ns[5].first = GlobalParam::gLayerChangeCost;
+	ns[5].first = GlobalParam::gLayerChangeCost + this->sized_via_cost_at(l, via_size);
 	ns[5].second.x = l.x;
 	ns[5].second.y = l.y;
 	ns[5].second.z = l.z - 1;
@@ -454,8 +466,21 @@ void BoardGrid::pprint()
 }
 
 
-float BoardGrid::cost_of_via_at(const Location &l){
-	return 10.0;
+float BoardGrid::sized_via_cost_at(const Location &l, int via_size) const{
+	return 0.0;
+	int radius = via_size;
+	float cost = 0.0;
+	for (int z = 0; z < this->l; z += 1) {
+		for (int y = -radius; y < radius; y += 1) {
+			if (y < 0 || y > this->h) return std::numeric_limits<float>::infinity();
+			for (int x = -radius; x < radius; x += 1){
+				if (x < 0 || x > this->w) return std::numeric_limits<float>::infinity();
+				Location current_l = Location(x, y, z);
+				cost += this->base_cost_at(current_l);// + this->via_cost_at(l);
+			}
+		}
+	}
+	return cost;
 }
 
 
@@ -586,21 +611,21 @@ void BoardGrid::remove_via_cost(const Location &l) {
 	}
 }
 
-void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, float cost)
+void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size)
 {
 	// std::vector<Location> features = route.features;
-	Location last_location = route.features[0];
+	// Location last_location = route.features[0];
 	for (Location l : route.features)
 	{
 		// std::cout << "setting cost for feature " << l << std::endl;
 		int layer = l.z;
-		if ((l.z != last_location.z) && (l.x == last_location.x) && (l.y == last_location.y)) {
-			this->add_via_cost(l);
-		}
+		// if ((l.z != last_location.z) && (l.x == last_location.x) && (l.y == last_location.y)) {
+			// this->add_via_cost(l);
+		// }
 
 		for (int current_radius = 0; current_radius <= radius; current_radius += 1)
 		{
-			float current_cost = cost - current_radius;
+			float current_cost = cost;
 			if (current_cost <= 0)
 				break;
 
@@ -882,6 +907,9 @@ void BoardGrid::print_features(std::vector<Location> features)
 
 void BoardGrid::add_route(MultipinRoute &route)
 {
+	int radius = 10;
+	int cost = 10;
+	int via_size = 10;
 	int num_pins = route.pins.size();
 
 	if (num_pins <= 0)
@@ -898,16 +926,19 @@ void BoardGrid::add_route(MultipinRoute &route)
 
 		for (Location pin : route.pins)
 		{
-			std::unordered_map<Location, Location> came_from = this->dijkstras_with_came_from(route.features);
+			std::unordered_map<Location, Location> came_from = this->dijkstras_with_came_from(route.features, via_size);
 			//this->print_came_from(came_from, pin);
 			std::vector<Location> new_features = this->came_from_to_features(came_from, pin);
+
+			Location last_feature = new_features[0];
 			for (Location f : new_features)
 			{
 				route.features.push_back(f);
+				last_feature = f;
 			}
 		}
 		//this->print_features(route.features);
-		this->add_route_to_base_cost(route, 1, 10);
+		this->add_route_to_base_cost(route, radius, cost, via_size);
 	}
 }
 

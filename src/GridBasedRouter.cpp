@@ -191,7 +191,7 @@ void GridBasedRouter::test_router()
   //const unsigned int l = 4;
   // TODO
   //const int max_ripups = 20000;
-  std::vector<Route> twoPinNets;
+  // std::vector<Route> twoPinNets;
   std::vector<MultipinRoute> multipinNets;
 
   //std::ofstream ofs("router.output", std::ofstream::out);
