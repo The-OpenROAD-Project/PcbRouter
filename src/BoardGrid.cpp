@@ -20,9 +20,16 @@ void BoardGrid::initilization(int w, int h, int l)
 
 	assert(this->base_cost == nullptr);
 	assert(this->working_cost == nullptr);
+	assert(this->via_cost == nullptr);
 
 	this->base_cost = new float[this->size];
 	this->working_cost = new float[this->size];
+    this->via_cost = new float[this->size];
+
+    assert(this->base_cost != nullptr);
+	assert(this->working_cost != nullptr);
+	assert(this->via_cost != nullptr);
+
 }
 
 void BoardGrid::base_cost_fill(float value)
@@ -48,27 +55,60 @@ float BoardGrid::cost_to_occupy(const Location &l) const
 
 float BoardGrid::base_cost_at(const Location &l) const
 {
+	#ifdef BOUND_CHECKS
+	assert ((l.x + l.y * this->w + l.z * this->w * this->h) < this->size);
+	#endif
 	return this->base_cost[l.x + l.y * this->w + l.z * this->w * this->h];
 }
 
 float BoardGrid::via_cost_at(const Location &l) const
 {
+	// std::cerr << "via_cost_at( " << l << ")" << std::endl;
+	// std::cerr << this->via_cost << std::endl;
+
+	// if (!this->via_cost) {
+	// 	std::cout << "Could not allocate via_cost" << std::endl;
+ //     	exit(-1);
+	// }
+
+	#ifdef BOUND_CHECKS
+	assert ((l.x + l.y * this->w + l.z * this->w * this->h) < this->size);
+	#endif
 	return this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h];
+	// std::cerr << "returning via_cost_at" << std::endl;
 }
 
 float BoardGrid::working_cost_at(const Location &l) const
 {
+	#ifdef BOUND_CHECKS
+	assert ((l.x + l.y * this->w + l.z * this->w * this->h) < this->size);
+	#endif
 	return this->working_cost[l.x + l.y * this->w + l.z * this->w * this->h];
 }
 
 void BoardGrid::base_cost_set(float value, const Location &l)
 {
+	#ifdef BOUND_CHECKS
+	assert (l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	#endif
 	this->base_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
 }
 
 void BoardGrid::working_cost_set(float value, const Location &l)
 {
+	#ifdef BOUND_CHECKS
+	assert (l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	#endif
 	this->working_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
+}
+
+void BoardGrid::via_cost_set(float value, const Location &l)
+{
+	#ifdef BOUND_CHECKS
+	assert (l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	#endif
+	this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
+
 }
 
 // void BoardGrid::breadth_first_search(const Location &start, const Location &end)
@@ -265,15 +305,32 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 			{
 				continue; // continue if out of bounds
 			}
-			float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) + next.first;
+			// std::cerr << "next.second.x: " << next.second.x << std::endl;
+			// std::cerr << "next.second.y: " << next.second.y << std::endl;
+			// std::cerr << "next.second.z: " << next.second.z << std::endl;
+
+			// std::cerr << "geting new cost" << std::endl;
+
+			float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) + this->via_cost_at(next.second) + next.first;
+
+			// std::cerr << "Done" << std::endl;
+
 			if (new_cost < this->working_cost_at(next.second))
 			{
+				// std::cerr << "setting working cost" << std::endl;
 				this->working_cost_set(new_cost, next.second);
 				came_from[next.second] = current;
 				frontier.push(next.second, new_cost);
+				// std::cerr << "Done" << std::endl;
+
 			}
+
+			// std::cerr << std::endl;
 		}
 	}
+
+	// std::cerr << "finished dijkstras_with_came_from" << std::endl;
+
 	return came_from;
 }
 
@@ -587,26 +644,29 @@ void BoardGrid::print_came_from(const std::unordered_map<Location, Location> &ca
 // 	}
 // }
 
-void BoardGrid::add_via_cost(const Location &l) {
+void BoardGrid::add_via_cost(const Location &l, int layer) {
+
 	int radius = 10;
 	float cost = 10.0;
-	for (int z = 0; z < this->l; z += 1) {
-		for (int y = -radius; y < radius; y += 1) {
-			for (int x = -radius; x <= radius; x += 1){
-				this->via_cost[(l.x+x) + (l.y+y) * this->w + (l.z+z) * this->w * this->h] += cost;
-			}
+	for (int y = -radius; y < radius; y += 1) {
+		for (int x = -radius; x <= radius; x += 1){
+			#ifdef BOUND_CHECKS
+			assert (((l.x+x) + (l.y+y) * this->w + (layer) * this->w * this->h) < this->size);
+			#endif
+			this->via_cost[(l.x+x) + (l.y+y) * this->w + (layer) * this->w * this->h] += cost;
 		}
 	}
 }
 
-void BoardGrid::remove_via_cost(const Location &l) {
+void BoardGrid::remove_via_cost(const Location &l, int layer) {
 	int radius = 10;
 	float cost = 10.0;
-	for (int z = 0; z < this->l; z += 1) {
-		for (int y = -radius; y < radius; y += 1) {
-			for (int x = -radius; x <= radius; x += 1){
-				this->via_cost[(l.x+x) + (l.y+y) * this->w + (l.z+z) * this->w * this->h] -= cost;
-			}
+	for (int y = -radius; y < radius; y += 1) {
+		for (int x = -radius; x <= radius; x += 1){
+			#ifdef BOUND_CHECKS
+			assert (((l.x+x) + (l.y+y) * this->w + (layer) * this->w * this->h) < this->size);
+			#endif
+			this->via_cost[(l.x+x) + (l.y+y) * this->w + (layer) * this->w * this->h] -= cost;
 		}
 	}
 }
@@ -614,14 +674,18 @@ void BoardGrid::remove_via_cost(const Location &l) {
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size)
 {
 	// std::vector<Location> features = route.features;
-	// Location last_location = route.features[0];
+	Location last_location = route.features[0];
 	for (Location l : route.features)
 	{
 		// std::cout << "setting cost for feature " << l << std::endl;
 		int layer = l.z;
-		// if ((l.z != last_location.z) && (l.x == last_location.x) && (l.y == last_location.y)) {
-			// this->add_via_cost(l);
-		// }
+
+		// Add costs for vias
+		if ((l.z != last_location.z) && (l.x == last_location.x) && (l.y == last_location.y)) {
+			for (int z = 0; z < this->l; z += 1){
+				this->add_via_cost(l, z);
+			}
+		}
 
 		for (int current_radius = 0; current_radius <= radius; current_radius += 1)
 		{
@@ -907,9 +971,9 @@ void BoardGrid::print_features(std::vector<Location> features)
 
 void BoardGrid::add_route(MultipinRoute &route)
 {
-	int radius = 10;
+	int radius = 7;
 	int cost = 10;
-	int via_size = 10;
+	int via_size = 7;
 	int num_pins = route.pins.size();
 
 	if (num_pins <= 0)

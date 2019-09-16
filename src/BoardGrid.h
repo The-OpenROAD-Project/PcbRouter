@@ -199,8 +199,9 @@ public:
 
   float sized_via_cost_at(const Location &l, int via_size) const;
   float via_cost_at(const Location &l) const;
-  void add_via_cost(const Location &l);
-  void remove_via_cost(const Location &l);
+  void add_via_cost(const Location &l, int layer);
+  void remove_via_cost(const Location &l, int layer);
+  void via_cost_set(float value, const Location &l);
 
   void printGnuPlot();
   void printMatPlot();
@@ -211,31 +212,7 @@ public:
 
   //ctor
   BoardGrid() {}
-  BoardGrid(int w, int h, int l)
-  {
-    this->w = w;
-    this->h = h;
-    this->l = l;
-    this->size = w * h * l;
-    this->base_cost = new float[this->size];
-    if (this->base_cost == nullptr)
-    {
-      std::cout << "Could not allocate base_cost" << std::endl;
-      exit(-1);
-    }
-    this->working_cost = new float[this->size];
-    if (this->working_cost == nullptr)
-    {
-      std::cout << "Could not allocate working_cost" << std::endl;
-      exit(-1);
-    }
-    this->via_cost = new float[this->size];
-    if (this->via_cost == nullptr)
-    {
-      std::cout << "Could not allocate via_cost" << std::endl;
-      exit(-1);
-    }
-  }
+
   //dtor
   ~BoardGrid()
   {

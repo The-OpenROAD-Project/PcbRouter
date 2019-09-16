@@ -11,6 +11,8 @@ using namespace std;
 
 #define PI 3.14159265358979323846264338
 
+#define BOUND_CHECKS
+
 // TODO
 // See router.h -> class net
 struct NetClass
