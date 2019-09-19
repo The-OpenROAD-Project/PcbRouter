@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
 
   db.printComp();
   db.printInst();
+  db.printNetclass();
   db.printNet();
   db.printFile();
   db.printPcbRouterInfo();
