@@ -33,7 +33,7 @@ bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets)
   std::string fileNameWoExtension = util::getFileNameWoExtension(mDb.getFileName());
   std::string outputFileName = fileNameWoExtension + ".routed.ours." + fileExtension;
   outputFileName = util::appendDirectory(GlobalParam::gOutputFolder, outputFileName);
-  std::cout << "outputResults2KiCadFile:: outputFileName: " << outputFileName << std::endl;
+  std::cout << __FUNCTION__ << "() outputFileName: " << outputFileName << std::endl;
 
   std::ofstream ofs;
   ofs.open(outputFileName, std::ofstream::out);
@@ -79,81 +79,239 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
 
   // Set output precision
   ofs << std::fixed << std::setprecision(GlobalParam::gOutputPrecision);
+  // Estimated total routed wirelength
+  double totalEstWL = 0.0;
 
   // Multipin net
-  for (int mpr = 0; mpr < multipinNets.size(); ++mpr)
+  for (auto &mpNet : multipinNets)
   {
-    Location last_location = multipinNets[mpr].features[0];
-    for (int i = 1; i < multipinNets[mpr].features.size(); i += 1)
+    if (!mDb.isNetId(mpNet.netId))
     {
-      // check if near ??????????
-      if (
-          abs(multipinNets[mpr].features[i].x - last_location.x) <= 1 &&
-          abs(multipinNets[mpr].features[i].y - last_location.y) <= 1 &&
-          abs(multipinNets[mpr].features[i].z - last_location.z) <= 1)
-      {
-        std::string layer;
-        if (multipinNets[mpr].features[i].z == 0)
-        {
-          layer = "Top";
-        }
-        /*
-        else if (multipinNets[mpr].features[i].z == 1)
-        {
-          // BBBW
-          layer = "Route3";
-        }
-        else if (multipinNets[mpr].features[i].z == 2)
-        {
-          // BBBW
-          layer = "Route14";
-        }
-        else if (multipinNets[mpr].features[i].z == 3)
-        */
-        else if (multipinNets[mpr].features[i].z == 1)
-        {
-          layer = "Bottom";
-        }
-        else
-        {
-          layer = "Top";
-        }
+      std::cerr << __FUNCTION__ << "() Invalid net id: " << mpNet.netId << std::endl;
+      continue;
+    }
 
-        // Print Via
-        if (multipinNets[mpr].features[i].z != last_location.z)
+    auto &net = mDb.getNet(mpNet.netId);
+    if (!mDb.isNetclassId(net.getNetclassId()))
+    {
+      std::cerr << __FUNCTION__ << "() Invalid netclass id: " << mpNet.netId << std::endl;
+      continue;
+    }
+
+    auto &netclass = mDb.getNetclass(net.getNetclassId());
+    Location last_location = mpNet.features[0];
+
+    for (int i = 1; i < mpNet.features.size(); ++i)
+    {
+      auto &feature = mpNet.features[i];
+      // check if close ???????
+      if (
+          abs(feature.x - last_location.x) <= 1 &&
+          abs(feature.y - last_location.y) <= 1 &&
+          abs(feature.z - last_location.z) <= 1)
+      {
+        // Print Through Hole Via
+        if (feature.z != last_location.z)
         {
           ofs << "(via";
-          ofs << " (at " << grid_factor * (last_location.x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + min_y * inputScale - enlargeBoundary / 2) << ")";
-          // BM2
-          ofs << " (size 0.8001)";
-          ofs << " (drill 0.3937)";
-          // BBBW
-          //ofs << " (size 0.6604)";
-          //ofs << " (drill 0.4064)";
+          ofs << " (at " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+          ofs << " (size " << netclass.getViaDia() << ")";
+          ofs << " (drill " << netclass.getViaDrill() << ")";
           ofs << " (layers Top Bottom)";
-          ofs << " (net " << multipinNets[mpr].netId << ")";
+          ofs << " (net " << mpNet.netId << ")";
           ofs << ")" << std::endl;
         }
 
         // Print Segment/Track/Wire
-        if (multipinNets[mpr].features[i].x != last_location.x || multipinNets[mpr].features[i].y != last_location.y)
+        if (feature.x != last_location.x || feature.y != last_location.y)
         {
+          point_2d start{grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2)};
+          point_2d end{grid_factor * (feature.x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (feature.y + mMinY * inputScale - enlargeBoundary / 2)};
+          totalEstWL += point_2d::getDistance(start, end);
+
           ofs << "(segment";
-          ofs << " (start " << grid_factor * (last_location.x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + min_y * inputScale - enlargeBoundary / 2) << ")";
-          ofs << " (end " << grid_factor * (multipinNets[mpr].features[i].x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (multipinNets[mpr].features[i].y + min_y * inputScale - enlargeBoundary / 2) << ")";
-          // BM2
-          ofs << " (width 0.2032)";
-          // BBBW
-          //ofs << " (width 0.1524)";
-          ofs << " (layer " << layer << ")";
-          ofs << " (net " << multipinNets[mpr].netId << ")";
+          ofs << " (start " << start.m_x << " " << start.m_y << ")";
+          ofs << " (end " << end.m_x << " " << end.m_y << ")";
+          ofs << " (width " << netclass.getTraceWidth() << ")";
+          ofs << " (layer " << mGridLayerToName.at(feature.z) << ")";
+          ofs << " (net " << mpNet.netId << ")";
           ofs << ")" << std::endl;
         }
       }
-      last_location = multipinNets[mpr].features[i];
+      last_location = feature;
     }
   }
 
+  std::cout << "=================" << __FUNCTION__ << "=================" << std::endl;
+  std::cout << "\tEstimated Total WL: " << totalEstWL << std::endl;
+  return true;
+}
+
+void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
+{
+  std::cout << std::fixed << std::setprecision(5);
+  std::cout << std::endl
+            << "=================" << __FUNCTION__ << "==================" << std::endl;
+
+  // Simple flow
+  // Location or point_2d get distance????
+  // -> Use template for both 2d and 3d points
+  // Point template to substitue point_2d and Location
+  // !!! Unified the point structure, delete the point from point_2d/3d and Location, and point in Util
+
+  // Temporary remove pad cost when routing those nets
+
+  // bug at matplot function??
+  // unified structure for Polygon, Rectangle
+
+  // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
+  // Loop Instaces: Add all pins into boardgrid with high cost
+  // ?? Perform rip-up and re-route ??
+
+  // Get board dimension
+  mDb.getBoardBoundaryByPinLocation(mMinX, mMaxX, mMinY, mMaxY);
+  std::cout << "Routing Outline: (" << mMinX << ", " << mMinY << "), (" << mMaxX << ", " << mMaxY << ")" << std::endl;
+  std::cout << "inputScale: " << inputScale << ", enlargeBoundary: " << enlargeBoundary << ", grid_factor: " << grid_factor << std::endl;
+
+  // Get grid dimension
+  const unsigned int h = int(std::abs(mMaxY * inputScale - mMinY * inputScale)) + enlargeBoundary;
+  const unsigned int w = int(std::abs(mMaxX * inputScale - mMinX * inputScale)) + enlargeBoundary;
+  const unsigned int l = mDb.getNumCopperLayers();
+  std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
+  for (auto &layerIte : mDb.getCopperLayers())
+  {
+    std::cout << "Grid layer: " << mGridLayerToName.size() << ", mapped to DB: " << layerIte.second << std::endl;
+    mLayerNameToGrid[layerIte.second] = mGridLayerToName.size();
+    mGridLayerToName.push_back(layerIte.second);
+  }
+
+  // Initialize board grid
+  mBg.initilization(w, h, l);
+  mBg.base_cost_fill(0.0);
+
+  // Add all instances' pins to a cost in grid
+  auto &instances = mDb.getInstances();
+  for (auto &inst : instances)
+  {
+    if (!mDb.isComponentId(inst.getComponentId()))
+    {
+      std::cerr << __FUNCTION__ << "(): Illegal component Id: " << inst.getComponentId() << ", from Instance: " << inst.getName() << std::endl;
+      continue;
+    }
+
+    auto &comp = mDb.getComponent(inst.getComponentId());
+    for (auto &pad : comp.getPadstacks())
+    {
+      addPinCost(pad, inst, pinCost);
+    }
+  }
+
+  // Add all nets to route
+  std::vector<MultipinRoute> multipinNets;
+  auto &nets = mDb.getNets();
+  for (auto &net : nets)
+  {
+    std::cout << "Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+    if (net.getPins().size() < 2)
+      continue;
+
+    std::vector<Location> pinLocations;
+    auto &pins = net.getPins();
+    for (auto &pin : pins)
+    {
+      point_2d pinDbLocation;
+      mDb.getPinPosition(pin, &pinDbLocation);
+      point_2d pinGridLocation; // should be in int
+      dbPointToGridPoint(pinDbLocation, pinGridLocation);
+
+      // TODO: pad layer information
+      // Throught hole???
+      pinLocations.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, 0));
+      std::cout << " location in grid: " << pinLocations.back() << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << std::endl;
+
+      // Temporary reomve the pin cost
+      addPinCost(pin, -pinCost);
+    }
+
+    multipinNets.push_back(MultipinRoute(pinLocations, net.getId()));
+    mBg.add_route(multipinNets.back());
+
+    // Put back the pin cost
+    for (auto &pin : pins)
+    {
+      addPinCost(pin, pinCost);
+    }
+  }
+
+  // Routing has done
+  // Print the final base cost
+  mBg.printGnuPlot();
+  mBg.printMatPlot();
+
+  // Output final result to KiCad file
+  outputResults2KiCadFile(multipinNets);
+}
+
+void GridBasedRouter::addPinCost(const pin &p, const float cost)
+{
+  // TODO: Id Range Checking?
+  auto &comp = mDb.getComponent(p.m_comp_id);
+  auto &inst = mDb.getInstance(p.m_inst_id);
+  auto &pad = comp.getPadstack(p.m_padstack_id);
+
+  addPinCost(pad, inst, cost);
+}
+
+void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, const float cost)
+{
+  point_2d pinDbLocation;
+  mDb.getPinPosition(pad, inst, &pinDbLocation);
+  point_2d pinDbUR{pinDbLocation.m_x + pad.getHalfWidth(), pinDbLocation.m_y + pad.getHalfHeight()};
+  point_2d pinDbLL{pinDbLocation.m_x - pad.getHalfWidth(), pinDbLocation.m_y - pad.getHalfHeight()};
+  point_2d pinGridLL, pinGridUR;
+  dbPointToGridPoint(pinDbUR, pinGridUR);
+  dbPointToGridPoint(pinDbLL, pinGridLL);
+
+  // TODO: Unify Rectangle to set costs
+  const auto &layers = pad.getLayers();
+  for (auto &layer : layers)
+  {
+    const auto &layerIte = mLayerNameToGrid.find(layer);
+    if (layerIte != mLayerNameToGrid.end())
+    {
+      for (int x = pinGridLL.m_x; x < (int)pinGridUR.m_x; ++x)
+      {
+        for (int y = pinGridLL.m_y; y < (int)pinGridUR.m_y; ++y)
+        {
+          Location gridPt{x, y, layerIte->second};
+          if (!mBg.validate_location(gridPt))
+          {
+            //std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
+            continue;
+          }
+          //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
+          mBg.base_cost_add(cost, gridPt);
+        }
+      }
+    }
+  }
+}
+
+bool GridBasedRouter::dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt)
+{
+  //TODO: boundary checking
+  //TODO: consider integer ceiling or flooring???
+  gridPt.m_x = dbPt.m_x * inputScale - mMinX * inputScale + enlargeBoundary / 2;
+  gridPt.m_y = dbPt.m_y * inputScale - mMinY * inputScale + enlargeBoundary / 2;
+  return true;
+}
+
+bool GridBasedRouter::gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt)
+{
+  //TODO: boundary checking
+  //TODO: consider integer ceiling or flooring???
+  dbPt.m_x = grid_factor * (gridPt.m_x + mMinX * inputScale - enlargeBoundary / 2);
+  dbPt.m_y = grid_factor * (gridPt.m_y + mMinY * inputScale - enlargeBoundary / 2);
   return true;
 }
 
@@ -172,19 +330,23 @@ void GridBasedRouter::test_router()
     for (auto ite : routerInfo.at(i))
     {
       std::cout << " (" << ite.first << ", " << ite.second << ")";
-      min_x = std::min(ite.first, min_x);
-      max_x = std::max(ite.first, max_x);
-      min_y = std::min(ite.second, min_y);
-      max_y = std::max(ite.second, max_y);
+      mMinX = std::min(ite.first, mMinX);
+      mMaxX = std::max(ite.first, mMaxX);
+      mMinY = std::min(ite.second, mMinY);
+      mMaxY = std::max(ite.second, mMaxY);
     }
     std::cout << std::endl;
   }
 
-  std::cout << "Routing Outline: (" << min_x << ", " << min_y << "), (" << max_x << ", " << max_y << ")" << std::endl;
+  std::cout << "Routing Outline: (" << mMinX << ", " << mMinY << "), (" << mMaxX << ", " << mMaxY << ")" << std::endl;
+
+  mDb.getBoardBoundaryByPinLocation(mMinX, mMaxX, mMinY, mMaxY);
+
+  std::cout << "Routing Outline From DB: (" << mMinX << ", " << mMinY << "), (" << mMaxX << ", " << mMaxY << ")" << std::endl;
 
   // Initialize board grid
-  const unsigned int h = int(std::abs(max_y * inputScale - min_y * inputScale)) + enlargeBoundary;
-  const unsigned int w = int(std::abs(max_x * inputScale - min_x * inputScale)) + enlargeBoundary;
+  const unsigned int h = int(std::abs(mMaxY * inputScale - mMinY * inputScale)) + enlargeBoundary;
+  const unsigned int w = int(std::abs(mMaxX * inputScale - mMinX * inputScale)) + enlargeBoundary;
   // BM*
   const unsigned int l = 2;
   // BBBW
@@ -214,7 +376,7 @@ void GridBasedRouter::test_router()
     for (auto ite : routerInfo.at(i))
     {
       std::cout << "\t(" << ite.first << ", " << ite.second << ")";
-      pins.push_back(Location(ite.first * inputScale - min_x * inputScale + enlargeBoundary / 2, ite.second * inputScale - min_y * inputScale + enlargeBoundary / 2, 0));
+      pins.push_back(Location(ite.first * inputScale - mMinX * inputScale + enlargeBoundary / 2, ite.second * inputScale - mMinY * inputScale + enlargeBoundary / 2, 0));
       std::cout << " location in grid: " << pins.back() << std::endl;
     }
 
@@ -282,7 +444,7 @@ void GridBasedRouter::test_router()
       if (twoPinNets[r].features[i].z != last_location.z)
       {
         std::cout << "(via";
-        std::cout << " (at " << grid_factor * (last_location.x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + min_y * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (at " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //std::cout << " (size 0.8001)";
         //std::cout << " (drill 0.3937)";
@@ -294,7 +456,7 @@ void GridBasedRouter::test_router()
         std::cout << ")" << std::endl;
 
         ofs << "(via";
-        ofs << " (at " << grid_factor * (last_location.x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + min_y * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (at " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //ofs << " (size 0.8001)";
         //ofs << " (drill 0.3937)";
@@ -310,8 +472,8 @@ void GridBasedRouter::test_router()
       {
         // Wire/Tack/Segment
         std::cout << "(segment";
-        std::cout << " (start " << grid_factor * (last_location.x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + min_y * inputScale - enlargeBoundary / 2) << ")";
-        std::cout << " (end " << grid_factor * (twoPinNets[r].features[i].x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].y + min_y * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (start " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (end " << grid_factor * (twoPinNets[r].features[i].x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //std::cout << " (width 0.2032)";
         // BBBW
@@ -321,8 +483,8 @@ void GridBasedRouter::test_router()
         std::cout << ")" << std::endl;
 
         ofs << "(segment";
-        ofs << " (start " << grid_factor * (last_location.x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + min_y * inputScale - enlargeBoundary / 2) << ")";
-        ofs << " (end " << grid_factor * (twoPinNets[r].features[i].x + min_x * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].y + min_y * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (start " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (end " << grid_factor * (twoPinNets[r].features[i].x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //ofs << " (width 0.2032)";
         // BBBW

@@ -190,6 +190,7 @@ public:
   void base_cost_fill(float value);
   float base_cost_at(const Location &l) const;
   void base_cost_set(float value, const Location &l);
+  void base_cost_add(float value, const Location &l);
   bool validate_location(const Location &l) const;
 
   // void add_route(Route &route);

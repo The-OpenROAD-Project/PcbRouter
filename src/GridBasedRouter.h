@@ -18,25 +18,35 @@ public:
   //ctor
   GridBasedRouter(kicadPcbDataBase &db) : mDb(db) {}
   //dtor
-  ~GridBasedRouter() {}
+  ~GridBasedRouter(){}
 
-  void test_router();
+      [[deprecated]] void test_router();
+  void testRouterWithPinAndKeepoutAvoidance();
   // bool outputResults2KiCadFile(std::vector<Route> &nets); // If needed
   bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets);
 
 private:
   bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
+  bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
+  bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
+  void addPinCost(const pin &, const float);
+  void addPinCost(const padstack &, const instance &, const float);
 
 private:
   BoardGrid mBg;
   kicadPcbDataBase &mDb;
 
+  std::vector<std::string> mGridLayerToName;
+  std::unordered_map<std::string, int> mLayerNameToGrid;
+
   // TODO
+  // Temporary value
+  const float pinCost = 100000.0;
   // Put below stuff to globalParam:: ??
-  double min_x = std::numeric_limits<double>::max();
-  double max_x = std::numeric_limits<double>::min();
-  double min_y = std::numeric_limits<double>::max();
-  double max_y = std::numeric_limits<double>::min();
+  double mMinX = std::numeric_limits<double>::max();
+  double mMaxX = std::numeric_limits<double>::min();
+  double mMinY = std::numeric_limits<double>::max();
+  double mMaxY = std::numeric_limits<double>::min();
   // Take const to below?
   const unsigned int inputScale = 10;
   const unsigned int enlargeBoundary = 10;
