@@ -94,7 +94,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
     auto &net = mDb.getNet(mpNet.netId);
     if (!mDb.isNetclassId(net.getNetclassId()))
     {
-      std::cerr << __FUNCTION__ << "() Invalid netclass id: " << mpNet.netId << std::endl;
+      std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
       continue;
     }
 
@@ -158,6 +158,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
   // -> Use template for both 2d and 3d points
   // Point template to substitue point_2d and Location
   // !!! Unified the point structure, delete the point from point_2d/3d and Location, and point in Util
+  // Can use boost's point structure????
 
   // Temporary remove pad cost when routing those nets
 
@@ -233,7 +234,20 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
       addPinCost(pin, -pinCost);
     }
 
-    multipinNets.push_back(MultipinRoute(pinLocations, net.getId()));
+    if (!mDb.isNetclassId(net.getNetclassId()))
+    {
+      std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
+      continue;
+    }
+    auto &netclass = mDb.getNetclass(net.getNetclassId());
+    int traceWidth = dbLengthToGridLength(netclass.getTraceWidth());
+    int viaSize = dbLengthToGridLength(netclass.getViaDia());
+    int clearance = dbLengthToGridLength(netclass.getClearance());
+    std::cout << " traceWidth: " << traceWidth << "(db: " << netclass.getTraceWidth() << ")"
+              << ", viaSize: " << viaSize << "(db: " << netclass.getViaDia() << ")"
+              << ", clearance: " << clearance << "(db: " << netclass.getClearance() << ")" << std::endl;
+
+    multipinNets.push_back(MultipinRoute(pinLocations, net.getId(), traceWidth, viaSize, clearance));
     mBg.add_route(multipinNets.back());
 
     // Put back the pin cost
@@ -271,6 +285,7 @@ void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, cons
   point_2d pinGridLL, pinGridUR;
   dbPointToGridPoint(pinDbUR, pinGridUR);
   dbPointToGridPoint(pinDbLL, pinGridLL);
+  std::cout << __FUNCTION__ << "(), inst:" << inst.getName() << "(" << inst.getId() << "), pad:" << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y << "), w:" << pad.getWidth() << ", h:" << pad.getHeight() << std::endl;
 
   // TODO: Unify Rectangle to set costs
   const auto &layers = pad.getLayers();

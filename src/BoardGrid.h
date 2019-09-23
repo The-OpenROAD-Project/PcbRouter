@@ -137,6 +137,8 @@ public:
   std::vector<Location> features;
   std::vector<Location> vias;
   int netId;
+  int trace_width;
+  int clearance;
   MultipinRoute()
   {
   }
@@ -145,10 +147,19 @@ public:
     this->pins = pins;
     this->netId = 0;
   }
-  MultipinRoute(std::vector<Location> pins, int netId)
+  // MultipinRoute(std::vector<Location> pins, int netId)
+  // {
+  //   this->pins = pins;
+  //   this->netId = netId;
+  // }
+
+  // Default values?
+  MultipinRoute(std::vector<Location> pins, int netId, int trace_width = 7, int viaSize = 7, int clearance = 7)
   {
     this->pins = pins;
     this->netId = netId;
+    this->trace_width = trace_width;
+    this->clearance = clearance;
   }
 };
 
@@ -183,6 +194,9 @@ public:
   int w; // width
   int h; // height
   int l; // layers
+  int current_trace_width;
+  int current_half_trace_width;
+  int current_clearance;
 
   float cost_to_occupy(const Location &l) const;
 
@@ -198,11 +212,15 @@ public:
   // void ripup_route(Route &route);
   void ripup_route(MultipinRoute &route);
 
+  // via
   float sized_via_cost_at(const Location &l, int via_size) const;
   float via_cost_at(const Location &l) const;
   void add_via_cost(const Location &l, int layer);
   void remove_via_cost(const Location &l, int layer);
   void via_cost_set(float value, const Location &l);
+
+  // trace_width
+  float sized_trace_cost_at(const Location &l, int traceRadius) const;
 
   void printGnuPlot();
   void printMatPlot();

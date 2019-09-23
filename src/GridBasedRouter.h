@@ -27,6 +27,10 @@ public:
 
 private:
   bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
+
+  // Utility
+  int dbLengthToGridLength(const double dbLength) { return (int)ceil(dbLength * inputScale); }
+
   bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
   bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
   void addPinCost(const pin &, const float);

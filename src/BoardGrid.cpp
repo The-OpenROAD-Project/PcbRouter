@@ -316,6 +316,7 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 
 			// std::cerr << "geting new cost" << std::endl;
 
+			// this->via_cost_at(next.second) ??????????
 			float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) + this->via_cost_at(next.second) + next.first;
 
 			// std::cerr << "Done" << std::endl;
@@ -347,22 +348,25 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 	ns[0].second.x = l.x + 1;
 	ns[0].second.y = l.y;
 	ns[0].second.z = l.z;
+	ns[0].first += sized_trace_cost_at(Location{ns[0].second.x, ns[0].second.y, ns[0].second.z}, current_half_trace_width + current_clearance);
 	// right
 	ns[1].first = 1.0;
 	ns[1].second.x = l.x - 1;
 	ns[1].second.y = l.y;
 	ns[1].second.z = l.z;
-
+	ns[1].first += sized_trace_cost_at(Location{ns[1].second.x, ns[1].second.y, ns[1].second.z}, current_half_trace_width + current_clearance);
 	// forward
 	ns[2].first = 1.0;
 	ns[2].second.x = l.x;
 	ns[2].second.y = l.y + 1;
 	ns[2].second.z = l.z;
+	ns[2].first += sized_trace_cost_at(Location{ns[2].second.x, ns[2].second.y, ns[2].second.z}, current_half_trace_width + current_clearance);
 	// back
 	ns[3].first = 1.0;
 	ns[3].second.x = l.x;
 	ns[3].second.y = l.y - 1;
 	ns[3].second.z = l.z;
+	ns[3].first += sized_trace_cost_at(Location{ns[3].second.x, ns[3].second.y, ns[3].second.z}, current_half_trace_width + current_clearance);
 
 	// up
 	ns[4].first = GlobalParam::gLayerChangeCost + this->sized_via_cost_at(l, via_size);
@@ -380,24 +384,28 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 	ns[6].second.x = l.x - 1;
 	ns[6].second.y = l.y + 1;
 	ns[6].second.z = l.z;
+	ns[6].first += sized_trace_cost_at(Location{ns[6].second.x, ns[6].second.y, ns[6].second.z}, current_half_trace_width + current_clearance);
 
 	//lb
 	ns[7].first = GlobalParam::gDiagonalCost;
 	ns[7].second.x = l.x - 1;
 	ns[7].second.y = l.y - 1;
 	ns[7].second.z = l.z;
+	ns[7].first += sized_trace_cost_at(Location{ns[7].second.x, ns[7].second.y, ns[7].second.z}, current_half_trace_width + current_clearance);
 
 	//rf
 	ns[8].first = GlobalParam::gDiagonalCost;
 	ns[8].second.x = l.x + 1;
 	ns[8].second.y = l.y + 1;
 	ns[8].second.z = l.z;
+	ns[8].first += sized_trace_cost_at(Location{ns[8].second.x, ns[8].second.y, ns[8].second.z}, current_half_trace_width + current_clearance);
 
 	//rb
 	ns[9].first = GlobalParam::gDiagonalCost;
 	ns[9].second.x = l.x + 1;
 	ns[9].second.y = l.y - 1;
 	ns[9].second.z = l.z;
+	ns[9].first += sized_trace_cost_at(Location{ns[9].second.x, ns[9].second.y, ns[9].second.z}, current_half_trace_width + current_clearance);
 
 	return ns;
 }
@@ -528,6 +536,7 @@ void BoardGrid::pprint()
 
 float BoardGrid::sized_via_cost_at(const Location &l, int via_size) const
 {
+	//???????????????????????????????????????????????????
 	return 0.0;
 	int radius = via_size;
 	float cost = 0.0;
@@ -544,6 +553,27 @@ float BoardGrid::sized_via_cost_at(const Location &l, int via_size) const
 				Location current_l = Location(x, y, z);
 				cost += this->base_cost_at(current_l); // + this->via_cost_at(l);
 			}
+		}
+	}
+	return cost;
+}
+
+float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const
+{
+	int radius = traceRadius;
+	float cost = 0.0;
+	for (int y = -radius; y < radius; y += 1)
+	{
+		for (int x = -radius; x < radius; x += 1)
+		{
+			Location current_l = Location(l.x + x, l.y + y, l.z);
+			if (!validate_location(current_l))
+			{
+				//TODO
+				cost += 100000;
+				continue;
+			}
+			cost += this->base_cost_at(current_l);
 		}
 	}
 	return cost;
@@ -990,6 +1020,9 @@ void BoardGrid::add_route(MultipinRoute &route)
 	int cost = 10;
 	int via_size = 7;
 	int num_pins = route.pins.size();
+	current_trace_width = route.trace_width;
+	current_half_trace_width = route.trace_width / 2;
+	current_clearance = route.clearance;
 
 	if (num_pins <= 0)
 	{
@@ -1017,7 +1050,9 @@ void BoardGrid::add_route(MultipinRoute &route)
 			}
 		}
 		//this->print_features(route.features);
-		this->add_route_to_base_cost(route, radius, cost, via_size);
+		//TODO
+		//this->add_route_to_base_cost(route, traceWidth, cost, via_size);
+		this->add_route_to_base_cost(route, current_trace_width, cost, via_size);
 	}
 }
 
