@@ -280,12 +280,14 @@ void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, cons
 {
   point_2d pinDbLocation;
   mDb.getPinPosition(pad, inst, &pinDbLocation);
-  point_2d pinDbUR{pinDbLocation.m_x + pad.getHalfWidth(), pinDbLocation.m_y + pad.getHalfHeight()};
-  point_2d pinDbLL{pinDbLocation.m_x - pad.getHalfWidth(), pinDbLocation.m_y - pad.getHalfHeight()};
+  double width = 0, height = 0;
+  mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
+  point_2d pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
+  point_2d pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
   point_2d pinGridLL, pinGridUR;
   dbPointToGridPoint(pinDbUR, pinGridUR);
   dbPointToGridPoint(pinDbLL, pinGridLL);
-  std::cout << __FUNCTION__ << "(), inst:" << inst.getName() << "(" << inst.getId() << "), pad:" << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y << "), w:" << pad.getWidth() << ", h:" << pad.getHeight() << std::endl;
+  std::cout << __FUNCTION__ << "() cost:" << cost << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:" << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y << "), w:" << width << ", h:" << height << std::endl;
 
   // TODO: Unify Rectangle to set costs
   const auto &layers = pad.getLayers();
@@ -306,6 +308,7 @@ void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, cons
           }
           //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
           mBg.base_cost_add(cost, gridPt);
+          mBg.via_cost_add(cost, gridPt);
         }
       }
     }

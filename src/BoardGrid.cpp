@@ -117,6 +117,14 @@ void BoardGrid::via_cost_set(float value, const Location &l)
 	this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
 }
 
+void BoardGrid::via_cost_add(float value, const Location &l)
+{
+#ifdef BOUND_CHECKS
+	assert(l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+#endif
+	this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h] += value;
+}
+
 // void BoardGrid::breadth_first_search(const Location &start, const Location &end)
 // {
 // 	// Location start(sx, sy, sz);

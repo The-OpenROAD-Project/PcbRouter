@@ -218,6 +218,7 @@ public:
   void add_via_cost(const Location &l, int layer);
   void remove_via_cost(const Location &l, int layer);
   void via_cost_set(float value, const Location &l);
+  void via_cost_add(float value, const Location &l);
 
   // trace_width
   float sized_trace_cost_at(const Location &l, int traceRadius) const;
