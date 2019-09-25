@@ -162,6 +162,30 @@ void BoardGrid::via_cost_add(float value, const Location &l)
 	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost += value;
 }
 
+void BoardGrid::setIsTargetedPin(const Location &l)
+{
+#ifdef BOUND_CHECKS
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].isTargetedPin = true;
+}
+
+void BoardGrid::clearIsTargetedPin(const Location &l)
+{
+#ifdef BOUND_CHECKS
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].isTargetedPin = false;
+}
+
+bool BoardGrid::isTargetedPin(const Location &l)
+{
+#ifdef BOUND_CHECKS
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+	return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].isTargetedPin;
+}
+
 // void BoardGrid::breadth_first_search(const Location &start, const Location &end)
 // {
 // 	// Location start(sx, sy, sz);
@@ -411,6 +435,7 @@ void BoardGrid::dijkstrasWithGridCameFrom(
 	{
 		this->working_cost_set(0.0, start);
 		frontier.push(start, 0.0);
+		// Set a ending for the backtracking
 		this->setCameFromId(start, this->locationToId(start));
 	}
 
@@ -1025,16 +1050,15 @@ void BoardGrid::came_from_to_features(
 
 	while (nextId != -1)
 	{
-		Location next;
-		this->idToLocation(nextId, next);
-
 		if (nextId == currentId)
 		{
 			break;
 		}
 
+		Location next;
+		this->idToLocation(nextId, next);
+
 		features.push_back(next);
-		//current = next;
 		currentId = nextId;
 		nextId = this->getCameFromId(currentId);
 	}
@@ -1188,20 +1212,16 @@ void BoardGrid::add_route(MultipinRoute &route)
 
 		for (Location pin : route.pins)
 		{
-			std::unordered_map<Location, Location> came_from;
-			//this->dijkstras_with_came_from(route.features, via_size, came_from);
+			//std::unordered_map<Location, Location> came_from;
 			this->dijkstrasWithGridCameFrom(route.features, via_size);
-			//this->print_came_from(came_from, pin);
 
 			std::vector<Location> new_features;
 			//this->came_from_to_features(came_from, pin, new_features);
 			this->came_from_to_features(pin, new_features);
 
-			//Location last_feature = new_features[0];
 			for (Location f : new_features)
 			{
 				route.features.push_back(f);
-				//last_feature = f;
 			}
 		}
 		//this->print_features(route.features);
@@ -1209,6 +1229,63 @@ void BoardGrid::add_route(MultipinRoute &route)
 		//this->add_route_to_base_cost(route, traceWidth, cost, via_size);
 		this->add_route_to_base_cost(route, current_trace_width, cost, via_size);
 	}
+}
+
+void BoardGrid::setTargetedPins(const std::vector<Location> &pins)
+{
+	for (auto pin : pins)
+	{
+		this->setIsTargetedPin(pin);
+	}
+}
+void BoardGrid::clearTargetedPins(const std::vector<Location> &pins)
+{
+	for (auto pin : pins)
+	{
+		this->clearIsTargetedPin(pin);
+	}
+}
+
+void BoardGrid::addRoute(MultipinRoute &route)
+{
+	int radius = 7;
+	int cost = 10;
+	int via_size = 7;
+	int num_pins = route.pins.size();
+	current_trace_width = route.trace_width;
+	current_half_trace_width = route.trace_width / 2;
+	current_clearance = route.clearance;
+
+	//TODO
+	// clear came from in the GridCell
+	// check if traceWidth/clearance/viaDiameter persist
+
+	if (num_pins <= 1)
+		return;
+
+	route.features.push_back(route.pins[0]);
+
+	//Set targetPins
+	setTargetedPins(route.pins);
+
+	for (Location pin : route.pins)
+	{
+		this->dijkstrasWithGridCameFrom(route.features, via_size);
+
+		std::vector<Location> new_features;
+		this->came_from_to_features(pin, new_features);
+
+		for (Location f : new_features)
+		{
+			route.features.push_back(f);
+		}
+	}
+	//this->print_features(route.features);
+	//TODO
+	//this->add_route_to_base_cost(route, traceWidth, cost, via_size);
+	this->add_route_to_base_cost(route, current_trace_width, cost, via_size);
+
+	clearTargetedPins(route.pins);
 }
 
 // void BoardGrid::ripup_route(Route &route)

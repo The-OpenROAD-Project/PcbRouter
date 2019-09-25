@@ -96,16 +96,20 @@ private:
   float workingCost = 0.0;
   float viaCost = 0.0;
   int cameFromId = -1;
+  bool isTargetedPin = false;
 };
 
 class MultipinRoute
 {
 public:
   std::vector<Location> pins;
-  std::vector<std::unordered_map<Location, Location>> came_from;
+  //TODO: change below to flag in the grid
+  std::unordered_set<Location> targetPins;
+  //std::vector<std::unordered_map<Location, Location>> came_from;
   std::vector<Location> features;
   std::vector<Location> vias;
   int netId;
+  //TODO: Remove from here
   int trace_width;
   int clearance;
   MultipinRoute()
@@ -189,6 +193,7 @@ public:
 
   // void add_route(Route &route);
   void add_route(MultipinRoute &route);
+  void addRoute(MultipinRoute &route);
   // void ripup_route(Route &route);
   void ripup_route(MultipinRoute &route);
 
@@ -202,6 +207,13 @@ public:
 
   // trace_width
   float sized_trace_cost_at(const Location &l, int traceRadius) const;
+
+  // targetPin
+  void setTargetedPins(const std::vector<Location> &pins);
+  void clearTargetedPins(const std::vector<Location> &pins);
+  void setIsTargetedPin(const Location &l);
+  void clearIsTargetedPin(const Location &l);
+  bool isTargetedPin(const Location &l);
 
   void printGnuPlot();
   void printMatPlot();

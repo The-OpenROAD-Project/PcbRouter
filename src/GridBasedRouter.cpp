@@ -240,7 +240,8 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
               << ", clearance: " << clearance << "(db: " << netclass.getClearance() << ")" << std::endl;
 
     multipinNets.push_back(MultipinRoute(pinLocations, net.getId(), traceWidth, viaSize, clearance));
-    mBg.add_route(multipinNets.back());
+    //mBg.add_route(multipinNets.back());
+    mBg.addRoute(multipinNets.back());
 
     // Put back the pin cost
     for (auto &pin : pins)
