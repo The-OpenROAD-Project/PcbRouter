@@ -54,30 +54,6 @@ struct LocationQueue
   }
 };
 
-// Location class for board position, just three ints
-// class Location
-// {
-// public:
-//   int x;
-//   int y;
-//   int z;
-//   bool operator==(const Location &other) const;
-//   Location(int x, int y, int z)
-//   {
-//     this->x = x;
-//     this->y = y;
-//     this->z = z;
-//   }
-//   Location()
-//   {
-//     this->x = 0;
-//     this->y = 0;
-//     this->z = 0;
-//   }
-// };
-
-// std::ostream &operator<<(std::ostream &os, Location const &l);
-
 // Hash function for Location to support unordered_set
 namespace std
 {
@@ -105,30 +81,22 @@ struct greater<std::pair<float, Location>>
 };
 } // namespace std
 
-// class Route
-// {
-// public:
-//   Location start;
-//   Location end;
-//   std::unordered_map<Location, Location> came_from;
-//   std::vector<Location> features;
-//   int netId;
-//   Route()
-//   {
-//   }
-//   Route(Location start, Location end)
-//   {
-//     this->start = start;
-//     this->end = end;
-//     this->netId = 0;
-//   }
-//   Route(Location start, Location end, int netId)
-//   {
-//     this->start = start;
-//     this->end = end;
-//     this->netId = netId;
-//   }
-// };
+class GridCell
+{
+public:
+  //ctor
+  GridCell() {}
+  //dtor
+  ~GridCell() {}
+
+  friend class BoardGrid;
+
+private:
+  float baseCost = 0.0;
+  float workingCost = 0.0;
+  float viaCost = 0.0;
+  int cameFromId = -1;
+};
 
 class MultipinRoute
 {
@@ -169,11 +137,16 @@ class BoardGrid
   float *base_cost = nullptr;    //Initialize to nullptr
   float *working_cost = nullptr; //Initialize to nullptr
   float *via_cost = nullptr;     //Initialize to nullptr
+  GridCell *grid = nullptr;      //Initialize to nullptr
   int size = 0;                  //Total number of cells
 
   void working_cost_fill(float value);
   float working_cost_at(const Location &l) const;
   void working_cost_set(float value, const Location &l);
+
+  void setCameFromId(const Location &l, const int id);
+  int getCameFromId(const Location &l) const;
+  int getCameFromId(const int id) const;
 
   // void add_route_to_base_cost(const Route &route, int radius, float cost);
   void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size);
@@ -182,14 +155,20 @@ class BoardGrid
 
   void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
   std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
+  void came_from_to_features(const Location &end, std::vector<Location> &features) const;
 
-  std::array<std::pair<float, Location>, 10> neighbors(const Location &l, int via_size) const;
+  void getNeighbors(const Location &l, int via_size, std::array<std::pair<float, Location>, 10> &ns) const;
 
   // std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, const Location &end);
   std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
   std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
+  void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
+  void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
   void breadth_first_search(const Location &start, const Location &end);
   std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
+
+  int locationToId(const Location &l) const;
+  void idToLocation(const int id, Location &l) const;
 
 public:
   int w; // width

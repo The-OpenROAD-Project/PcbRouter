@@ -1,16 +1,6 @@
 // BoardGrid.cpp
 #include "BoardGrid.h"
 
-// bool Location::operator==(const Location &other) const
-// {
-// 	return (this->x == other.m_x) && (this->y == other.m_y) && (this->z == other.m_z);
-// }
-
-// std::ostream &operator<<(std::ostream &os, Location const &l)
-// {
-// 	return os << "Location(" << l.m_x << ", " << l.m_y << ", " << l.m_z << ")";
-// }
-
 void BoardGrid::initilization(int w, int h, int l)
 {
 	this->w = w;
@@ -25,6 +15,7 @@ void BoardGrid::initilization(int w, int h, int l)
 	this->base_cost = new float[this->size];
 	this->working_cost = new float[this->size];
 	this->via_cost = new float[this->size];
+	this->grid = new GridCell[this->size];
 
 	assert(this->base_cost != nullptr);
 	assert(this->working_cost != nullptr);
@@ -35,7 +26,8 @@ void BoardGrid::base_cost_fill(float value)
 {
 	for (int i = 0; i < this->size; i++)
 	{
-		this->base_cost[i] = value;
+		//this->base_cost[i] = value;
+		this->grid[i].baseCost = value;
 	}
 }
 
@@ -43,7 +35,8 @@ void BoardGrid::working_cost_fill(float value)
 {
 	for (int i = 0; i < this->size; i++)
 	{
-		this->working_cost[i] = value;
+		//this->working_cost[i] = value;
+		this->grid[i].workingCost = value;
 	}
 }
 
@@ -57,7 +50,8 @@ float BoardGrid::base_cost_at(const Location &l) const
 #ifdef BOUND_CHECKS
 	assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-	return this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
+	//return this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
+	return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost;
 }
 
 float BoardGrid::via_cost_at(const Location &l) const
@@ -73,7 +67,8 @@ float BoardGrid::via_cost_at(const Location &l) const
 #ifdef BOUND_CHECKS
 	assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-	return this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
+	//return this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
+	return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost;
 	// std::cerr << "returning via_cost_at" << std::endl;
 }
 
@@ -82,7 +77,8 @@ float BoardGrid::working_cost_at(const Location &l) const
 #ifdef BOUND_CHECKS
 	assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-	return this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
+	//return this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
+	return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].workingCost;
 }
 
 void BoardGrid::base_cost_set(float value, const Location &l)
@@ -90,7 +86,8 @@ void BoardGrid::base_cost_set(float value, const Location &l)
 #ifdef BOUND_CHECKS
 	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
+	//this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost = value;
 }
 
 void BoardGrid::base_cost_add(float value, const Location &l)
@@ -98,7 +95,8 @@ void BoardGrid::base_cost_add(float value, const Location &l)
 #ifdef BOUND_CHECKS
 	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
+	//this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost += value;
 }
 
 void BoardGrid::working_cost_set(float value, const Location &l)
@@ -106,7 +104,44 @@ void BoardGrid::working_cost_set(float value, const Location &l)
 #ifdef BOUND_CHECKS
 	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
+	//this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].workingCost = value;
+}
+
+void BoardGrid::setCameFromId(const Location &l, const int id)
+{
+#ifdef BOUND_CHECKS
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cameFromId = id;
+}
+
+int BoardGrid::getCameFromId(const Location &l) const
+{
+#ifdef BOUND_CHECKS
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+	return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cameFromId;
+}
+
+int BoardGrid::getCameFromId(const int id) const
+{
+#ifdef BOUND_CHECKS
+	assert(id < this->size);
+#endif
+	return this->grid[id].cameFromId;
+}
+
+int BoardGrid::locationToId(const Location &l) const
+{
+	return l.m_x + l.m_y * this->w + l.m_z * this->w * this->h;
+}
+
+void BoardGrid::idToLocation(const int id, Location &l) const
+{
+	l.m_z = id / (this->w * this->h);
+	l.m_y = (id - l.m_z * this->w * this->h) / this->w;
+	l.m_x = (id - l.m_z * this->w * this->h) % this->w;
 }
 
 void BoardGrid::via_cost_set(float value, const Location &l)
@@ -114,7 +149,8 @@ void BoardGrid::via_cost_set(float value, const Location &l)
 #ifdef BOUND_CHECKS
 	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
+	//this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost = value;
 }
 
 void BoardGrid::via_cost_add(float value, const Location &l)
@@ -122,7 +158,8 @@ void BoardGrid::via_cost_add(float value, const Location &l)
 #ifdef BOUND_CHECKS
 	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
+	//this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
+	this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost += value;
 }
 
 // void BoardGrid::breadth_first_search(const Location &start, const Location &end)
@@ -285,19 +322,30 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 	const std::vector<Location> &route,
 	int via_size)
 {
-	std::cout << "Starting dijkstras_with_came_from ==Multipin== nets: route.features.size() = " << route.size() << std::endl;
+	std::unordered_map<Location, Location> came_from;
+	this->dijkstras_with_came_from(route, via_size, came_from);
+	return came_from;
+}
+
+void BoardGrid::dijkstras_with_came_from(
+	const std::vector<Location> &route,
+	int via_size,
+	std::unordered_map<Location, Location> &came_from)
+{
+	std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
 
 	// For path to multiple points
 	// Searches from the multiple points to every other point
 	this->working_cost_fill(std::numeric_limits<float>::infinity());
 
-	LocationQueue<Location, float> frontier;		  // search frontier
-	std::unordered_map<Location, Location> came_from; // cheapest neighbor
+	LocationQueue<Location, float> frontier; // search frontier
+	//std::unordered_map<Location, Location> came_from; // cheapest neighbor
 	for (Location start : route)
 	{
 		this->working_cost_set(0.0, start);
 		frontier.push(start, 0.0);
-		came_from[start] = start;
+		//came_from[start] = start;
+		this->setCameFromId(start, this->locationToId(start));
 	}
 
 	std::cout << "came_from.size() = " << came_from.size() << ", frontier.size(): " << frontier.size() << std::endl;
@@ -308,8 +356,10 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 		frontier.pop();
 
 		//std::cout << "Visiting " << current << ", frontierSize: "<< frontier.size() << std::endl;
+		std::array<std::pair<float, Location>, 10> neighbors;
+		this->getNeighbors(current, via_size, neighbors);
 
-		for (std::pair<float, Location> next : this->neighbors(current, via_size))
+		for (std::pair<float, Location> next : neighbors)
 		{
 			if (
 				(next.second.m_x < 0) || (next.second.m_x >= this->w) ||
@@ -333,7 +383,9 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 			{
 				// std::cerr << "setting working cost" << std::endl;
 				this->working_cost_set(new_cost, next.second);
-				came_from[next.second] = current;
+				//came_from[next.second] = current;
+				this->setCameFromId(next.second, this->locationToId(current));
+
 				frontier.push(next.second, new_cost);
 				// std::cerr << "Done" << std::endl;
 			}
@@ -341,15 +393,69 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 			// std::cerr << std::endl;
 		}
 	}
-
 	// std::cerr << "finished dijkstras_with_came_from" << std::endl;
-
-	return came_from;
 }
 
-std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &l, int via_size) const
+void BoardGrid::dijkstrasWithGridCameFrom(
+	const std::vector<Location> &route,
+	int via_size)
 {
-	std::array<std::pair<float, Location>, 10> ns;
+	std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
+
+	// For path to multiple points
+	// Searches from the multiple points to every other point
+	this->working_cost_fill(std::numeric_limits<float>::infinity());
+
+	LocationQueue<Location, float> frontier; // search frontier
+	for (Location start : route)
+	{
+		this->working_cost_set(0.0, start);
+		frontier.push(start, 0.0);
+		this->setCameFromId(start, this->locationToId(start));
+	}
+
+	std::cout << " frontier.size(): " << frontier.size() << std::endl;
+
+	while (!frontier.empty())
+	{
+		Location current = frontier.front();
+		frontier.pop();
+
+		//std::cout << "Visiting " << current << ", frontierSize: "<< frontier.size() << std::endl;
+		std::array<std::pair<float, Location>, 10> neighbors;
+		this->getNeighbors(current, via_size, neighbors);
+
+		for (std::pair<float, Location> next : neighbors)
+		{
+			if (
+				(next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+				(next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+				(next.second.m_z < 0) || (next.second.m_z >= this->l))
+			{
+				continue; // continue if out of bounds
+			}
+			// std::cerr << "next.second.m_x: " << next.second.m_x << std::endl;
+			// std::cerr << "next.second.m_y: " << next.second.m_y << std::endl;
+			// std::cerr << "next.second.m_z: " << next.second.m_z << std::endl;
+
+			// this->via_cost_at(next.second) ??????????
+			float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) + this->via_cost_at(next.second) + next.first;
+
+			if (new_cost < this->working_cost_at(next.second))
+			{
+				// std::cerr << "setting working cost" << std::endl;
+				this->working_cost_set(new_cost, next.second);
+				this->setCameFromId(next.second, this->locationToId(current));
+
+				frontier.push(next.second, new_cost);
+			}
+		}
+	}
+}
+
+void BoardGrid::getNeighbors(const Location &l, int via_size, std::array<std::pair<float, Location>, 10> &ns) const
+{
+	//std::array<std::pair<float, Location>, 10> ns;
 
 	// left
 	ns[0].first = 1.0;
@@ -415,7 +521,7 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 	ns[9].second.m_z = l.m_z;
 	ns[9].first += sized_trace_cost_at(Location{ns[9].second.m_x, ns[9].second.m_y, ns[9].second.m_z}, current_half_trace_width + current_clearance);
 
-	return ns;
+	//return ns;
 }
 
 void BoardGrid::printGnuPlot()
@@ -702,7 +808,8 @@ void BoardGrid::add_via_cost(const Location &l, int layer)
 #ifdef BOUND_CHECKS
 			assert(((l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
-			this->via_cost[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h] += cost;
+			//this->via_cost[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h] += cost;
+			this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].viaCost += cost;
 		}
 	}
 }
@@ -718,7 +825,8 @@ void BoardGrid::remove_via_cost(const Location &l, int layer)
 #ifdef BOUND_CHECKS
 			assert(((l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
-			this->via_cost[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h] -= cost;
+			//this->via_cost[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h] -= cost;
+			this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].viaCost -= cost;
 		}
 	}
 }
@@ -886,18 +994,52 @@ void BoardGrid::came_from_to_features(
 		current = next;
 	}
 
-	for (Location l : features)
-	{
-		//std::cout << "\t" << l << std::endl;
-		if (l.m_z > 2)
-		{
-			exit(-1);
-		}
-	}
+	// ?????????
+	// for (Location l : features)
+	// {
+	// 	//std::cout << "\t" << l << std::endl;
+	// 	if (l.m_z > 2)
+	// 	{
+	// 		exit(-1);
+	// 	}
+	// }
 
 	std::cout << "Finished came_from_to_features " << std::endl;
 
 	// return features;
+}
+
+void BoardGrid::came_from_to_features(
+	const Location &end,
+	std::vector<Location> &features) const
+{
+	std::cout << "Starting came_from_to_features ID" << std::endl;
+
+	if (!this->validate_location(end))
+		std::cout << "Bad end for came_from_to_features ID" << std::endl;
+
+	features.push_back(end);
+	Location current = end;
+	int currentId = this->locationToId(current);
+	int nextId = this->getCameFromId(currentId);
+
+	while (nextId != -1)
+	{
+		Location next;
+		this->idToLocation(nextId, next);
+
+		if (nextId == currentId)
+		{
+			break;
+		}
+
+		features.push_back(next);
+		//current = next;
+		currentId = nextId;
+		nextId = this->getCameFromId(currentId);
+	}
+
+	std::cout << "Finished came_from_to_features ID" << std::endl;
 }
 
 std::vector<Location> BoardGrid::came_from_to_features(
@@ -1046,15 +1188,20 @@ void BoardGrid::add_route(MultipinRoute &route)
 
 		for (Location pin : route.pins)
 		{
-			std::unordered_map<Location, Location> came_from = this->dijkstras_with_came_from(route.features, via_size);
+			std::unordered_map<Location, Location> came_from;
+			//this->dijkstras_with_came_from(route.features, via_size, came_from);
+			this->dijkstrasWithGridCameFrom(route.features, via_size);
 			//this->print_came_from(came_from, pin);
-			std::vector<Location> new_features = this->came_from_to_features(came_from, pin);
 
-			Location last_feature = new_features[0];
+			std::vector<Location> new_features;
+			//this->came_from_to_features(came_from, pin, new_features);
+			this->came_from_to_features(pin, new_features);
+
+			//Location last_feature = new_features[0];
 			for (Location f : new_features)
 			{
 				route.features.push_back(f);
-				last_feature = f;
+				//last_feature = f;
 			}
 		}
 		//this->print_features(route.features);
