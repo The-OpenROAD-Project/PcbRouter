@@ -153,15 +153,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
   std::cout << std::endl
             << "=================" << __FUNCTION__ << "==================" << std::endl;
 
-  // Simple flow
-  // Location or point_2d get distance????
-  // -> Use template for both 2d and 3d points
-  // Point template to substitue point_2d and Location
-  // !!! Unified the point structure, delete the point from point_2d/3d and Location, and point in Util
-  // Can use boost's point structure????
-
-  // Temporary remove pad cost when routing those nets
-
+  // TODO
   // bug at matplot function??
   // unified structure for Polygon, Rectangle
 
