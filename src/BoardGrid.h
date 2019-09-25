@@ -15,6 +15,7 @@
 #include <fstream>
 #include <string>
 #include "globalParam.h"
+#include "point.h"
 
 // custom Location priority queue class for search
 template <typename T, typename priority_t>
@@ -54,28 +55,28 @@ struct LocationQueue
 };
 
 // Location class for board position, just three ints
-class Location
-{
-public:
-  int x;
-  int y;
-  int z;
-  bool operator==(const Location &other) const;
-  Location(int x, int y, int z)
-  {
-    this->x = x;
-    this->y = y;
-    this->z = z;
-  }
-  Location()
-  {
-    this->x = 0;
-    this->y = 0;
-    this->z = 0;
-  }
-};
+// class Location
+// {
+// public:
+//   int x;
+//   int y;
+//   int z;
+//   bool operator==(const Location &other) const;
+//   Location(int x, int y, int z)
+//   {
+//     this->x = x;
+//     this->y = y;
+//     this->z = z;
+//   }
+//   Location()
+//   {
+//     this->x = 0;
+//     this->y = 0;
+//     this->z = 0;
+//   }
+// };
 
-std::ostream &operator<<(std::ostream &os, Location const &l);
+// std::ostream &operator<<(std::ostream &os, Location const &l);
 
 // Hash function for Location to support unordered_set
 namespace std
@@ -85,7 +86,7 @@ struct hash<Location>
 {
   size_t operator()(Location const &x) const
   {
-    return (((53 + x.x) * 53 + x.y) * 53 + x.z);
+    return (((53 + x.m_x) * 53 + x.m_y) * 53 + x.m_z);
   }
 };
 } // namespace std

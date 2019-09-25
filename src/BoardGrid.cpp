@@ -1,15 +1,15 @@
 // BoardGrid.cpp
 #include "BoardGrid.h"
 
-bool Location::operator==(const Location &other) const
-{
-	return (this->x == other.x) && (this->y == other.y) && (this->z == other.z);
-}
+// bool Location::operator==(const Location &other) const
+// {
+// 	return (this->x == other.m_x) && (this->y == other.m_y) && (this->z == other.m_z);
+// }
 
-std::ostream &operator<<(std::ostream &os, Location const &l)
-{
-	return os << "Location(" << l.x << ", " << l.y << ", " << l.z << ")";
-}
+// std::ostream &operator<<(std::ostream &os, Location const &l)
+// {
+// 	return os << "Location(" << l.m_x << ", " << l.m_y << ", " << l.m_z << ")";
+// }
 
 void BoardGrid::initilization(int w, int h, int l)
 {
@@ -55,9 +55,9 @@ float BoardGrid::cost_to_occupy(const Location &l) const
 float BoardGrid::base_cost_at(const Location &l) const
 {
 #ifdef BOUND_CHECKS
-	assert((l.x + l.y * this->w + l.z * this->w * this->h) < this->size);
+	assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-	return this->base_cost[l.x + l.y * this->w + l.z * this->w * this->h];
+	return this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
 }
 
 float BoardGrid::via_cost_at(const Location &l) const
@@ -71,58 +71,58 @@ float BoardGrid::via_cost_at(const Location &l) const
 	// }
 
 #ifdef BOUND_CHECKS
-	assert((l.x + l.y * this->w + l.z * this->w * this->h) < this->size);
+	assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-	return this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h];
+	return this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
 	// std::cerr << "returning via_cost_at" << std::endl;
 }
 
 float BoardGrid::working_cost_at(const Location &l) const
 {
 #ifdef BOUND_CHECKS
-	assert((l.x + l.y * this->w + l.z * this->w * this->h) < this->size);
+	assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-	return this->working_cost[l.x + l.y * this->w + l.z * this->w * this->h];
+	return this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
 }
 
 void BoardGrid::base_cost_set(float value, const Location &l)
 {
 #ifdef BOUND_CHECKS
-	assert(l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->base_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
+	this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
 }
 
 void BoardGrid::base_cost_add(float value, const Location &l)
 {
 #ifdef BOUND_CHECKS
-	assert(l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->base_cost[l.x + l.y * this->w + l.z * this->w * this->h] += value;
+	this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
 }
 
 void BoardGrid::working_cost_set(float value, const Location &l)
 {
 #ifdef BOUND_CHECKS
-	assert(l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->working_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
+	this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
 }
 
 void BoardGrid::via_cost_set(float value, const Location &l)
 {
 #ifdef BOUND_CHECKS
-	assert(l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h] = value;
+	this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
 }
 
 void BoardGrid::via_cost_add(float value, const Location &l)
 {
 #ifdef BOUND_CHECKS
-	assert(l.x + l.y * this->w + l.z * this->w * this->h < this->size);
+	assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-	this->via_cost[l.x + l.y * this->w + l.z * this->w * this->h] += value;
+	this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
 }
 
 // void BoardGrid::breadth_first_search(const Location &start, const Location &end)
@@ -146,9 +146,9 @@ void BoardGrid::via_cost_add(float value, const Location &l)
 // 		for (std::pair<float, Location> next : this->neighbors(current))
 // 		{
 // 			if (
-// 				(next.second.x < 0) || (next.second.x >= this->w) ||
-// 				(next.second.y < 0) || (next.second.y >= this->h) ||
-// 				(next.second.z < 0) || (next.second.z >= this->l))
+// 				(next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+// 				(next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+// 				(next.second.m_z < 0) || (next.second.m_z >= this->l))
 // 			{
 // 				continue; // continue if out of bounds
 // 			}
@@ -193,9 +193,9 @@ void BoardGrid::via_cost_add(float value, const Location &l)
 // 		for (std::pair<float, Location> next : this->neighbors(current))
 // 		{
 // 			if (
-// 				(next.second.x < 0) || (next.second.x >= this->w) ||
-// 				(next.second.y < 0) || (next.second.y >= this->h) ||
-// 				(next.second.z < 0) || (next.second.z >= this->l))
+// 				(next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+// 				(next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+// 				(next.second.m_z < 0) || (next.second.m_z >= this->l))
 // 			{
 // 				continue; // continue if out of bounds
 // 			}
@@ -250,9 +250,9 @@ void BoardGrid::via_cost_add(float value, const Location &l)
 // 		for (std::pair<float, Location> next : aNeighbors)
 // 		{
 // 			if (
-// 				(next.second.x < 0) || (next.second.x >= this->w) ||
-// 				(next.second.y < 0) || (next.second.y >= this->h) ||
-// 				(next.second.z < 0) || (next.second.z >= this->l))
+// 				(next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+// 				(next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+// 				(next.second.m_z < 0) || (next.second.m_z >= this->l))
 // 			{
 // 				// std::cout << "\tOut of bounds neighbor " < next.second << std::endl;
 // 				continue; // continue if out of bounds
@@ -312,15 +312,15 @@ std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
 		for (std::pair<float, Location> next : this->neighbors(current, via_size))
 		{
 			if (
-				(next.second.x < 0) || (next.second.x >= this->w) ||
-				(next.second.y < 0) || (next.second.y >= this->h) ||
-				(next.second.z < 0) || (next.second.z >= this->l))
+				(next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+				(next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+				(next.second.m_z < 0) || (next.second.m_z >= this->l))
 			{
 				continue; // continue if out of bounds
 			}
-			// std::cerr << "next.second.x: " << next.second.x << std::endl;
-			// std::cerr << "next.second.y: " << next.second.y << std::endl;
-			// std::cerr << "next.second.z: " << next.second.z << std::endl;
+			// std::cerr << "next.second.m_x: " << next.second.m_x << std::endl;
+			// std::cerr << "next.second.m_y: " << next.second.m_y << std::endl;
+			// std::cerr << "next.second.m_z: " << next.second.m_z << std::endl;
 
 			// std::cerr << "geting new cost" << std::endl;
 
@@ -353,67 +353,67 @@ std::array<std::pair<float, Location>, 10> BoardGrid::neighbors(const Location &
 
 	// left
 	ns[0].first = 1.0;
-	ns[0].second.x = l.x + 1;
-	ns[0].second.y = l.y;
-	ns[0].second.z = l.z;
-	ns[0].first += sized_trace_cost_at(Location{ns[0].second.x, ns[0].second.y, ns[0].second.z}, current_half_trace_width + current_clearance);
+	ns[0].second.m_x = l.m_x + 1;
+	ns[0].second.m_y = l.m_y;
+	ns[0].second.m_z = l.m_z;
+	ns[0].first += sized_trace_cost_at(Location{ns[0].second.m_x, ns[0].second.m_y, ns[0].second.m_z}, current_half_trace_width + current_clearance);
 	// right
 	ns[1].first = 1.0;
-	ns[1].second.x = l.x - 1;
-	ns[1].second.y = l.y;
-	ns[1].second.z = l.z;
-	ns[1].first += sized_trace_cost_at(Location{ns[1].second.x, ns[1].second.y, ns[1].second.z}, current_half_trace_width + current_clearance);
+	ns[1].second.m_x = l.m_x - 1;
+	ns[1].second.m_y = l.m_y;
+	ns[1].second.m_z = l.m_z;
+	ns[1].first += sized_trace_cost_at(Location{ns[1].second.m_x, ns[1].second.m_y, ns[1].second.m_z}, current_half_trace_width + current_clearance);
 	// forward
 	ns[2].first = 1.0;
-	ns[2].second.x = l.x;
-	ns[2].second.y = l.y + 1;
-	ns[2].second.z = l.z;
-	ns[2].first += sized_trace_cost_at(Location{ns[2].second.x, ns[2].second.y, ns[2].second.z}, current_half_trace_width + current_clearance);
+	ns[2].second.m_x = l.m_x;
+	ns[2].second.m_y = l.m_y + 1;
+	ns[2].second.m_z = l.m_z;
+	ns[2].first += sized_trace_cost_at(Location{ns[2].second.m_x, ns[2].second.m_y, ns[2].second.m_z}, current_half_trace_width + current_clearance);
 	// back
 	ns[3].first = 1.0;
-	ns[3].second.x = l.x;
-	ns[3].second.y = l.y - 1;
-	ns[3].second.z = l.z;
-	ns[3].first += sized_trace_cost_at(Location{ns[3].second.x, ns[3].second.y, ns[3].second.z}, current_half_trace_width + current_clearance);
+	ns[3].second.m_x = l.m_x;
+	ns[3].second.m_y = l.m_y - 1;
+	ns[3].second.m_z = l.m_z;
+	ns[3].first += sized_trace_cost_at(Location{ns[3].second.m_x, ns[3].second.m_y, ns[3].second.m_z}, current_half_trace_width + current_clearance);
 
 	// up
 	ns[4].first = GlobalParam::gLayerChangeCost + this->sized_via_cost_at(l, via_size);
-	ns[4].second.x = l.x;
-	ns[4].second.y = l.y;
-	ns[4].second.z = l.z + 1;
+	ns[4].second.m_x = l.m_x;
+	ns[4].second.m_y = l.m_y;
+	ns[4].second.m_z = l.m_z + 1;
 	// down
 	ns[5].first = GlobalParam::gLayerChangeCost + this->sized_via_cost_at(l, via_size);
-	ns[5].second.x = l.x;
-	ns[5].second.y = l.y;
-	ns[5].second.z = l.z - 1;
+	ns[5].second.m_x = l.m_x;
+	ns[5].second.m_y = l.m_y;
+	ns[5].second.m_z = l.m_z - 1;
 
 	//lf
 	ns[6].first = GlobalParam::gDiagonalCost;
-	ns[6].second.x = l.x - 1;
-	ns[6].second.y = l.y + 1;
-	ns[6].second.z = l.z;
-	ns[6].first += sized_trace_cost_at(Location{ns[6].second.x, ns[6].second.y, ns[6].second.z}, current_half_trace_width + current_clearance);
+	ns[6].second.m_x = l.m_x - 1;
+	ns[6].second.m_y = l.m_y + 1;
+	ns[6].second.m_z = l.m_z;
+	ns[6].first += sized_trace_cost_at(Location{ns[6].second.m_x, ns[6].second.m_y, ns[6].second.m_z}, current_half_trace_width + current_clearance);
 
 	//lb
 	ns[7].first = GlobalParam::gDiagonalCost;
-	ns[7].second.x = l.x - 1;
-	ns[7].second.y = l.y - 1;
-	ns[7].second.z = l.z;
-	ns[7].first += sized_trace_cost_at(Location{ns[7].second.x, ns[7].second.y, ns[7].second.z}, current_half_trace_width + current_clearance);
+	ns[7].second.m_x = l.m_x - 1;
+	ns[7].second.m_y = l.m_y - 1;
+	ns[7].second.m_z = l.m_z;
+	ns[7].first += sized_trace_cost_at(Location{ns[7].second.m_x, ns[7].second.m_y, ns[7].second.m_z}, current_half_trace_width + current_clearance);
 
 	//rf
 	ns[8].first = GlobalParam::gDiagonalCost;
-	ns[8].second.x = l.x + 1;
-	ns[8].second.y = l.y + 1;
-	ns[8].second.z = l.z;
-	ns[8].first += sized_trace_cost_at(Location{ns[8].second.x, ns[8].second.y, ns[8].second.z}, current_half_trace_width + current_clearance);
+	ns[8].second.m_x = l.m_x + 1;
+	ns[8].second.m_y = l.m_y + 1;
+	ns[8].second.m_z = l.m_z;
+	ns[8].first += sized_trace_cost_at(Location{ns[8].second.m_x, ns[8].second.m_y, ns[8].second.m_z}, current_half_trace_width + current_clearance);
 
 	//rb
 	ns[9].first = GlobalParam::gDiagonalCost;
-	ns[9].second.x = l.x + 1;
-	ns[9].second.y = l.y - 1;
-	ns[9].second.z = l.z;
-	ns[9].first += sized_trace_cost_at(Location{ns[9].second.x, ns[9].second.y, ns[9].second.z}, current_half_trace_width + current_clearance);
+	ns[9].second.m_x = l.m_x + 1;
+	ns[9].second.m_y = l.m_y - 1;
+	ns[9].second.m_z = l.m_z;
+	ns[9].first += sized_trace_cost_at(Location{ns[9].second.m_x, ns[9].second.m_y, ns[9].second.m_z}, current_half_trace_width + current_clearance);
 
 	return ns;
 }
@@ -574,7 +574,7 @@ float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const
 	{
 		for (int x = -radius; x < radius; x += 1)
 		{
-			Location current_l = Location(l.x + x, l.y + y, l.z);
+			Location current_l = Location(l.m_x + x, l.m_y + y, l.m_z);
 			if (!validate_location(current_l))
 			{
 				//TODO
@@ -620,31 +620,31 @@ void BoardGrid::print_came_from(const std::unordered_map<Location, Location> &ca
 
 				Location cf = came_from.find(current)->second;
 
-				if (current.x > cf.x)
+				if (current.m_x > cf.m_x)
 				{
 					std::cout << "> ";
 				}
-				else if (current.x < cf.x)
+				else if (current.m_x < cf.m_x)
 				{
 					std::cout << "< ";
 				}
-				else if (current.y > cf.y)
+				else if (current.m_y > cf.m_y)
 				{
 					std::cout << "V ";
 				}
-				else if (current.y < cf.y)
+				else if (current.m_y < cf.m_y)
 				{
 					std::cout << "^ ";
 				}
-				else if (current.z > cf.z)
+				else if (current.m_z > cf.m_z)
 				{
 					std::cout << "X ";
 				}
-				else if (current.z < cf.z)
+				else if (current.m_z < cf.m_z)
 				{
 					std::cout << "O ";
 				}
-				else if ((current.x == cf.x) && (current.y == cf.y) && (current.z == cf.z))
+				else if ((current.m_x == cf.m_x) && (current.m_y == cf.m_y) && (current.m_z == cf.m_z))
 				{
 					std::cout << "* "; // start
 				}
@@ -660,7 +660,7 @@ void BoardGrid::print_came_from(const std::unordered_map<Location, Location> &ca
 // 	for (Location l : route.features)
 // 	{
 // 		// std::cout << "setting cost for feature " << l << std::endl;
-// 		int layer = l.z;
+// 		int layer = l.m_z;
 
 // 		for (int current_radius = 0; current_radius <= radius; current_radius += 1)
 // 		{
@@ -668,13 +668,13 @@ void BoardGrid::print_came_from(const std::unordered_map<Location, Location> &ca
 // 			if (current_cost <= 0)
 // 				break;
 
-// 			for (int r = l.y - current_radius; r <= l.y + current_radius; r += 1)
+// 			for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; r += 1)
 // 			{
 // 				if (r < 0)
 // 					continue;
 // 				if (r >= this->h)
 // 					continue;
-// 				for (int c = l.x - current_radius; c <= l.x + current_radius; c += 1)
+// 				for (int c = l.m_x - current_radius; c <= l.m_x + current_radius; c += 1)
 // 				{
 // 					if (c < 0)
 // 						continue;
@@ -700,9 +700,9 @@ void BoardGrid::add_via_cost(const Location &l, int layer)
 		for (int x = -radius; x <= radius; x += 1)
 		{
 #ifdef BOUND_CHECKS
-			assert(((l.x + x) + (l.y + y) * this->w + (layer) * this->w * this->h) < this->size);
+			assert(((l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
-			this->via_cost[(l.x + x) + (l.y + y) * this->w + (layer) * this->w * this->h] += cost;
+			this->via_cost[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h] += cost;
 		}
 	}
 }
@@ -716,9 +716,9 @@ void BoardGrid::remove_via_cost(const Location &l, int layer)
 		for (int x = -radius; x <= radius; x += 1)
 		{
 #ifdef BOUND_CHECKS
-			assert(((l.x + x) + (l.y + y) * this->w + (layer) * this->w * this->h) < this->size);
+			assert(((l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
-			this->via_cost[(l.x + x) + (l.y + y) * this->w + (layer) * this->w * this->h] -= cost;
+			this->via_cost[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h] -= cost;
 		}
 	}
 }
@@ -730,10 +730,10 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 	for (Location l : route.features)
 	{
 		// std::cout << "setting cost for feature " << l << std::endl;
-		int layer = l.z;
+		int layer = l.m_z;
 
 		// Add costs for vias
-		if ((l.z != last_location.z) && (l.x == last_location.x) && (l.y == last_location.y))
+		if ((l.m_z != last_location.m_z) && (l.m_x == last_location.m_x) && (l.m_y == last_location.m_y))
 		{
 			for (int z = 0; z < this->l; z += 1)
 			{
@@ -747,13 +747,13 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 			if (current_cost <= 0)
 				break;
 
-			for (int r = l.y - current_radius; r <= l.y + current_radius; r += 1)
+			for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; r += 1)
 			{
 				if (r < 0)
 					continue;
 				if (r >= this->h)
 					continue;
-				for (int c = l.x - current_radius; c <= l.x + current_radius; c += 1)
+				for (int c = l.m_x - current_radius; c <= l.m_x + current_radius; c += 1)
 				{
 					if (c < 0)
 						continue;
@@ -776,7 +776,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 // 	for (Location l : route.features)
 // 	{
 // 		// std::cout << "setting cost for feature " << l << std::endl;
-// 		int layer = l.z;
+// 		int layer = l.m_z;
 
 // 		if (layer > 2)
 // 		{
@@ -790,13 +790,13 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 // 			if (current_cost <= 0)
 // 				break;
 
-// 			for (int r = l.y - current_radius; r <= l.y + current_radius; r += 1)
+// 			for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; r += 1)
 // 			{
 // 				if (r < 0)
 // 					continue;
 // 				if (r >= this->h)
 // 					continue;
-// 				for (int c = l.x - current_radius; c <= l.x + current_radius; c += 1)
+// 				for (int c = l.m_x - current_radius; c <= l.m_x + current_radius; c += 1)
 // 				{
 // 					if (c < 0)
 // 						continue;
@@ -819,7 +819,7 @@ void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route, int radi
 	for (Location l : route.features)
 	{
 		// std::cout << "setting cost for feature " << l << std::endl;
-		int layer = l.z;
+		int layer = l.m_z;
 
 		if (layer > 2)
 		{
@@ -833,13 +833,13 @@ void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route, int radi
 			if (current_cost <= 0)
 				break;
 
-			for (int r = l.y - current_radius; r <= l.y + current_radius; r += 1)
+			for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; r += 1)
 			{
 				if (r < 0)
 					continue;
 				if (r >= this->h)
 					continue;
-				for (int c = l.x - current_radius; c <= l.x + current_radius; c += 1)
+				for (int c = l.m_x - current_radius; c <= l.m_x + current_radius; c += 1)
 				{
 					if (c < 0)
 						continue;
@@ -889,7 +889,7 @@ void BoardGrid::came_from_to_features(
 	for (Location l : features)
 	{
 		//std::cout << "\t" << l << std::endl;
-		if (l.z > 2)
+		if (l.m_z > 2)
 		{
 			exit(-1);
 		}
@@ -1014,7 +1014,7 @@ void BoardGrid::print_features(std::vector<Location> features)
 // 	// Check if out of boundary
 // 	for (Location l : route.features)
 // 	{
-// 		if (l.x > this->w || l.y > this->h || l.z > this->l)
+// 		if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l)
 // 		{
 // 			std::cout << "Bad route added: " << l << std::endl;
 // 			exit(-1);
@@ -1069,7 +1069,7 @@ void BoardGrid::add_route(MultipinRoute &route)
 // 	std::cout << "Doing ripup" << std::endl;
 // 	for (Location l : route.features)
 // 	{
-// 		if (l.x > this->w || l.y > this->h || l.z > this->l)
+// 		if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l)
 // 		{
 // 			std::cout << "Bad route to ripup: " << l << std::endl;
 // 			exit(-1);
@@ -1087,7 +1087,7 @@ void BoardGrid::ripup_route(MultipinRoute &route)
 	std::cout << "Doing ripup" << std::endl;
 	for (Location l : route.features)
 	{
-		if (l.x > this->w || l.y > this->h || l.z > this->l)
+		if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l)
 		{
 			std::cout << "Bad route to ripup: " << l << std::endl;
 			exit(-1);
@@ -1102,11 +1102,11 @@ void BoardGrid::ripup_route(MultipinRoute &route)
 
 bool BoardGrid::validate_location(const Location &l) const
 {
-	if (l.x >= this->w || l.x < 0)
+	if (l.m_x >= this->w || l.m_x < 0)
 		return false;
-	if (l.y >= this->h || l.y < 0)
+	if (l.m_y >= this->h || l.m_y < 0)
 		return false;
-	if (l.z >= this->l || l.z < 0)
+	if (l.m_z >= this->l || l.m_z < 0)
 		return false;
 	return true;
 }

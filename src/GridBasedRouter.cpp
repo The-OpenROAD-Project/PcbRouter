@@ -106,15 +106,15 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
       auto &feature = mpNet.features[i];
       // check if close ???????
       if (
-          abs(feature.x - last_location.x) <= 1 &&
-          abs(feature.y - last_location.y) <= 1 &&
-          abs(feature.z - last_location.z) <= 1)
+          abs(feature.m_x - last_location.m_x) <= 1 &&
+          abs(feature.m_y - last_location.m_y) <= 1 &&
+          abs(feature.m_z - last_location.m_z) <= 1)
       {
         // Print Through Hole Via
-        if (feature.z != last_location.z)
+        if (feature.m_z != last_location.m_z)
         {
           ofs << "(via";
-          ofs << " (at " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+          ofs << " (at " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
           ofs << " (size " << netclass.getViaDia() << ")";
           ofs << " (drill " << netclass.getViaDrill() << ")";
           ofs << " (layers Top Bottom)";
@@ -123,17 +123,17 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
         }
 
         // Print Segment/Track/Wire
-        if (feature.x != last_location.x || feature.y != last_location.y)
+        if (feature.m_x != last_location.m_x || feature.m_y != last_location.m_y)
         {
-          point_2d start{grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2)};
-          point_2d end{grid_factor * (feature.x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (feature.y + mMinY * inputScale - enlargeBoundary / 2)};
+          point_2d start{grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2)};
+          point_2d end{grid_factor * (feature.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (feature.m_y + mMinY * inputScale - enlargeBoundary / 2)};
           totalEstWL += point_2d::getDistance(start, end);
 
           ofs << "(segment";
           ofs << " (start " << start.m_x << " " << start.m_y << ")";
           ofs << " (end " << end.m_x << " " << end.m_y << ")";
           ofs << " (width " << netclass.getTraceWidth() << ")";
-          ofs << " (layer " << mGridLayerToName.at(feature.z) << ")";
+          ofs << " (layer " << mGridLayerToName.at(feature.m_z) << ")";
           ofs << " (net " << mpNet.netId << ")";
           ofs << ")" << std::endl;
         }
@@ -423,19 +423,19 @@ void GridBasedRouter::test_router()
     for (int i = 1; i < twoPinNets[r].features.size(); i += 1)
     {
       std::string layer;
-      if (twoPinNets[r].features[i].z == 0)
+      if (twoPinNets[r].features[i].m_z == 0)
       {
         layer = "Top";
       }
-      else if (twoPinNets[r].features[i].z == 1)
+      else if (twoPinNets[r].features[i].m_z == 1)
       {
         layer = "Route3";
       }
-      else if (twoPinNets[r].features[i].z == 2)
+      else if (twoPinNets[r].features[i].m_z == 2)
       {
         layer = "Route14";
       }
-      else if (twoPinNets[r].features[i].z == 3)
+      else if (twoPinNets[r].features[i].m_z == 3)
       {
         layer = "Bottom";
       }
@@ -451,10 +451,10 @@ void GridBasedRouter::test_router()
       //    (via (at 153.9341 96.7756) (size 0.8001) (drill 0.3937) (layers Top Bottom) (net 18) (tstamp 384ED00))
       //    (via blind (at 153.9341 95.7756) (size 0.8001) (drill 0.3937) (layers In1.Cu Bottom) (net 18) (tstamp 384ED00))
       //    (via micro (at 153.9341 94.7756) (size 0.8001) (drill 0.3937) (layers In1.Cu In2.Cu) (net 18) (tstamp 384ED00))
-      if (twoPinNets[r].features[i].z != last_location.z)
+      if (twoPinNets[r].features[i].m_z != last_location.m_z)
       {
         std::cout << "(via";
-        std::cout << " (at " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (at " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //std::cout << " (size 0.8001)";
         //std::cout << " (drill 0.3937)";
@@ -466,7 +466,7 @@ void GridBasedRouter::test_router()
         std::cout << ")" << std::endl;
 
         ofs << "(via";
-        ofs << " (at " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (at " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //ofs << " (size 0.8001)";
         //ofs << " (drill 0.3937)";
@@ -478,12 +478,12 @@ void GridBasedRouter::test_router()
         ofs << ")" << std::endl;
       }
 
-      if (twoPinNets[r].features[i].x != last_location.x || twoPinNets[r].features[i].y != last_location.y)
+      if (twoPinNets[r].features[i].m_x != last_location.m_x || twoPinNets[r].features[i].m_y != last_location.m_y)
       {
         // Wire/Tack/Segment
         std::cout << "(segment";
-        std::cout << " (start " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
-        std::cout << " (end " << grid_factor * (twoPinNets[r].features[i].x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (start " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (end " << grid_factor * (twoPinNets[r].features[i].m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //std::cout << " (width 0.2032)";
         // BBBW
@@ -493,8 +493,8 @@ void GridBasedRouter::test_router()
         std::cout << ")" << std::endl;
 
         ofs << "(segment";
-        ofs << " (start " << grid_factor * (last_location.x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.y + mMinY * inputScale - enlargeBoundary / 2) << ")";
-        ofs << " (end " << grid_factor * (twoPinNets[r].features[i].x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (start " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (end " << grid_factor * (twoPinNets[r].features[i].m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
         // BM2
         //ofs << " (width 0.2032)";
         // BBBW
@@ -520,7 +520,7 @@ void GridBasedRouter::test_router()
       Location last_location = twoPinNets[r].features[0];
 
       for (int i = 1; i < twoPinNets[r].features.size(); i += 1) {
-          int layer = twoPinNets[r].features[i].z;
+          int layer = twoPinNets[r].features[i].m_z;
           if (layer == 0) {
               layer = 1;
           }
@@ -529,8 +529,8 @@ void GridBasedRouter::test_router()
           }
 
           std::cout << "\t" << "<wire ";
-          std::cout << "x1=\"" << grid_factor * last_location.x << "\" y1=\"" << grid_factor * last_location.y << "\" ";
-          std::cout << "x2=\"" << grid_factor * twoPinNets[r].features[i].x << "\" y2=\"" << grid_factor * twoPinNets[r].features[i].y << "\" ";
+          std::cout << "x1=\"" << grid_factor * last_location.m_x << "\" y1=\"" << grid_factor * last_location.m_y << "\" ";
+          std::cout << "x2=\"" << grid_factor * twoPinNets[r].features[i].m_x << "\" y2=\"" << grid_factor * twoPinNets[r].features[i].m_y << "\" ";
           std::cout << "width=\"" << 0.6096 << "\" layer=\"" << layer << "\"";
           std::cout << "/>";
           std::cout << std::endl;
@@ -547,13 +547,13 @@ void GridBasedRouter::test_router()
     std::cout << "<signal name=\"" << "MP" << mpr <<"\">" << std::endl;
     Location last_location = multipinNets[mpr].features[0];
     for (int i = 1; i < multipinNets[mpr].features.size(); i += 1) {
-        int layer = multipinNets[mpr].features[i].z;
+        int layer = multipinNets[mpr].features[i].m_z;
 
         // check if near
         if (
-            abs(multipinNets[mpr].features[i].x - last_location.x) <= 1 &&
-            abs(multipinNets[mpr].features[i].y - last_location.y) <= 1 &&
-            abs(multipinNets[mpr].features[i].z - last_location.z) <= 1
+            abs(multipinNets[mpr].features[i].m_x - last_location.m_x) <= 1 &&
+            abs(multipinNets[mpr].features[i].m_y - last_location.m_y) <= 1 &&
+            abs(multipinNets[mpr].features[i].m_z - last_location.m_z) <= 1
         ){
             if (layer == 0) {
                 layer = 1;
@@ -563,8 +563,8 @@ void GridBasedRouter::test_router()
             }
 
             std::cout << "\t" << "<wire ";
-            std::cout << "x1=\"" << grid_factor * last_location.x << "\" y1=\"" << grid_factor * last_location.y << "\" ";
-            std::cout << "x2=\"" << grid_factor * multipinNets[mpr].features[i].x << "\" y2=\"" << grid_factor * multipinNets[mpr].features[i].y << "\" ";
+            std::cout << "x1=\"" << grid_factor * last_location.m_x << "\" y1=\"" << grid_factor * last_location.m_y << "\" ";
+            std::cout << "x2=\"" << grid_factor * multipinNets[mpr].features[i].m_x << "\" y2=\"" << grid_factor * multipinNets[mpr].features[i].m_y << "\" ";
             std::cout << "width=\"" << 0.6096 << "\" layer=\"" << layer << "\"";
             std::cout << "/>";
             std::cout << std::endl;
