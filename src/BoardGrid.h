@@ -168,6 +168,7 @@ class BoardGrid
   std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
   void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
   void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
+  void aStarWithGridCameFrom(const std::vector<Location> &route, int via_size);
   void breadth_first_search(const Location &start, const Location &end);
   std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
 
@@ -181,6 +182,7 @@ public:
   int current_trace_width;
   int current_half_trace_width;
   int current_clearance;
+  Location currentTargetedPin;
 
   float cost_to_occupy(const Location &l) const;
 
@@ -214,6 +216,9 @@ public:
   void setIsTargetedPin(const Location &l);
   void clearIsTargetedPin(const Location &l);
   bool isTargetedPin(const Location &l);
+
+  // cost
+  float getEstimatedCost(const Location &l);
 
   void printGnuPlot();
   void printMatPlot();

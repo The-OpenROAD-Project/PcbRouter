@@ -478,6 +478,80 @@ void BoardGrid::dijkstrasWithGridCameFrom(
 	}
 }
 
+void BoardGrid::aStarWithGridCameFrom(
+	const std::vector<Location> &route,
+	int via_size)
+{
+	std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
+
+	// For path to multiple points
+	// Searches from the multiple points to every other point
+	this->working_cost_fill(std::numeric_limits<float>::infinity());
+
+	LocationQueue<Location, float> frontier; // search frontier
+	for (Location start : route)
+	{
+		// Walked cost + estimated future cost
+		float cost = 0.0 + getEstimatedCost(start);
+		this->working_cost_set(cost, start);
+		frontier.push(start, cost);
+		// Set a ending for the backtracking
+		this->setCameFromId(start, this->locationToId(start));
+	}
+
+	std::cout << " frontier.size(): " << frontier.size() << std::endl;
+
+	while (!frontier.empty())
+	{
+		Location current = frontier.front();
+		frontier.pop();
+
+		//std::cout << "Visiting " << current << ", frontierSize: "<< frontier.size() << std::endl;
+		std::array<std::pair<float, Location>, 10> neighbors;
+		this->getNeighbors(current, via_size, neighbors);
+
+		for (std::pair<float, Location> next : neighbors)
+		{
+			if (
+				(next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+				(next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+				(next.second.m_z < 0) || (next.second.m_z >= this->l))
+			{
+				continue; // continue if out of bounds
+			}
+
+			// std::cerr << "next.second.m_x: " << next.second.m_x << std::endl;
+			// std::cerr << "next.second.m_y: " << next.second.m_y << std::endl;
+			// std::cerr << "next.second.m_z: " << next.second.m_z << std::endl;
+
+			// this->via_cost_at(next.second) ??????????
+			float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) + this->via_cost_at(next.second) + next.first;
+			// A*
+			new_cost += getEstimatedCost(next.second);
+
+			if (new_cost < this->working_cost_at(next.second))
+			{
+				// std::cerr << "setting working cost" << std::endl;
+				this->working_cost_set(new_cost, next.second);
+				this->setCameFromId(next.second, this->locationToId(current));
+
+				frontier.push(next.second, new_cost);
+			}
+
+			//Test early break
+			if (isTargetedPin(next.second))
+			{
+				return;
+			}
+		}
+	}
+}
+
+float BoardGrid::getEstimatedCost(const Location &l)
+{
+	return max(abs(l.m_x - this->currentTargetedPin.m_x), abs(l.m_y - this->currentTargetedPin.m_y));
+}
+
 void BoardGrid::getNeighbors(const Location &l, int via_size, std::array<std::pair<float, Location>, 10> &ns) const
 {
 	//std::array<std::pair<float, Location>, 10> ns;
@@ -1265,27 +1339,28 @@ void BoardGrid::addRoute(MultipinRoute &route)
 
 	route.features.push_back(route.pins[0]);
 
-	//Set targetPins
-	setTargetedPins(route.pins);
-
-	for (Location pin : route.pins)
+	for (size_t i = 1; i < route.pins.size(); ++i)
+	//for (size_t i = 0; i < route.pins.size(); ++i) //Original incorrect implementation
 	{
-		this->dijkstrasWithGridCameFrom(route.features, via_size);
+		this->setIsTargetedPin(route.pins[i]);
+		currentTargetedPin = route.pins[i];
+		//this->dijkstrasWithGridCameFrom(route.features, via_size);
+		this->aStarWithGridCameFrom(route.features, via_size);
 
 		std::vector<Location> new_features;
-		this->came_from_to_features(pin, new_features);
+		this->came_from_to_features(route.pins[i], new_features);
 
 		for (Location f : new_features)
 		{
 			route.features.push_back(f);
 		}
+		this->clearIsTargetedPin(route.pins[i]);
+		currentTargetedPin = Location{0, 0, 0};
 	}
 	//this->print_features(route.features);
 	//TODO
 	//this->add_route_to_base_cost(route, traceWidth, cost, via_size);
 	this->add_route_to_base_cost(route, current_trace_width, cost, via_size);
-
-	clearTargetedPins(route.pins);
 }
 
 // void BoardGrid::ripup_route(Route &route)
