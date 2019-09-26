@@ -544,25 +544,28 @@ void BoardGrid::pprint()
 
 float BoardGrid::sized_via_cost_at(const Location &l, int via_size) const
 {
-	//???????????????????????????????????????????????????
-	return 0.0;
 	int radius = via_size;
 	float cost = 0.0;
 	for (int z = 0; z < this->l; z += 1)
 	{
 		for (int y = -radius; y < radius; y += 1)
 		{
-			if (y < 0 || y > this->h)
-				return std::numeric_limits<float>::infinity();
 			for (int x = -radius; x < radius; x += 1)
 			{
-				if (x < 0 || x > this->w)
-					return std::numeric_limits<float>::infinity();
-				Location current_l = Location(x, y, z);
+				Location current_l = Location(l.x+x, l.y+y, z);
+				if (!validate_location(current_l))
+				{
+					// std::cerr << 'Invalid location: ' << current_l << std::endl;
+					cost += 1000;
+					continue;
+				}
+				cost += this->via_cost_at(current_l); // + this->via_cost_at(l);
 				cost += this->base_cost_at(current_l); // + this->via_cost_at(l);
 			}
 		}
 	}
+	// std::cerr << "sized_via_cost_at " << l << ": " << cost << std::endl;
+
 	return cost;
 }
 

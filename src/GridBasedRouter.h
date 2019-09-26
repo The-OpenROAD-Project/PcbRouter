@@ -35,6 +35,8 @@ private:
   bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
   void addPinCost(const pin &, const float);
   void addPinCost(const padstack &, const instance &, const float);
+  void add_pin_cost_to_via_cost(const pin &, const float);
+  void add_pin_cost_to_via_cost(const padstack &, const instance &, const float);
 
 private:
   BoardGrid mBg;

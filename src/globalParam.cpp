@@ -13,7 +13,7 @@ double GlobalParam::gEpsilon = 0.00000000000001;
 bool GlobalParam::g90DegreeMode = true;
 // BoardGrid
 double GlobalParam::gDiagonalCost = 1.41421356237;
-double GlobalParam::gLayerChangeCost = 10.0;
+double GlobalParam::gLayerChangeCost = 1.0;
 // Outputfile
 int GlobalParam::gOutputPrecision = 5;
 string GlobalParam::gOutputFolder = "output";

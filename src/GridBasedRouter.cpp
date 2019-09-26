@@ -196,6 +196,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
     for (auto &pad : comp.getPadstacks())
     {
       addPinCost(pad, inst, pinCost);
+      add_pin_cost_to_via_cost(pad, inst, pinCost);
     }
   }
 
@@ -300,12 +301,59 @@ void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, cons
           }
           //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
           mBg.base_cost_add(cost, gridPt);
-          mBg.via_cost_add(cost, gridPt);
         }
       }
     }
   }
 }
+
+void GridBasedRouter::add_pin_cost_to_via_cost(const pin &p, const float cost)
+{
+  // TODO: Id Range Checking?
+  auto &comp = mDb.getComponent(p.m_comp_id);
+  auto &inst = mDb.getInstance(p.m_inst_id);
+  auto &pad = comp.getPadstack(p.m_padstack_id);
+
+  add_pin_cost_to_via_cost(pad, inst, cost);
+}
+
+void GridBasedRouter::add_pin_cost_to_via_cost(const padstack &pad, const instance &inst, const float cost)
+{
+  point_2d pinDbLocation;
+  mDb.getPinPosition(pad, inst, &pinDbLocation);
+  double width = 0, height = 0;
+  mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
+  point_2d pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
+  point_2d pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
+  point_2d pinGridLL, pinGridUR;
+  dbPointToGridPoint(pinDbUR, pinGridUR);
+  dbPointToGridPoint(pinDbLL, pinGridLL);
+  std::cout << __FUNCTION__ << "() cost:" << cost << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:" << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y << "), w:" << width << ", h:" << height << std::endl;
+
+  // TODO: Unify Rectangle to set costs
+  const auto &layers = pad.getLayers();
+  for (auto &layer : layers)
+  {
+    const auto &layerIte = mLayerNameToGrid.find(layer);
+    if (layerIte != mLayerNameToGrid.end())
+    {
+      for (int x = pinGridLL.m_x; x < (int)pinGridUR.m_x; ++x)
+      {
+        for (int y = pinGridLL.m_y; y < (int)pinGridUR.m_y; ++y)
+        {
+          Location gridPt{x, y, layerIte->second};
+          if (!mBg.validate_location(gridPt))
+          {
+            //std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
+            continue;
+          }
+          //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
+          mBg.via_cost_add(cost, gridPt);
+        }
+      }
+    }
+  }
+} 
 
 bool GridBasedRouter::dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt)
 {
