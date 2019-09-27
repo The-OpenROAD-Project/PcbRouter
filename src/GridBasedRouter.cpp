@@ -81,6 +81,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
   ofs << std::fixed << std::setprecision(GlobalParam::gOutputPrecision);
   // Estimated total routed wirelength
   double totalEstWL = 0.0;
+  int totalNumVia = 0;
 
   std::cout << "================= Start of " << __FUNCTION__ << "() =================" << std::endl;
 
@@ -103,6 +104,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
     auto &netclass = mDb.getNetclass(net.getNetclassId());
     Location last_location = mpNet.features[0];
     double netEstWL = 0.0;
+    int netNumVia = 0;
 
     for (int i = 1; i < mpNet.features.size(); ++i)
     {
@@ -116,6 +118,9 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
         // Print Through Hole Via
         if (feature.m_z != last_location.m_z)
         {
+          ++totalNumVia;
+          ++netNumVia;
+
           ofs << "(via";
           ofs << " (at " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
           ofs << " (size " << netclass.getViaDia() << ")";
@@ -144,10 +149,10 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
       }
       last_location = feature;
     }
-    std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size() << ", Total WL: " << netEstWL << std::endl;
+    std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size() << ", Total WL: " << netEstWL << ", #Vias: " << netNumVia << std::endl;
   }
 
-  std::cout << "\tEstimated Total WL: " << totalEstWL << std::endl;
+  std::cout << "\tEstimated Total WL: " << totalEstWL << ", Total # Vias: " << totalNumVia << std::endl;
   std::cout << "================= End of " << __FUNCTION__ << "() =================" << std::endl;
   return true;
 }
