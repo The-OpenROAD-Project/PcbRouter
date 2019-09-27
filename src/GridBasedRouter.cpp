@@ -205,7 +205,8 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
     auto &comp = mDb.getComponent(inst.getComponentId());
     for (auto &pad : comp.getPadstacks())
     {
-      addPinCost(pad, inst, pinCost);
+      // Add cost to both via/base cost grid
+      addPinAvoidingCostToGrid(pad, inst, pinCost, true, true);
     }
   }
 
@@ -232,8 +233,8 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
       pinLocations.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, 0));
       std::cout << " location in grid: " << pinLocations.back() << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << std::endl;
 
-      // Temporary reomve the pin cost
-      addPinCost(pin, -pinCost);
+      // Temporary reomve the pin cost on base cost grid
+      addPinAvoidingCostToGrid(pin, -pinCost, true, true);
     }
 
     if (!mDb.isNetclassId(net.getNetclassId()))
@@ -253,10 +254,10 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
     //mBg.add_route(multipinNets.back());
     mBg.addRoute(multipinNets.back());
 
-    // Put back the pin cost
+    // Put back the pin cost on base cost grid
     for (auto &pin : pins)
     {
-      addPinCost(pin, pinCost);
+      addPinAvoidingCostToGrid(pin, pinCost, true, true);
     }
   }
 
@@ -269,17 +270,17 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
   outputResults2KiCadFile(multipinNets);
 }
 
-void GridBasedRouter::addPinCost(const pin &p, const float cost)
+void GridBasedRouter::addPinAvoidingCostToGrid(const pin &p, const float value, const bool toViaCost, const bool toBaseCost)
 {
   // TODO: Id Range Checking?
   auto &comp = mDb.getComponent(p.m_comp_id);
   auto &inst = mDb.getInstance(p.m_inst_id);
   auto &pad = comp.getPadstack(p.m_padstack_id);
 
-  addPinCost(pad, inst, cost);
+  addPinAvoidingCostToGrid(pad, inst, value, toViaCost, toBaseCost);
 }
 
-void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, const float cost)
+void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instance &inst, const float value, const bool toViaCost, const bool toBaseCost)
 {
   point_2d pinDbLocation;
   mDb.getPinPosition(pad, inst, &pinDbLocation);
@@ -290,7 +291,11 @@ void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, cons
   point_2d pinGridLL, pinGridUR;
   dbPointToGridPoint(pinDbUR, pinGridUR);
   dbPointToGridPoint(pinDbLL, pinGridLL);
-  std::cout << __FUNCTION__ << "() cost:" << cost << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:" << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y << "), w:" << width << ", h:" << height << std::endl;
+  std::cout << __FUNCTION__ << "()"
+            << " toViaCostGrid:" << toViaCost << ", toBaseCostGrid:" << toBaseCost;
+  std::cout << ", cost:" << value << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:"
+            << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y
+            << "), w:" << width << ", h:" << height << std::endl;
 
   // TODO: Unify Rectangle to set costs
   const auto &layers = pad.getLayers();
@@ -310,8 +315,14 @@ void GridBasedRouter::addPinCost(const padstack &pad, const instance &inst, cons
             continue;
           }
           //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
-          mBg.base_cost_add(cost, gridPt);
-          mBg.via_cost_add(cost, gridPt);
+          if (toBaseCost)
+          {
+            mBg.base_cost_add(value, gridPt);
+          }
+          if (toViaCost)
+          {
+            mBg.via_cost_add(value, gridPt);
+          }
         }
       }
     }
