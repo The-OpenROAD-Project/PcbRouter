@@ -109,9 +109,6 @@ public:
   std::vector<Location> features;
   std::vector<Location> vias;
   int netId;
-  //TODO: Remove from here
-  int trace_width;
-  int clearance;
   MultipinRoute()
   {
   }
@@ -120,19 +117,10 @@ public:
     this->pins = pins;
     this->netId = 0;
   }
-  // MultipinRoute(std::vector<Location> pins, int netId)
-  // {
-  //   this->pins = pins;
-  //   this->netId = netId;
-  // }
-
-  // Default values?
-  MultipinRoute(std::vector<Location> pins, int netId, int trace_width = 7, int viaSize = 7, int clearance = 7)
+  MultipinRoute(std::vector<Location> pins, int netId)
   {
     this->pins = pins;
     this->netId = netId;
-    this->trace_width = trace_width;
-    this->clearance = clearance;
   }
 };
 
@@ -182,11 +170,17 @@ public:
   int current_trace_width;
   int current_half_trace_width;
   int current_clearance;
-  Location currentTargetedPin;
+  int current_via_diameter;
+  Location current_targeted_pin;
 
   float cost_to_occupy(const Location &l) const;
 
   void initilization(int w, int h, int l);
+
+  // constraints
+  void set_current_rules(const int clr, const int trWid, int viaDia);
+
+  // base cost
   void base_cost_fill(float value);
   float base_cost_at(const Location &l) const;
   void base_cost_set(float value, const Location &l);

@@ -549,7 +549,7 @@ void BoardGrid::aStarWithGridCameFrom(
 
 float BoardGrid::getEstimatedCost(const Location &l)
 {
-	return max(abs(l.m_x - this->currentTargetedPin.m_x), abs(l.m_y - this->currentTargetedPin.m_y));
+	return max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
 }
 
 void BoardGrid::getNeighbors(const Location &l, int via_size, std::array<std::pair<float, Location>, 10> &ns) const
@@ -1271,9 +1271,6 @@ void BoardGrid::add_route(MultipinRoute &route)
 	int cost = 10;
 	int via_size = 7;
 	int num_pins = route.pins.size();
-	current_trace_width = route.trace_width;
-	current_half_trace_width = route.trace_width / 2;
-	current_clearance = route.clearance;
 
 	if (num_pins <= 0)
 	{
@@ -1329,9 +1326,6 @@ void BoardGrid::addRoute(MultipinRoute &route)
 	int cost = 10;
 	int via_size = 7;
 	int num_pins = route.pins.size();
-	current_trace_width = route.trace_width;
-	current_half_trace_width = route.trace_width / 2;
-	current_clearance = route.clearance;
 
 	//TODO
 	// clear came from in the GridCell
@@ -1346,7 +1340,7 @@ void BoardGrid::addRoute(MultipinRoute &route)
 	//for (size_t i = 0; i < route.pins.size(); ++i) //Original incorrect implementation
 	{
 		this->setIsTargetedPin(route.pins[i]);
-		currentTargetedPin = route.pins[i];
+		current_targeted_pin = route.pins[i];
 		//this->dijkstrasWithGridCameFrom(route.features, via_size);
 		this->aStarWithGridCameFrom(route.features, via_size);
 
@@ -1358,11 +1352,10 @@ void BoardGrid::addRoute(MultipinRoute &route)
 			route.features.push_back(f);
 		}
 		this->clearIsTargetedPin(route.pins[i]);
-		currentTargetedPin = Location{0, 0, 0};
+		current_targeted_pin = Location{0, 0, 0};
 	}
 	//this->print_features(route.features);
 	//TODO
-	//this->add_route_to_base_cost(route, traceWidth, cost, via_size);
 	this->add_route_to_base_cost(route, current_trace_width, cost, via_size);
 }
 
@@ -1400,6 +1393,14 @@ void BoardGrid::ripup_route(MultipinRoute &route)
 
 	route.features.clear();
 	std::cout << "Finished ripup" << std::endl;
+}
+
+void BoardGrid::set_current_rules(const int clr, const int trWid, int viaDia)
+{
+	current_trace_width = trWid;
+	current_half_trace_width = ceil((double)trWid / 2.0);
+	current_clearance = clr;
+	current_via_diameter = viaDia;
 }
 
 bool BoardGrid::validate_location(const Location &l) const

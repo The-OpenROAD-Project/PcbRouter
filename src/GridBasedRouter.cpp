@@ -250,8 +250,9 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
               << ", viaSize: " << viaSize << "(db: " << netclass.getViaDia() << ")"
               << ", clearance: " << clearance << "(db: " << netclass.getClearance() << ")" << std::endl;
 
-    multipinNets.push_back(MultipinRoute(pinLocations, net.getId(), traceWidth, viaSize, clearance));
+    multipinNets.push_back(MultipinRoute(pinLocations, net.getId()));
     //mBg.add_route(multipinNets.back());
+    mBg.set_current_rules(clearance, traceWidth, viaSize);
     mBg.addRoute(multipinNets.back());
 
     // Put back the pin cost on base cost grid
@@ -288,9 +289,9 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
   mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
   point_2d pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
   point_2d pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
-  point_2d pinGridLL, pinGridUR;
-  dbPointToGridPoint(pinDbUR, pinGridUR);
-  dbPointToGridPoint(pinDbLL, pinGridLL);
+  Point_2D<int> pinGridLL, pinGridUR;
+  dbPointToGridPointCeil(pinDbUR, pinGridUR);
+  dbPointToGridPointFloor(pinDbLL, pinGridLL);
   std::cout << __FUNCTION__ << "()"
             << " toViaCostGrid:" << toViaCost << ", toBaseCostGrid:" << toBaseCost;
   std::cout << ", cost:" << value << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:"
@@ -304,9 +305,9 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
     const auto &layerIte = mLayerNameToGrid.find(layer);
     if (layerIte != mLayerNameToGrid.end())
     {
-      for (int x = pinGridLL.m_x; x < (int)pinGridUR.m_x; ++x)
+      for (int x = pinGridLL.m_x; x < pinGridUR.m_x; ++x)
       {
-        for (int y = pinGridLL.m_y; y < (int)pinGridUR.m_y; ++y)
+        for (int y = pinGridLL.m_y; y < pinGridUR.m_y; ++y)
         {
           Location gridPt{x, y, layerIte->second};
           if (!mBg.validate_location(gridPt))
@@ -332,9 +333,24 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
 bool GridBasedRouter::dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt)
 {
   //TODO: boundary checking
-  //TODO: consider integer ceiling or flooring???
   gridPt.m_x = dbPt.m_x * inputScale - mMinX * inputScale + enlargeBoundary / 2;
   gridPt.m_y = dbPt.m_y * inputScale - mMinY * inputScale + enlargeBoundary / 2;
+  return true;
+}
+
+bool GridBasedRouter::dbPointToGridPointCeil(const Point_2D<double> &dbPt, Point_2D<int> &gridPt)
+{
+  //TODO: boundary checking
+  gridPt.m_x = ceil(dbPt.m_x * inputScale - mMinX * inputScale + (double)enlargeBoundary / 2);
+  gridPt.m_y = ceil(dbPt.m_y * inputScale - mMinY * inputScale + (double)enlargeBoundary / 2);
+  return true;
+}
+
+bool GridBasedRouter::dbPointToGridPointFloor(const Point_2D<double> &dbPt, Point_2D<int> &gridPt)
+{
+  //TODO: boundary checking
+  gridPt.m_x = floor(dbPt.m_x * inputScale - mMinX * inputScale + (double)enlargeBoundary / 2);
+  gridPt.m_y = floor(dbPt.m_y * inputScale - mMinY * inputScale + (double)enlargeBoundary / 2);
   return true;
 }
 

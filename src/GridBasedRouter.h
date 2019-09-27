@@ -32,6 +32,8 @@ private:
   int dbLengthToGridLength(const double dbLength) { return (int)ceil(dbLength * inputScale); }
 
   bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
+  bool dbPointToGridPointCeil(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
+  bool dbPointToGridPointFloor(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
   bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
   void addPinAvoidingCostToGrid(const pin &, const float, const bool, const bool);
   void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool);
