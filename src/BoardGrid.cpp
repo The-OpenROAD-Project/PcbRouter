@@ -1301,7 +1301,7 @@ void BoardGrid::add_route(MultipinRoute &route)
 		//this->print_features(route.features);
 		//TODO
 		//this->add_route_to_base_cost(route, traceWidth, cost, via_size);
-		this->add_route_to_base_cost(route, current_trace_width, cost, via_size);
+		this->add_route_to_base_cost(route, current_half_trace_width, cost, via_size);
 	}
 }
 
@@ -1356,7 +1356,7 @@ void BoardGrid::addRoute(MultipinRoute &route)
 	}
 	//this->print_features(route.features);
 	//TODO
-	this->add_route_to_base_cost(route, current_trace_width, cost, via_size);
+	this->add_route_to_base_cost(route, current_half_trace_width, cost, via_size);
 }
 
 // void BoardGrid::ripup_route(Route &route)
@@ -1401,6 +1401,7 @@ void BoardGrid::set_current_rules(const int clr, const int trWid, int viaDia)
 	current_half_trace_width = ceil((double)trWid / 2.0);
 	current_clearance = clr;
 	current_via_diameter = viaDia;
+	current_half_via_diameter = ceil((double)viaDia / 2.0);
 }
 
 bool BoardGrid::validate_location(const Location &l) const

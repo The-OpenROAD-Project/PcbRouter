@@ -171,6 +171,7 @@ public:
   int current_half_trace_width;
   int current_clearance;
   int current_via_diameter;
+  int current_half_via_diameter;
   Location current_targeted_pin;
 
   float cost_to_occupy(const Location &l) const;
