@@ -33,7 +33,8 @@ int main(int argc, char *argv[])
   std::cout << "Starting router..." << std::endl;
   GridBasedRouter router(db);
   //router.test_router();
-  router.testRouterWithPinAndKeepoutAvoidance();
+  //router.testRouterWithPinAndKeepoutAvoidance();
+  router.testRouterWithAvoidanceAndVariousPadType();
 
   GlobalParam::showCurrentUsage("GridBasedRouter");
   GlobalParam::showFinalUsage("End of Program");

@@ -22,11 +22,16 @@ public:
 
       [[deprecated]] void test_router();
   void testRouterWithPinAndKeepoutAvoidance();
+  void testRouterWithAvoidanceAndVariousPadType();
   // bool outputResults2KiCadFile(std::vector<Route> &nets); // If needed
   bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets);
 
 private:
   bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
+
+  // Pin Layers on Grid
+  bool getGridLayers(const Pin &, std::vector<int> &layers);
+  bool getGridLayers(const padstack &, const instance &, std::vector<int> &layers);
 
   // Utility
   int dbLengthToGridLength(const double dbLength) { return (int)ceil(dbLength * inputScale); }
@@ -35,7 +40,7 @@ private:
   bool dbPointToGridPointCeil(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
   bool dbPointToGridPointFloor(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
   bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
-  void addPinAvoidingCostToGrid(const pin &, const float, const bool, const bool);
+  void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool);
   void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool);
 
 private:
@@ -44,6 +49,7 @@ private:
 
   std::vector<std::string> mGridLayerToName;
   std::unordered_map<std::string, int> mLayerNameToGrid;
+  std::unordered_map<int, int> mDbLayerIdToGridLayer;
 
   // TODO
   // Temporary value

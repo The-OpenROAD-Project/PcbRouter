@@ -480,6 +480,7 @@ void BoardGrid::dijkstrasWithGridCameFrom(
 
 void BoardGrid::aStarWithGridCameFrom(
 	const std::vector<Location> &route,
+	Location &finalEnd,
 	int via_size)
 {
 	std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
@@ -541,6 +542,7 @@ void BoardGrid::aStarWithGridCameFrom(
 			//Test early break
 			if (isTargetedPin(next.second))
 			{
+				finalEnd = next.second;
 				return;
 			}
 		}
@@ -763,7 +765,7 @@ float BoardGrid::sized_via_cost_at(const Location &l, int via_size) const
 				{
 					// std::cerr << 'Invalid location: ' << current_l << std::endl;
 					//TODO: cost to model the clearance to boundary
-					cost += 10000;
+					cost += 1000;
 					continue;
 				}
 				cost += this->via_cost_at(current_l);
@@ -786,7 +788,7 @@ float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const
 			if (!validate_location(current_l))
 			{
 				//TODO: cost to model the clearance to boundary
-				cost += 10000;
+				cost += 100000;
 				continue;
 			}
 			cost += this->base_cost_at(current_l);
@@ -901,7 +903,7 @@ void BoardGrid::print_came_from(const std::unordered_map<Location, Location> &ca
 void BoardGrid::add_via_cost(const Location &l, int layer)
 {
 
-	int radius = 10;
+	int radius = current_half_via_diameter;
 	float cost = 10.0;
 	for (int y = -radius; y < radius; y += 1)
 	{
@@ -918,7 +920,7 @@ void BoardGrid::add_via_cost(const Location &l, int layer)
 
 void BoardGrid::remove_via_cost(const Location &l, int layer)
 {
-	int radius = 10;
+	int radius = current_half_via_diameter;
 	float cost = 10.0;
 	for (int y = -radius; y < radius; y += 1)
 	{
@@ -945,6 +947,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 		// Add costs for vias
 		if ((l.m_z != last_location.m_z) && (l.m_x == last_location.m_x) && (l.m_y == last_location.m_y))
 		{
+			// TODO Expandsion based on via_half_width
 			for (int z = 0; z < this->l; z += 1)
 			{
 				this->add_via_cost(l, z);
@@ -1339,10 +1342,15 @@ void BoardGrid::addRoute(MultipinRoute &route)
 	for (size_t i = 1; i < route.pins.size(); ++i)
 	//for (size_t i = 0; i < route.pins.size(); ++i) //Original incorrect implementation
 	{
+		// For early break
 		this->setIsTargetedPin(route.pins[i]);
+		// For cost estimation (cares about x and y only)
 		current_targeted_pin = route.pins[i];
+
 		//this->dijkstrasWithGridCameFrom(route.features, via_size);
-		this->aStarWithGridCameFrom(route.features, via_size);
+		// via size is half_width
+		Location finalEnd{0,0,0};
+		this->aStarWithGridCameFrom(route.features, finalEnd, current_half_via_diameter);
 
 		std::vector<Location> new_features;
 		this->came_from_to_features(route.pins[i], new_features);
@@ -1351,12 +1359,68 @@ void BoardGrid::addRoute(MultipinRoute &route)
 		{
 			route.features.push_back(f);
 		}
+
+		// For early break
 		this->clearIsTargetedPin(route.pins[i]);
+		// For cost estimation
 		current_targeted_pin = Location{0, 0, 0};
 	}
 	//this->print_features(route.features);
 	//TODO
-	this->add_route_to_base_cost(route, current_half_trace_width, cost, via_size);
+	this->add_route_to_base_cost(route, current_half_trace_width, cost, current_half_via_diameter);
+}
+
+void BoardGrid::addRouteWithGridPins(MultipinRoute &route)
+{
+	int radius = 7;
+	int cost = 10;
+	int via_size = 7;
+
+	//TODO
+	// clear came from in the GridCell
+	// check if traceWidth/clearance/viaDiameter persist
+
+	std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.gridPins.size() << std::endl;
+
+	if (route.gridPins.size() <= 1)
+		return;
+
+	for (auto pinLocation : route.gridPins.front().pinWithLayers)
+	{
+		route.features.push_back(pinLocation);
+	}
+
+	for (size_t i = 1; i < route.gridPins.size(); ++i)
+	{
+		// For early break
+		//this->setIsTargetedPin(route.pins[i]);
+		this->setTargetedPins(route.gridPins.at(i).pinWithLayers);
+		// For cost estimation (cares about x and y only)
+		current_targeted_pin = route.gridPins.at(i).pinWithLayers.front();
+
+		//this->dijkstrasWithGridCameFrom(route.features, via_size);
+		// via size is half_width
+		Location finalEnd{0,0,0};
+		this->aStarWithGridCameFrom(route.features, finalEnd, current_half_via_diameter);
+
+		std::vector<Location> new_features;
+		// TODO Fix this
+		this->came_from_to_features(finalEnd, new_features);
+
+		for (Location f : new_features)
+		{
+			route.features.push_back(f);
+		}
+
+		// For early break
+		//this->clearIsTargetedPin(route.pins[i]);
+		this->clearTargetedPins(route.gridPins.at(i).pinWithLayers);
+		// For cost estimation
+		current_targeted_pin = Location{0, 0, 0};
+	}
+	//this->print_features(route.features);
+	//TODO
+	this->add_route_to_base_cost(route, current_half_trace_width, cost, current_half_via_diameter);
 }
 
 // void BoardGrid::ripup_route(Route &route)

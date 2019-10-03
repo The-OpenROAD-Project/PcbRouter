@@ -99,6 +99,21 @@ private:
   bool isTargetedPin = false;
 };
 
+class GridPin
+{
+public:
+  //ctor
+  GridPin() {}
+  //dtor
+  ~GridPin() {}
+
+  friend class BoardGrid;
+  friend class MultipinRoute;
+
+private:
+  std::vector<Location> pinWithLayers;
+};
+
 class MultipinRoute
 {
 public:
@@ -108,9 +123,23 @@ public:
   //std::vector<std::unordered_map<Location, Location>> came_from;
   std::vector<Location> features;
   std::vector<Location> vias;
+  std::vector<GridPin> gridPins;
   int netId;
+
+  void addPin(std::vector<Location> &_pinWithLayers)
+  {
+    //TODO:: Optimize below for speeding up
+    GridPin gridPin;
+    gridPin.pinWithLayers = _pinWithLayers;
+    gridPins.push_back(gridPin);
+  }
+
   MultipinRoute()
   {
+  }
+  MultipinRoute(int netId)
+  {
+    this->netId = netId;
   }
   MultipinRoute(std::vector<Location> pins)
   {
@@ -156,7 +185,7 @@ class BoardGrid
   std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
   void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
   void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
-  void aStarWithGridCameFrom(const std::vector<Location> &route, int via_size);
+  void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, int via_size);
   void breadth_first_search(const Location &start, const Location &end);
   std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
 
@@ -191,6 +220,7 @@ public:
   // void add_route(Route &route);
   void add_route(MultipinRoute &route);
   void addRoute(MultipinRoute &route);
+  void addRouteWithGridPins(MultipinRoute &route);
   // void ripup_route(Route &route);
   void ripup_route(MultipinRoute &route);
 
