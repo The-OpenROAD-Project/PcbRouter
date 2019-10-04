@@ -505,9 +505,7 @@ void BoardGrid::dijkstrasWithGridCameFrom(const std::vector<Location> &route,
 
 void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route,
                                       Location &finalEnd) {
-    std::cout << __FUNCTION__
-              << "() nets: route.features.size() = " << route.size()
-              << std::endl;
+    std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
     // std::cerr << fixed;
     // std::cout << fixed;
 
@@ -515,6 +513,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route,
     // Searches from the multiple points to every other point
     this->working_cost_fill(std::numeric_limits<float>::infinity());
 
+    float bestCostWhenReachTarget = std::numeric_limits<float>::max();
     LocationQueue<Location, float> frontier;  // search frontier
     for (Location start : route) {
         // Walked cost + estimated future cost
@@ -532,8 +531,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route,
         Location current = frontier.front();
         frontier.pop();
 
-        // std::cout << "Visiting " << current << ", frontierSize: " <<
-        // frontier.size() << std::endl;
+        // std::cout << "Visiting " << current << ", frontierSize: " << frontier.size() << std::endl;
         std::array<std::pair<float, Location>, 10> neighbors;
         this->getNeighbors(current, neighbors);
 
@@ -545,11 +543,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route,
             }
 
             // TODO: this->via_cost_at(next.second)?
-            float new_cost =
-                this->working_cost_at(current) +
-                this->base_cost_at(
-                    next.second) /*+ this->via_cost_at(next.second)*/
-                + next.first;
+            float new_cost = this->working_cost_at(current) + this->base_cost_at(next.second) /*+ this->via_cost_at(next.second)*/ + next.first;
             // A*
             new_cost += getEstimatedCost(next.second);
 
@@ -563,24 +557,32 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route,
                 // next.second << std::endl;
 
                 // TODO: Test early break
-                // if (isTargetedPin(next.second))
-                // {
-                // 	finalEnd = next.second;
+                // if (isTargetedPin(next.second) && new_cost < bestCostWhenReachTarget) {
+                //     bestCostWhenReachTarget = new_cost;
+                //     finalEnd = next.second;
                 // }
             }
 
             // Test early break
             if (isTargetedPin(next.second)) {
+                bestCostWhenReachTarget = new_cost;
                 finalEnd = next.second;
+                std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
                 return;
             }
         }
     }
+    //For Dijkstra to output
+    std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
 }
 
 float BoardGrid::getEstimatedCost(const Location &l) {
-    return max(abs(l.m_x - this->current_targeted_pin.m_x),
-               abs(l.m_y - this->current_targeted_pin.m_y));
+    return max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
+    // int absDiffX = abs(l.m_x - this->current_targeted_pin.m_x);
+    // int absDiffY = abs(l.m_y - this->current_targeted_pin.m_y);
+    // int minDiff = min(absDiffX, absDiffY);
+    // int maxDiff = max(absDiffX, absDiffY);
+    // return minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff;
 }
 
 void BoardGrid::getNeighbors(
@@ -1342,8 +1344,7 @@ void BoardGrid::addRoute(MultipinRoute &route) {
     }
     // this->print_features(route.features);
     // TODO
-    this->add_route_to_base_cost(route, current_half_trace_width, cost,
-                                 current_half_via_diameter);
+    this->add_route_to_base_cost(route, current_half_trace_width, cost, current_half_via_diameter);
 }
 
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
@@ -1352,9 +1353,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     // TODO
     // check if traceWidth/clearance/viaDiameter persist
 
-    std::cout << __FUNCTION__
-              << "() route.gridPins.size: " << route.gridPins.size()
-              << std::endl;
+    std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.gridPins.size() << std::endl;
 
     if (route.gridPins.size() <= 1) return;
 
@@ -1391,8 +1390,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     }
     // this->print_features(route.features);
     // TODO
-    this->add_route_to_base_cost(route, current_half_trace_width, cost,
-                                 current_half_via_diameter);
+    this->add_route_to_base_cost(route, current_half_trace_width, cost, current_half_via_diameter);
 }
 
 // void BoardGrid::ripup_route(Route &route)

@@ -71,6 +71,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
     ofs << std::fixed << std::setprecision(GlobalParam::gOutputPrecision);
     // Estimated total routed wirelength
     double totalEstWL = 0.0;
+    double totalEstGridWL = 0.0;
     int totalNumVia = 0;
 
     std::cout << "================= Start of " << __FUNCTION__ << "() =================" << std::endl;
@@ -95,6 +96,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
         auto &netclass = mDb.getNetclass(net.getNetclassId());
         Location last_location = mpNet.features.front();
         double netEstWL = 0.0;
+        double netEstGridWL = 0.0;
         int netNumVia = 0;
 
         for (int i = 1; i < mpNet.features.size(); ++i) {
@@ -123,7 +125,9 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
                     point_2d start{grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2)};
                     point_2d end{grid_factor * (feature.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (feature.m_y + mMinY * inputScale - enlargeBoundary / 2)};
                     totalEstWL += point_2d::getDistance(start, end);
+                    totalEstGridWL += Location::getDistance2D(last_location, feature);
                     netEstWL += point_2d::getDistance(start, end);
+                    netEstGridWL += Location::getDistance2D(last_location, feature);
 
                     ofs << "(segment";
                     ofs << " (start " << start.m_x << " " << start.m_y << ")";
@@ -136,10 +140,11 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
             }
             last_location = feature;
         }
-        std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size() << ", Total WL: " << netEstWL << ", #Vias: " << netNumVia << std::endl;
+        std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size()
+                  << ", Total WL: " << netEstWL << ", Total Grid WL: " << netEstGridWL << ", #Vias: " << netNumVia << std::endl;
     }
 
-    std::cout << "\tEstimated Total WL: " << totalEstWL << ", Total # Vias: " << totalNumVia << std::endl;
+    std::cout << "\tEstimated Total WL: " << totalEstWL << ", Total Grid WL: " << totalEstGridWL << ", Total # Vias: " << totalNumVia << std::endl;
     std::cout << "================= End of " << __FUNCTION__ << "() =================" << std::endl;
     return true;
 }
@@ -301,8 +306,8 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     //for (int i = nets.size() - 1; i >= 0; --i) {
     //    auto &net = nets.at(i);
     for (auto &net : nets) {
-        //if (net.getId() != 18 && net.getId() != 19)
-        //    continue;
+        // if (net.getId() != 31)
+        //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
