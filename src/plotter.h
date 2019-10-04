@@ -2,13 +2,13 @@
 #ifndef PCBROUTER_PLOTTER_H
 #define PCBROUTER_PLOTTER_H
 
-#include <iostream>
+#include <math.h>
 #include <stdio.h>
 #include <fstream>
-#include <string>
-#include <math.h>
 #include <iomanip>
+#include <iostream>
 #include <list>
+#include <string>
 //#include "point.h"
 //#include "rectangle.h"
 //#include "segment.h"
@@ -18,40 +18,39 @@ using namespace std;
 
 // TODO
 // Plot the via/wire obstacle grids
-class Plotter
-{
-public:
-  Plotter(char *outputFileName);
-  ~Plotter();
+class Plotter {
+   public:
+    Plotter(char *outputFileName);
+    ~Plotter();
 
-  bool isInit();
+    bool isInit();
 
-  void outputString(const string &s);
-  void outputDouble(double d, size_t digit = 2);
-  //void outputString(char* s);
+    void outputString(const string &s);
+    void outputDouble(double d, size_t digit = 2);
+    //void outputString(char* s);
 
-  //plot
-  void plotLine(double x1, double y1, double x2, double y2);
-  //void plotLine(Point<double> p1, Point<double> p2);
-  //void plotLine(Segment s);
-  void plotRec(double &x1, double &y1, double &x2, double &y2);
-  void plotRec(double x1, double y1, double x2, double y2);
-  //void plotRec(Point<double> p1, Point<double> p2);
-  //void plotRec(Rectangle r);
-  //void plotSquare(Point<double> cp, double length);
-  //void plotOct(Point<double> cp, double &radius);
-  //void plotPath(Path &p);
-  //void plotRectilinear(list<Point<double> > &rectilinear);
+    //plot
+    void plotLine(double x1, double y1, double x2, double y2);
+    //void plotLine(Point<double> p1, Point<double> p2);
+    //void plotLine(Segment s);
+    void plotRec(double &x1, double &y1, double &x2, double &y2);
+    void plotRec(double x1, double y1, double x2, double y2);
+    //void plotRec(Point<double> p1, Point<double> p2);
+    //void plotRec(Rectangle r);
+    //void plotSquare(Point<double> cp, double length);
+    //void plotOct(Point<double> cp, double &radius);
+    //void plotPath(Path &p);
+    //void plotRectilinear(list<Point<double> > &rectilinear);
 
-  //plot Obj
-  //void plotCircleObj(Point<double> cp, double radius, const string &rgb = "\"#000000\"");
+    //plot Obj
+    //void plotCircleObj(Point<double> cp, double radius, const string &rgb = "\"#000000\"");
 
-private:
-  //void outputPoint(Point<double> p);
+   private:
+    //void outputPoint(Point<double> p);
 
-private:
-  ofstream _outFile;
-  //size_t _objCounter;
+   private:
+    ofstream _outFile;
+    //size_t _objCounter;
 };
 
 //Congestion color map

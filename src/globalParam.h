@@ -1,10 +1,10 @@
 #ifndef PCBROUTER_GLOBALPARAM_H
 #define PCBROUTER_GLOBALPARAM_H
 
-#include <string>
 #include <math.h>
-#include <time.h>
 #include <stdlib.h>
+#include <time.h>
+#include <string>
 #include "util.h"
 
 using namespace std;
@@ -15,60 +15,58 @@ using namespace std;
 
 // TODO
 // See router.h -> class net
-struct NetClass
-{
-  double ncClearance;
-  double ncTraceWidth;
-  double ncViaDiameter;
-  double ncMicroViaDiameter;
+struct NetClass {
+    double ncClearance;
+    double ncTraceWidth;
+    double ncViaDiameter;
+    double ncMicroViaDiameter;
 };
 
 // TODO
 // See clearance matrix in the EAGLE/KiCad format
-class GlobalParam
-{
-public:
-  static int gLayerNum;
-  static double gWireWidth;
-  static double gWireSpace;
-  static double gWirePadSpace;
+class GlobalParam {
+   public:
+    static int gLayerNum;
+    static double gWireWidth;
+    static double gWireSpace;
+    static double gWirePadSpace;
 
-  static double gHalfWireWidth;
-  static double gHWidthAndSpace;
-  static double gHWidthAndWPSpace;
-  static double gWire2Wire;
-  static double gDisBetweenWire;
+    static double gHalfWireWidth;
+    static double gHWidthAndSpace;
+    static double gHWidthAndWPSpace;
+    static double gWire2Wire;
+    static double gDisBetweenWire;
 
-  static double gEpsilon;
-  static bool g90DegreeMode;
+    static double gEpsilon;
+    static bool g90DegreeMode;
 
-  //BoardGrid
-  static double gDiagonalCost;
-  static double gLayerChangeCost;
-  static double gViaInsertionCost;
+    //BoardGrid
+    static double gDiagonalCost;
+    static double gLayerChangeCost;
+    static double gViaInsertionCost;
 
-  //Outputfile
-  static int gOutputPrecision;
-  static string gOutputFolder;
+    //Outputfile
+    static int gOutputPrecision;
+    static string gOutputFolder;
 
-  //Log
-  static string gLogFolder;
+    //Log
+    static string gLogFolder;
 
-  const static double gSqrt2;
-  const static double gTan22_5;
+    const static double gSqrt2;
+    const static double gTan22_5;
 
-  static int gSeed;
+    static int gSeed;
 
-  static util::TimeUsage runTime;
+    static util::TimeUsage runTime;
 
-  static void setFolders();
-  static void setDesignRule();
-  static void setLayerNum(int l) { gLayerNum = l; }
+    static void setFolders();
+    static void setDesignRule();
+    static void setLayerNum(int l) { gLayerNum = l; }
 
-  static void showParam();
-  static void showCurrentUsage(const string comment);
-  static void showFinalUsage(const string comment);
-  static void setUsageStart();
+    static void showParam();
+    static void showCurrentUsage(const string comment);
+    static void showFinalUsage(const string comment);
+    static void setUsageStart();
 };
 
 #endif

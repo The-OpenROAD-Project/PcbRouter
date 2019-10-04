@@ -1,6 +1,6 @@
 
-#include <iostream>
 #include <stdlib.h>
+#include <iostream>
 #include <random>
 
 #include "BoardGrid.h"
@@ -43,8 +43,7 @@ TODO:
 
 *********************************************************************************/
 
-void test_two_pin_routing()
-{
+void test_two_pin_routing() {
     std::cout << "test_two_pin_routing starting\n";
 
     // height, width, layers
@@ -69,20 +68,16 @@ void test_two_pin_routing()
 
     std::cout << "Initial routing" << std::endl;
     // initial route
-    for (int i = 0; i < nets.size(); i += 1)
-    {
+    for (int i = 0; i < nets.size(); i += 1) {
         bg.add_route(nets[i]);
         // std::cout << "Printing route" << std::endl;
         // bg.print_route(nets[i].came_from, nets[i].end);
         // std::cout << "Printing route done" << std::endl;
     }
 
-    for (Route route : nets)
-    {
-        for (Location l : route.features)
-        {
-            if (l.x > bg.w || l.y > bg.h || l.z > bg.l)
-            {
+    for (Route route : nets) {
+        for (Location l : route.features) {
+            if (l.x > bg.w || l.y > bg.h || l.z > bg.l) {
                 std::cout << "Bad route initial: " << l << std::endl;
                 exit(-1);
             }
@@ -91,11 +86,10 @@ void test_two_pin_routing()
 
     // ripup loop
     std::cout << "Doing ripups" << std::endl;
-    std::random_device rd;                                 // obtain a random number from hardware
-    std::mt19937 eng(rd());                                // seed the generator
-    std::uniform_int_distribution<> distr(0, nets.size()); // define the range
-    for (int i = 0; i < max_ripups; i += 1)
-    {
+    std::random_device rd;                                  // obtain a random number from hardware
+    std::mt19937 eng(rd());                                 // seed the generator
+    std::uniform_int_distribution<> distr(0, nets.size());  // define the range
+    for (int i = 0; i < max_ripups; i += 1) {
         int rand_index = distr(eng);
         bg.ripup_route(nets[rand_index]);
         bg.add_route(nets[rand_index]);
@@ -105,21 +99,16 @@ void test_two_pin_routing()
     bg.pprint();
     std::cout << "Printing costs done" << std::endl;
 
-    for (int r = 0; r < nets.size(); r += 1)
-    {
+    for (int r = 0; r < nets.size(); r += 1) {
         // std::cout << std::endl;
         std::cout << "<signal name=\"" << char('A' + r) << "\">" << std::endl;
         Location last_location = nets[r].features[0];
 
-        for (int i = 1; i < nets[r].features.size(); i += 1)
-        {
+        for (int i = 1; i < nets[r].features.size(); i += 1) {
             int layer = nets[r].features[i].z;
-            if (layer == 0)
-            {
+            if (layer == 0) {
                 layer = 1;
-            }
-            else if (layer == 1)
-            {
+            } else if (layer == 1) {
                 layer = 16;
             }
 
@@ -140,8 +129,7 @@ void test_two_pin_routing()
     std::cout << "test_two_pin_routing exiting\n";
 }
 
-void test_multipin()
-{
+void test_multipin() {
     std::cout << "test_two_pin_routing starting\n";
 
     // height, width, layers
@@ -180,8 +168,7 @@ void test_multipin()
         Route(Location(w / 4, h - 1, 0), Location(w / 4, 0, 0)),
         Route(Location(3 * w / 4, h - 1, 0), Location(3 * w / 4, 0, 0))};
 
-    for (int i = 0; i < nets.size(); i += 1)
-    {
+    for (int i = 0; i < nets.size(); i += 1) {
         // Add net and route immediately
         bg.add_route(nets[i]);
         std::cout << std::endl
@@ -267,8 +254,7 @@ void test_multipin()
     */
 }
 
-void mixed_test()
-{
+void mixed_test() {
     std::cout << "mixed_test starting\n";
 
     // height, width, layers
