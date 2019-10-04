@@ -14,6 +14,7 @@ bool GlobalParam::g90DegreeMode = true;
 // BoardGrid
 double GlobalParam::gDiagonalCost = 1.41421356237;
 double GlobalParam::gLayerChangeCost = 10.0;
+double GlobalParam::gViaInsertionCost = 100.0;
 // Outputfile
 int GlobalParam::gOutputPrecision = 5;
 string GlobalParam::gOutputFolder = "output";
@@ -58,10 +59,12 @@ void GlobalParam::setDesignRule()
 
 void GlobalParam::setFolders()
 {
-    if(!util::createDirectory(gOutputFolder)){
+    if (!util::createDirectory(gOutputFolder))
+    {
         gOutputFolder = "";
     }
-    if(!util::createDirectory(gLogFolder)){
+    if (!util::createDirectory(gLogFolder))
+    {
         gLogFolder = "";
     }
 }

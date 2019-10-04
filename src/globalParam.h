@@ -45,6 +45,7 @@ public:
   //BoardGrid
   static double gDiagonalCost;
   static double gLayerChangeCost;
+  static double gViaInsertionCost;
 
   //Outputfile
   static int gOutputPrecision;

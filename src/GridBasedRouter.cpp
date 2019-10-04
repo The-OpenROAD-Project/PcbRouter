@@ -101,8 +101,13 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
       continue;
     }
 
+    if (mpNet.features.empty())
+    {
+      continue;
+    }
+
     auto &netclass = mDb.getNetclass(net.getNetclassId());
-    Location last_location = mpNet.features[0];
+    Location last_location = mpNet.features.front();
     double netEstWL = 0.0;
     int netNumVia = 0;
 
@@ -184,6 +189,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance()
   // Initialize board grid
   mBg.initilization(w, h, l);
   mBg.base_cost_fill(0.0);
+  mBg.via_cost_fill(0.0);
 
   // Add all instances' pins to a cost in grid
   auto &instances = mDb.getInstances();
@@ -301,6 +307,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType()
   // Initialize board grid
   mBg.initilization(w, h, l);
   mBg.base_cost_fill(0.0);
+  mBg.via_cost_fill(0.0);
 
   // Add all instances' pins to a cost in grid
   auto &instances = mDb.getInstances();
@@ -325,7 +332,10 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType()
   auto &nets = mDb.getNets();
   for (auto &net : nets)
   {
-    std::cout << "Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+    //if (net.getId() != 33)
+    //  continue;
+
+    std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
     if (net.getPins().size() < 2)
       continue;
 
@@ -380,6 +390,9 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType()
     }
   }
 
+  std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
+            << std::endl;
+
   // Routing has done
   // Print the final base cost
   mBg.printGnuPlot();
@@ -414,7 +427,8 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
             << " toViaCostGrid:" << toViaCost << ", toBaseCostGrid:" << toBaseCost;
   std::cout << ", cost:" << value << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:"
             << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y
-            << "), w:" << width << ", h:" << height << ", layers:";
+            << "), w:" << width << ", h:" << height << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR
+            << ", layers:";
 
   // TODO: Unify Rectangle to set costs
   // Get layer from Padstack's type and instance's layers
@@ -568,6 +582,7 @@ void GridBasedRouter::test_router()
 
   mBg.initilization(w, h, l);
   mBg.base_cost_fill(0.0);
+  mBg.via_cost_fill(0.0);
 
   // Prepare all the nets to route
   for (int i = 0; i < routerInfo.size(); ++i)

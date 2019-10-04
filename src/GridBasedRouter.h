@@ -53,7 +53,7 @@ private:
 
   // TODO
   // Temporary value
-  const float pinCost = 100000.0;
+  const float pinCost = 1000.0;
   // Put below stuff to globalParam:: ??
   double mMinX = std::numeric_limits<double>::max();
   double mMaxX = std::numeric_limits<double>::min();

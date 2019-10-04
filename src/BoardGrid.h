@@ -168,6 +168,7 @@ class BoardGrid
   void setCameFromId(const Location &l, const int id);
   int getCameFromId(const Location &l) const;
   int getCameFromId(const int id) const;
+  void clearAllCameFromId();
 
   // void add_route_to_base_cost(const Route &route, int radius, float cost);
   void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size);
@@ -178,14 +179,14 @@ class BoardGrid
   std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
   void came_from_to_features(const Location &end, std::vector<Location> &features) const;
 
-  void getNeighbors(const Location &l, int via_size, std::array<std::pair<float, Location>, 10> &ns) const;
+  void getNeighbors(const Location &l, std::array<std::pair<float, Location>, 10> &ns) const;
 
   // std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, const Location &end);
   std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
   std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
   void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
   void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
-  void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, int via_size);
+  void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd);
   void breadth_first_search(const Location &start, const Location &end);
   std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
 
@@ -225,12 +226,13 @@ public:
   void ripup_route(MultipinRoute &route);
 
   // via
-  float sized_via_cost_at(const Location &l, int via_size) const;
+  float sized_via_cost_at(const Location &l, const int viaRadius) const;
   float via_cost_at(const Location &l) const;
-  void add_via_cost(const Location &l, int layer);
-  void remove_via_cost(const Location &l, int layer);
-  void via_cost_set(float value, const Location &l);
-  void via_cost_add(float value, const Location &l);
+  void add_via_cost(const Location &l, const int layer, const int viaRadius);
+  void remove_via_cost(const Location &l, const int layer, const int viaRadius);
+  void via_cost_set(const float value, const Location &l);
+  void via_cost_add(const float value, const Location &l);
+  void via_cost_fill(float value);
 
   // trace_width
   float sized_trace_cost_at(const Location &l, int traceRadius) const;
