@@ -1360,22 +1360,18 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
 
     this->clearAllCameFromId();
 
-    for (auto pinLocation : route.gridPins.front().pinWithLayers) {
-        route.features.push_back(pinLocation);
-    }
-
     for (size_t i = 1; i < route.gridPins.size(); ++i) {
         // For early break
-        // this->setIsTargetedPin(route.pins[i]);
         this->setTargetedPins(route.gridPins.at(i).pinWithLayers);
         // For cost estimation (cares about x and y only)
         current_targeted_pin = route.gridPins.at(i).pinWithLayers.front();
 
         // via size is half_width
         Location finalEnd{0, 0, 0};
-        // this->dijkstrasWithGridCameFrom(route.features,
-        // current_half_via_diameter);
+        // this->dijkstrasWithGridCameFrom(route.features, current_half_via_diameter);
         if (route.features.empty()) {
+            //TODO::
+            this->aStarWithGridCameFrom(route.gridPins.front().pinWithLayers, finalEnd);
         } else {
             this->aStarWithGridCameFrom(route.features, finalEnd);
         }
@@ -1389,7 +1385,6 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         }
 
         // For early break
-        // this->clearIsTargetedPin(route.pins[i]);
         this->clearTargetedPins(route.gridPins.at(i).pinWithLayers);
         // For cost estimation
         current_targeted_pin = Location{0, 0, 0};

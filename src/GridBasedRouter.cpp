@@ -298,9 +298,11 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     // Add all nets to route
     std::vector<MultipinRoute> multipinNets;
     auto &nets = mDb.getNets();
+    //for (int i = nets.size() - 1; i >= 0; --i) {
+    //    auto &net = nets.at(i);
     for (auto &net : nets) {
-        if (net.getId() != 33)
-            continue;
+        //if (net.getId() != 18 && net.getId() != 19)
+        //    continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
