@@ -15,6 +15,8 @@ bool GlobalParam::g90DegreeMode = true;
 double GlobalParam::gDiagonalCost = 1.41421356237;
 double GlobalParam::gLayerChangeCost = 10.0;
 double GlobalParam::gViaInsertionCost = 100.0;
+// Routing Options
+bool GlobalParam::gViaUnderPad = false;
 // Outputfile
 int GlobalParam::gOutputPrecision = 5;
 string GlobalParam::gOutputFolder = "output";

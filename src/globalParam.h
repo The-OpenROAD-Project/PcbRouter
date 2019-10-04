@@ -45,6 +45,9 @@ class GlobalParam {
     static double gLayerChangeCost;
     static double gViaInsertionCost;
 
+    //Routing Options
+    static bool gViaUnderPad;
+
     //Outputfile
     static int gOutputPrecision;
     static string gOutputFolder;

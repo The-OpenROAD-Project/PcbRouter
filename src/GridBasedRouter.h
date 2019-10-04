@@ -40,15 +40,11 @@ class GridBasedRouter {
     }
 
     bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
-    bool dbPointToGridPointCeil(const Point_2D<double> &dbPt,
-                                Point_2D<int> &gridPt);
-    bool dbPointToGridPointFloor(const Point_2D<double> &dbPt,
-                                 Point_2D<int> &gridPt);
+    bool dbPointToGridPointCeil(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
+    bool dbPointToGridPointFloor(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
     bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
-    void addPinAvoidingCostToGrid(const Pin &, const float, const bool,
-                                  const bool);
-    void addPinAvoidingCostToGrid(const padstack &, const instance &,
-                                  const float, const bool, const bool);
+    void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool);
+    void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool, const bool);
 
    private:
     BoardGrid mBg;

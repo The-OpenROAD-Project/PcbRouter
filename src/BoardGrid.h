@@ -82,7 +82,9 @@ class GridCell {
     float workingCost = 0.0;
     float viaCost = 0.0;
     int cameFromId = -1;
-    bool isTargetedPin = false;
+    //TODO:: Use integer's bit to represent the flag;// Or Enum to represent everything
+    bool targetedPin = false;
+    bool viaForbidden = false;
 };
 
 class GridPin {
@@ -157,7 +159,7 @@ class BoardGrid {
     std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
     void came_from_to_features(const Location &end, std::vector<Location> &features) const;
 
-    void getNeighbors(const Location &l, std::array<std::pair<float, Location>, 10> &ns) const;
+    void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) const;
 
     // std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, const Location &end);
     std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
@@ -205,6 +207,7 @@ class BoardGrid {
 
     // via
     float sized_via_cost_at(const Location &l, const int viaRadius) const;
+    bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
     float via_cost_at(const Location &l) const;
     void add_via_cost(const Location &l, const int layer, const int viaRadius);
     void remove_via_cost(const Location &l, const int layer, const int viaRadius);
@@ -218,9 +221,16 @@ class BoardGrid {
     // targetPin
     void setTargetedPins(const std::vector<Location> &pins);
     void clearTargetedPins(const std::vector<Location> &pins);
-    void setIsTargetedPin(const Location &l);
-    void clearIsTargetedPin(const Location &l);
+    void setTargetedPin(const Location &l);
+    void clearTargetedPin(const Location &l);
     bool isTargetedPin(const Location &l);
+
+    // via Forbidden
+    void setViaForbiddenArea(const std::vector<Location> &locations);
+    void clearViaForbiddenArea(const std::vector<Location> &locations);
+    void setViaForbidden(const Location &l);
+    void clearViaForbidden(const Location &l);
+    bool isViaForbidden(const Location &l) const;
 
     // cost
     float getEstimatedCost(const Location &l);

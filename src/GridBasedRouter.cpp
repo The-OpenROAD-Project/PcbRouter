@@ -187,7 +187,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
         auto &comp = mDb.getComponent(inst.getComponentId());
         for (auto &pad : comp.getPadstacks()) {
             // Add cost to both via/base cost grid
-            addPinAvoidingCostToGrid(pad, inst, pinCost, true, true);
+            addPinAvoidingCostToGrid(pad, inst, pinCost, true, false, true);
         }
     }
 
@@ -214,7 +214,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
 
             // Temporary reomve the pin cost on base cost grid
             // TODO:: true, true seems more reasonable
-            addPinAvoidingCostToGrid(pin, -pinCost, true, true);
+            addPinAvoidingCostToGrid(pin, -pinCost, true, false, true);
         }
 
         if (!mDb.isNetclassId(net.getNetclassId())) {
@@ -237,7 +237,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
         // Put back the pin cost on base cost grid
         for (auto &pin : pins) {
             // TODO: true, true seems more reasonable
-            addPinAvoidingCostToGrid(pin, pinCost, true, true);
+            addPinAvoidingCostToGrid(pin, pinCost, true, false, true);
         }
     }
 
@@ -296,7 +296,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
         auto &comp = mDb.getComponent(inst.getComponentId());
         for (auto &pad : comp.getPadstacks()) {
             // Add cost to both via/base cost grid
-            addPinAvoidingCostToGrid(pad, inst, pinCost, true, true);
+            addPinAvoidingCostToGrid(pad, inst, pinCost, true, true, true);
         }
     }
 
@@ -334,7 +334,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
             route.addPin(pinLocationWithLayers);
             // Temporary reomve the pin cost on base cost grid
-            addPinAvoidingCostToGrid(pin, -pinCost, false, true);
+            addPinAvoidingCostToGrid(pin, -pinCost, false, false, true);
         }
 
         if (!mDb.isNetclassId(net.getNetclassId())) {
@@ -356,7 +356,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
         // Put back the pin cost on base cost grid
         for (auto &pin : pins) {
-            addPinAvoidingCostToGrid(pin, pinCost, false, true);
+            addPinAvoidingCostToGrid(pin, pinCost, false, false, true);
         }
     }
 
@@ -372,16 +372,16 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     outputResults2KiCadFile(multipinNets);
 }
 
-void GridBasedRouter::addPinAvoidingCostToGrid(const Pin &p, const float value, const bool toViaCost, const bool toBaseCost) {
+void GridBasedRouter::addPinAvoidingCostToGrid(const Pin &p, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
     // TODO: Id Range Checking?
     auto &comp = mDb.getComponent(p.getCompId());
     auto &inst = mDb.getInstance(p.getInstId());
     auto &pad = comp.getPadstack(p.getPadstackId());
 
-    addPinAvoidingCostToGrid(pad, inst, value, toViaCost, toBaseCost);
+    addPinAvoidingCostToGrid(pad, inst, value, toViaCost, toViaForbidden, toBaseCost);
 }
 
-void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instance &inst, const float value, const bool toViaCost, const bool toBaseCost) {
+void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instance &inst, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
     Point_2D<double> pinDbLocation;
     mDb.getPinPosition(pad, inst, &pinDbLocation);
     double width = 0, height = 0;
@@ -392,7 +392,7 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
     dbPointToGridPointCeil(pinDbUR, pinGridUR);
     dbPointToGridPointFloor(pinDbLL, pinGridLL);
     std::cout << __FUNCTION__ << "()"
-              << " toViaCostGrid:" << toViaCost << ", toBaseCostGrid:" << toBaseCost;
+              << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
     std::cout << ", cost:" << value << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:"
               << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y
               << "), w:" << width << ", h:" << height << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR
@@ -423,6 +423,10 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
                 }
                 if (toViaCost) {
                     mBg.via_cost_add(value, gridPt);
+                }
+                //TODO:: How to controll clear/set
+                if (toViaForbidden) {
+                    mBg.setViaForbidden(gridPt);
                 }
             }
         }

@@ -165,28 +165,68 @@ void BoardGrid::via_cost_add(const float value, const Location &l) {
         value;
 }
 
-void BoardGrid::setIsTargetedPin(const Location &l) {
+void BoardGrid::setTargetedPin(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h]
-        .isTargetedPin = true;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin = true;
 }
 
-void BoardGrid::clearIsTargetedPin(const Location &l) {
+void BoardGrid::clearTargetedPin(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h]
-        .isTargetedPin = false;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin = false;
 }
 
 bool BoardGrid::isTargetedPin(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h]
-        .isTargetedPin;
+    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin;
+}
+
+void BoardGrid::setTargetedPins(const std::vector<Location> &pins) {
+    for (auto pin : pins) {
+        this->setTargetedPin(pin);
+    }
+}
+void BoardGrid::clearTargetedPins(const std::vector<Location> &pins) {
+    for (auto pin : pins) {
+        this->clearTargetedPin(pin);
+    }
+}
+
+void BoardGrid::setViaForbidden(const Location &l) {
+#ifdef BOUND_CHECKS
+    assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden = true;
+}
+
+void BoardGrid::clearViaForbidden(const Location &l) {
+#ifdef BOUND_CHECKS
+    assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden = false;
+}
+
+bool BoardGrid::isViaForbidden(const Location &l) const {
+#ifdef BOUND_CHECKS
+    assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden;
+}
+
+void BoardGrid::setViaForbiddenArea(const std::vector<Location> &locations) {
+    for (auto loc : locations) {
+        this->setViaForbidden(loc);
+    }
+}
+void BoardGrid::clearViaForbiddenArea(const std::vector<Location> &locations) {
+    for (auto loc : locations) {
+        this->clearViaForbidden(loc);
+    }
 }
 
 // void BoardGrid::breadth_first_search(const Location &start, const Location
@@ -410,7 +450,7 @@ void BoardGrid::dijkstras_with_came_from(
 
         // std::cout << "Visiting " << current << ", frontierSize: "<<
         // frontier.size() << std::endl;
-        std::array<std::pair<float, Location>, 10> neighbors;
+        std::vector<std::pair<float, Location>> neighbors;
         this->getNeighbors(current, neighbors);
 
         for (std::pair<float, Location> next : neighbors) {
@@ -474,7 +514,7 @@ void BoardGrid::dijkstrasWithGridCameFrom(const std::vector<Location> &route,
 
         // std::cout << "Visiting " << current << ", frontierSize: "<<
         // frontier.size() << std::endl;
-        std::array<std::pair<float, Location>, 10> neighbors;
+        std::vector<std::pair<float, Location>> neighbors;
         this->getNeighbors(current, neighbors);
 
         for (std::pair<float, Location> next : neighbors) {
@@ -532,7 +572,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route,
         frontier.pop();
 
         // std::cout << "Visiting " << current << ", frontierSize: " << frontier.size() << std::endl;
-        std::array<std::pair<float, Location>, 10> neighbors;
+        std::vector<std::pair<float, Location>> neighbors;
         this->getNeighbors(current, neighbors);
 
         for (std::pair<float, Location> next : neighbors) {
@@ -585,93 +625,78 @@ float BoardGrid::getEstimatedCost(const Location &l) {
     // return minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff;
 }
 
-void BoardGrid::getNeighbors(
-    const Location &l, std::array<std::pair<float, Location>, 10> &ns) const {
+void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) const {
     // left
-    ns[0].first = 1.0;
-    ns[0].second.m_x = l.m_x + 1;
-    ns[0].second.m_y = l.m_y;
-    ns[0].second.m_z = l.m_z;
-    ns[0].first += sized_trace_cost_at(
-        Location{ns[0].second.m_x, ns[0].second.m_y, ns[0].second.m_z},
-        current_half_trace_width + current_clearance);
+    Location left{l.m_x - 1, l.m_y, l.m_z};
+    float leftCost = 1.0;
+    leftCost += sized_trace_cost_at(left, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(leftCost, left));
+
     // right
-    ns[1].first = 1.0;
-    ns[1].second.m_x = l.m_x - 1;
-    ns[1].second.m_y = l.m_y;
-    ns[1].second.m_z = l.m_z;
-    ns[1].first += sized_trace_cost_at(
-        Location{ns[1].second.m_x, ns[1].second.m_y, ns[1].second.m_z},
-        current_half_trace_width + current_clearance);
+    Location right{l.m_x + 1, l.m_y, l.m_z};
+    float rightCost = 1.0;
+    rightCost += sized_trace_cost_at(right, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(rightCost, right));
+
     // forward
-    ns[2].first = 1.0;
-    ns[2].second.m_x = l.m_x;
-    ns[2].second.m_y = l.m_y + 1;
-    ns[2].second.m_z = l.m_z;
-    ns[2].first += sized_trace_cost_at(
-        Location{ns[2].second.m_x, ns[2].second.m_y, ns[2].second.m_z},
-        current_half_trace_width + current_clearance);
+    Location forward{l.m_x, l.m_y + 1, l.m_z};
+    float forwardCost = 1.0;
+    forwardCost += sized_trace_cost_at(forward, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(forwardCost, forward));
+
     // back
-    ns[3].first = 1.0;
-    ns[3].second.m_x = l.m_x;
-    ns[3].second.m_y = l.m_y - 1;
-    ns[3].second.m_z = l.m_z;
-    ns[3].first += sized_trace_cost_at(
-        Location{ns[3].second.m_x, ns[3].second.m_y, ns[3].second.m_z},
-        current_half_trace_width + current_clearance);
+    Location backward{l.m_x, l.m_y - 1, l.m_z};
+    float backwardCost = 1.0;
+    backwardCost += sized_trace_cost_at(backward, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(backwardCost, backward));
 
     // up
-    ns[4].first = GlobalParam::gLayerChangeCost +
-                  this->sized_via_cost_at(
-                      l, current_half_via_diameter + current_clearance);
-    ns[4].second.m_x = l.m_x;
-    ns[4].second.m_y = l.m_y;
-    ns[4].second.m_z = l.m_z + 1;
+    // Location up{l.m_x, l.m_y, l.m_z + 1};
+    // float upCost = GlobalParam::gLayerChangeCost;
+    // upCost += this->sized_via_cost_at(l, current_half_via_diameter + current_clearance);
+    // ns.push_back(std::pair<float, Location>(upCost, up));
+
+    Location up{l.m_x, l.m_y, l.m_z + 1};
+    float upCost = GlobalParam::gLayerChangeCost;
+    if (sizedViaExpandableAndCost(l, current_half_via_diameter + current_clearance, upCost)) {
+        ns.push_back(std::pair<float, Location>(upCost, up));
+    }
+
     // down
-    ns[5].first = GlobalParam::gLayerChangeCost +
-                  this->sized_via_cost_at(
-                      l, current_half_via_diameter + current_clearance);
-    ns[5].second.m_x = l.m_x;
-    ns[5].second.m_y = l.m_y;
-    ns[5].second.m_z = l.m_z - 1;
+    // Location down{l.m_x, l.m_y, l.m_z - 1};
+    // float downCost = GlobalParam::gLayerChangeCost;
+    // downCost += this->sized_via_cost_at(l, current_half_via_diameter + current_clearance);
+    // ns.push_back(std::pair<float, Location>(downCost, down));
+
+    Location down{l.m_x, l.m_y, l.m_z - 1};
+    float downCost = GlobalParam::gLayerChangeCost;
+    if (sizedViaExpandableAndCost(l, current_half_via_diameter + current_clearance, downCost)) {
+        ns.push_back(std::pair<float, Location>(downCost, down));
+    }
 
     // lf
-    ns[6].first = GlobalParam::gDiagonalCost;
-    ns[6].second.m_x = l.m_x - 1;
-    ns[6].second.m_y = l.m_y + 1;
-    ns[6].second.m_z = l.m_z;
-    ns[6].first += sized_trace_cost_at(
-        Location{ns[6].second.m_x, ns[6].second.m_y, ns[6].second.m_z},
-        current_half_trace_width + current_clearance);
+    Location lf{l.m_x - 1, l.m_y + 1, l.m_z};
+    float lfCost = GlobalParam::gDiagonalCost;
+    lfCost += sized_trace_cost_at(lf, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(lfCost, lf));
 
     // lb
-    ns[7].first = GlobalParam::gDiagonalCost;
-    ns[7].second.m_x = l.m_x - 1;
-    ns[7].second.m_y = l.m_y - 1;
-    ns[7].second.m_z = l.m_z;
-    ns[7].first += sized_trace_cost_at(
-        Location{ns[7].second.m_x, ns[7].second.m_y, ns[7].second.m_z},
-        current_half_trace_width + current_clearance);
+    Location lb{l.m_x - 1, l.m_y - 1, l.m_z};
+    float lbCost = GlobalParam::gDiagonalCost;
+    lbCost += sized_trace_cost_at(lb, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(lbCost, lb));
 
     // rf
-    ns[8].first = GlobalParam::gDiagonalCost;
-    ns[8].second.m_x = l.m_x + 1;
-    ns[8].second.m_y = l.m_y + 1;
-    ns[8].second.m_z = l.m_z;
-    ns[8].first += sized_trace_cost_at(
-        Location{ns[8].second.m_x, ns[8].second.m_y, ns[8].second.m_z},
-        current_half_trace_width + current_clearance);
+    Location rf{l.m_x + 1, l.m_y + 1, l.m_z};
+    float rfCost = GlobalParam::gDiagonalCost;
+    rfCost += sized_trace_cost_at(rf, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(rfCost, rf));
 
     // rb
-    ns[9].first = GlobalParam::gDiagonalCost;
-    ns[9].second.m_x = l.m_x + 1;
-    ns[9].second.m_y = l.m_y - 1;
-    ns[9].second.m_z = l.m_z;
-    ns[9].first += sized_trace_cost_at(
-        Location{ns[9].second.m_x, ns[9].second.m_y, ns[9].second.m_z},
-        current_half_trace_width + current_clearance);
-
-    // return ns;
+    Location rb{l.m_x + 1, l.m_y - 1, l.m_z};
+    float rbCost = GlobalParam::gDiagonalCost;
+    rbCost += sized_trace_cost_at(rb, current_half_trace_width + current_clearance);
+    ns.push_back(std::pair<float, Location>(rbCost, rb));
 }
 
 void BoardGrid::printGnuPlot() {
@@ -825,8 +850,7 @@ void BoardGrid::pprint() {
     }
 }
 
-float BoardGrid::sized_via_cost_at(const Location &l,
-                                   const int viaRadius) const {
+float BoardGrid::sized_via_cost_at(const Location &l, const int viaRadius) const {
     // TODO: THROUGH HOLE only, should be extended to uVia and blind/burried
     // vias
     int radius = viaRadius;
@@ -848,6 +872,29 @@ float BoardGrid::sized_via_cost_at(const Location &l,
         }
     }
     return cost;
+}
+
+bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const {
+    int radius = viaRadius;
+    //cost = 0.0;
+    for (int z = 0; z < this->l; ++z) {
+        for (int y = -radius; y < radius; ++y) {
+            for (int x = -radius; x < radius; ++x) {
+                Location current_l = Location(l.m_x + x, l.m_y + y, z);
+                if (!validate_location(current_l)) {
+                    // TODO: cost to model the clearance to boundary
+                    cost += 1000;
+                    continue;
+                }
+                if (this->isViaForbidden(current_l)) {
+                    return false;
+                }
+                cost += this->via_cost_at(current_l);
+                cost += this->base_cost_at(current_l);
+            }
+        }
+    }
+    return true;
 }
 
 float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const {
@@ -1293,17 +1340,6 @@ void BoardGrid::add_route(MultipinRoute &route) {
     }
 }
 
-void BoardGrid::setTargetedPins(const std::vector<Location> &pins) {
-    for (auto pin : pins) {
-        this->setIsTargetedPin(pin);
-    }
-}
-void BoardGrid::clearTargetedPins(const std::vector<Location> &pins) {
-    for (auto pin : pins) {
-        this->clearIsTargetedPin(pin);
-    }
-}
-
 void BoardGrid::addRoute(MultipinRoute &route) {
     int cost = 10;
     int num_pins = route.pins.size();
@@ -1321,7 +1357,7 @@ void BoardGrid::addRoute(MultipinRoute &route) {
     // implementation
     {
         // For early break
-        this->setIsTargetedPin(route.pins[i]);
+        this->setTargetedPin(route.pins[i]);
         // For cost estimation (cares about x and y only)
         current_targeted_pin = route.pins[i];
 
@@ -1338,7 +1374,7 @@ void BoardGrid::addRoute(MultipinRoute &route) {
         }
 
         // For early break
-        this->clearIsTargetedPin(route.pins[i]);
+        this->clearTargetedPin(route.pins[i]);
         // For cost estimation
         current_targeted_pin = Location{0, 0, 0};
     }
