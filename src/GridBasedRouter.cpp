@@ -101,6 +101,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
 
         for (int i = 1; i < mpNet.features.size(); ++i) {
             auto &feature = mpNet.features[i];
+            //std::cout << feature << std::endl;
             // check if close ???????
             if (
                 abs(feature.m_x - last_location.m_x) <= 1 &&
@@ -306,7 +307,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     //for (int i = nets.size() - 1; i >= 0; --i) {
     //    auto &net = nets.at(i);
     for (auto &net : nets) {
-        // if (net.getId() != 31)
+        // if (net.getId() != 18)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;

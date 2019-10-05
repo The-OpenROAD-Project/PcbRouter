@@ -183,6 +183,7 @@ class BoardGrid {
     int current_via_diameter;
     int current_half_via_diameter;
     Location current_targeted_pin;
+    std::vector<Location> currentTargetedPinWithLayers;
 
     float cost_to_occupy(const Location &l) const;
 
@@ -234,6 +235,7 @@ class BoardGrid {
 
     // cost
     float getEstimatedCost(const Location &l);
+    float getEstimatedCostWithLayers(const Location &l);
 
     void printGnuPlot();
     void printMatPlot();
