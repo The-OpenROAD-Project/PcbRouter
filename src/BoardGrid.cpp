@@ -135,20 +135,16 @@ void BoardGrid::via_cost_set(const float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    // this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] =
-    // value;
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost =
-        value;
+    // this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost = value;
 }
 
 void BoardGrid::via_cost_add(const float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    // this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] +=
-    // value;
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost +=
-        value;
+    // this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost += value;
 }
 
 void BoardGrid::setTargetedPin(const Location &l) {
@@ -214,191 +210,6 @@ void BoardGrid::clearViaForbiddenArea(const std::vector<Location> &locations) {
         this->clearViaForbidden(loc);
     }
 }
-
-// void BoardGrid::breadth_first_search(const Location &start, const Location
-// &end)
-// {
-// 	// Location start(sx, sy, sz);
-// 	// Location end(ex, ey, ez);
-
-// 	std::queue<Location> frontier;
-// 	frontier.push(start);
-
-// 	std::unordered_set<Location> visited;
-// 	visited.insert(start);
-
-// 	while (!frontier.empty())
-// 	{
-// 		Location current = frontier.front();
-// 		frontier.pop();
-
-// 		std::cout << "Visiting " << current << std::endl;
-
-// 		for (std::pair<float, Location> next : this->neighbors(current))
-// 		{
-// 			if (
-// 				(next.second.m_x < 0) || (next.second.m_x >=
-// this->w)
-// || 				(next.second.m_y < 0) || (next.second.m_y >= this->h)
-// || 				(next.second.m_z < 0) || (next.second.m_z >=
-// this->l))
-// 			{
-// 				continue; // continue if out of bounds
-// 			}
-// 			if (visited.find(next.second) == visited.end())
-// 			{ // next not in visited
-// 				frontier.push(next.second);
-// 				visited.insert(next.second);
-// 			}
-// 		}
-// 	}
-// }
-
-// std::unordered_map<Location, Location>
-// BoardGrid::breadth_first_search_with_came_from(const Location &start, const
-// Location &end)
-// {
-// 	// Location start(sx, sy, sz);
-// 	// Location end(ex, ey, ez);
-
-// 	std::cout << "Starting breadth_first_search_with_came_from start: " <<
-// start << " end: " << end << std::endl;
-
-// 	std::queue<Location> frontier;
-// 	frontier.push(start);
-
-// 	// std::unordered_set<Location> visited; // we can keep track of visited
-// set with the came from map
-// 	// visited.insert(start);
-
-// 	std::unordered_map<Location, Location> came_from;
-// 	came_from[start] = start;
-
-// 	while (!frontier.empty())
-// 	{
-// 		Location current = frontier.front();
-// 		frontier.pop();
-
-// 		std::cout << "Visiting " << current << std::endl;
-
-// 		if (current == end)
-// 		{
-// 			std::cout << "Found goal, exiting early" << std::endl;
-// 			break;
-// 		}
-
-// 		for (std::pair<float, Location> next : this->neighbors(current))
-// 		{
-// 			if (
-// 				(next.second.m_x < 0) || (next.second.m_x >=
-// this->w)
-// || 				(next.second.m_y < 0) || (next.second.m_y >= this->h)
-// || 				(next.second.m_z < 0) || (next.second.m_z >=
-// this->l))
-// 			{
-// 				continue; // continue if out of bounds
-// 			}
-// 			// if (visited.find(next) == visited.end()) { // next not
-// in visited
-// 			// if (came_from.find(next.second) == came_from.end()) {
-// //
-// next not in visited 			if (came_from.find(next.second) ==
-// came_from.end()) 			{ // next not in visited
-// frontier.push(next.second);
-// 				// visited.insert(next);
-// 				came_from[next.second] = current;
-// 			}
-// 		}
-// 	}
-
-// 	return came_from;
-// }
-
-// std::unordered_map<Location, Location>
-// BoardGrid::dijkstras_with_came_from(const Location &start)
-// {
-// 	// Location start(sx, sy, sz);
-// 	// Location end(ex, ey, ez);
-
-// 	//std::cout << "Starting dijkstras_with_came_from start: " << start << "
-// end: " << end << std::endl; 	std::cout << "Starting dijkstras_with_came_from
-// ==TwoPin== start: " << start << std::endl;
-
-// 	// this->working_cost_fill(0.1);
-// 	this->working_cost_fill(std::numeric_limits<float>::infinity());
-// 	this->working_cost_set(0.0, start);
-
-// 	LocationQueue<Location, float> frontier;
-// 	frontier.push(start, 0.0);
-
-// 	std::unordered_map<Location, Location> came_from;
-// 	came_from[start] = start;
-
-// 	while (!frontier.empty())
-// 	{
-// 		Location current = frontier.front();
-// 		frontier.pop();
-
-// 		//std::cout << "Visiting " << current << ", frontierSize: "<<
-// frontier.size() << std::endl;
-
-// 		// if (current == end) {
-// 		// std::cout << "Found goal, exiting early" << std::endl;
-// 		// break;
-// 		// }
-
-// 		//std::cout << "Got " << this->neighbors(current).size() << "
-// neighbors" << std::endl; 		std::array<std::pair<float, Location>,
-// 10>
-// &&aNeighbors = this->neighbors(current);
-
-// 		//for (std::pair<float, Location> next :
-// this->neighbors(current)) { 		for (std::pair<float, Location> next :
-// aNeighbors)
-// 		{
-// 			if (
-// 				(next.second.m_x < 0) || (next.second.m_x >=
-// this->w)
-// || 				(next.second.m_y < 0) || (next.second.m_y >= this->h)
-// || 				(next.second.m_z < 0) || (next.second.m_z >=
-// this->l))
-// 			{
-// 				// std::cout << "\tOut of bounds neighbor " <
-// next.second
-// << std::endl; 				continue; // continue if out of
-// bounds
-// 			}
-
-// 			//std::cout << "\tWorking on neighbor " << next.second
-// << std::endl;
-
-// 			// this->at(Location l) give the cost of moving to l
-// 			// this->working_cost_at(Location l) gives the current
-// best cost to get to l 			float new_cost =
-// this->working_cost_at(current) + this->base_cost_at(next.second) +
-// next.first;
-
-// 			// std::cout << "\t\tnew_cost: " << new_cost <<
-// std::endl;
-// 			// std::cout << "\t\t\twc: " <<
-// this->working_cost_at(current)
-// <<  " bc: " << this->base_cost_at(next.second) << " n.f: " << next.first <<
-// std::endl;
-
-// 			// std::cout << "\t\told cost: " <<
-// this->working_cost_at(next.second) << std::endl;
-
-// 			if (new_cost < this->working_cost_at(next.second))
-// 			{
-// 				this->working_cost_set(new_cost, next.second);
-// 				came_from[next.second] = current;
-// 				frontier.push(next.second, new_cost);
-// 			}
-// 		}
-// 	}
-
-// 	return came_from;
-// }
 
 std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
     const std::vector<Location> &route, int via_size) {
@@ -1292,27 +1103,6 @@ void BoardGrid::print_features(std::vector<Location> features) {
         }
     }
 }
-
-// void BoardGrid::add_route(Route &route)
-// {
-// 	std::cout << "add_route: Start: " << route.start << ", End: " <<
-// route.end << std::endl; 	route.came_from =
-// this->dijkstras_with_came_from(route.start); 	route.features.clear();
-// 	this->came_from_to_features(route.came_from, route.end, route.features);
-// 	// std::cout << "Net: " << route.features.size() << std::endl;
-
-// 	this->add_route_to_base_cost(route, 1, 10);
-
-// 	// Check if out of boundary
-// 	for (Location l : route.features)
-// 	{
-// 		if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l)
-// 		{
-// 			std::cout << "Bad route added: " << l << std::endl;
-// 			exit(-1);
-// 		}
-// 	}
-// }
 
 void BoardGrid::add_route(MultipinRoute &route) {
     int cost = 10;

@@ -47,16 +47,6 @@ struct LocationQueue {
     }
 };
 
-// Hash function for Location to support unordered_set
-namespace std {
-template <>
-struct hash<Location> {
-    size_t operator()(Location const &x) const {
-        return (((53 + x.m_x) * 53 + x.m_y) * 53 + x.m_z);
-    }
-};
-}  // namespace std
-
 namespace std {
 template <>
 struct greater<std::pair<float, Location>> {
@@ -104,9 +94,6 @@ class GridPin {
 class MultipinRoute {
    public:
     std::vector<Location> pins;
-    //TODO: change below to flag in the grid
-    std::unordered_set<Location> targetPins;
-    //std::vector<std::unordered_map<Location, Location>> came_from;
     std::vector<Location> features;
     std::vector<Location> vias;
     std::vector<GridPin> gridPins;
@@ -150,9 +137,7 @@ class BoardGrid {
     int getCameFromId(const int id) const;
     void clearAllCameFromId();
 
-    // void add_route_to_base_cost(const Route &route, int radius, float cost);
     void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size);
-    // void remove_route_from_base_cost(const Route &route, int radius, float cost);
     void remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost);
 
     void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
@@ -161,7 +146,6 @@ class BoardGrid {
 
     void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) const;
 
-    // std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, const Location &end);
     std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
     std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
     void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
@@ -250,11 +234,13 @@ class BoardGrid {
     //dtor
     ~BoardGrid() {
         delete[] this->base_cost;
-        this->base_cost = NULL;
+        this->base_cost = nullptr;
         delete[] this->working_cost;
-        this->working_cost = NULL;
+        this->working_cost = nullptr;
         delete[] this->via_cost;
-        this->via_cost = NULL;
+        this->via_cost = nullptr;
+        delete[] this->grid;
+        this->grid = nullptr;
     }
 };
 
