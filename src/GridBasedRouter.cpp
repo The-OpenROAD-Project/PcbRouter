@@ -335,7 +335,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
             route.addPin(pinLocationWithLayers);
             // Temporary reomve the pin cost on base cost grid
-            addPinAvoidingCostToGrid(pin, -pinCost, false, false, true);
+            addPinAvoidingCostToGrid(pin, -pinCost, true, false, true);
         }
 
         if (!mDb.isNetclassId(net.getNetclassId())) {
@@ -357,7 +357,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
         // Put back the pin cost on base cost grid
         for (auto &pin : pins) {
-            addPinAvoidingCostToGrid(pin, pinCost, false, false, true);
+            addPinAvoidingCostToGrid(pin, pinCost, true, false, true);
         }
     }
 
