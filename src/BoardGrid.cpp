@@ -804,14 +804,23 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
     }
 }
 
-void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, float cost) {
+void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
+    add_route_to_base_cost(route, current_half_trace_width, -GlobalParam::gTraceBasicCost, current_half_via_diameter, -GlobalParam::gViaInsertionCost);
+}
+
+void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
+    add_route_to_base_cost(route, current_half_trace_width, GlobalParam::gTraceBasicCost, current_half_via_diameter, GlobalParam::gViaInsertionCost);
+}
+
+void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost,
+                                       const int viaRadius, const float viaCost) {
     if (route.features.empty())
         return;
 
     // Add costs for traces
     for (auto &l : route.features) {
-        for (int current_radius = 0; current_radius <= radius; ++current_radius) {
-            float current_cost = cost;
+        for (int current_radius = 0; current_radius <= traceRadius; ++current_radius) {
+            float current_cost = traceCost;
             if (current_cost <= 0) break;
 
             for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; ++r) {
@@ -832,7 +841,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 
     // Add costs for vias
     // TODO:: Currently handle THROUGH VIA only
-    float viaCost = GlobalParam::gViaInsertionCost;
+    //float viaCost = GlobalParam::gViaInsertionCost;
 
     for (int i = 1; i < route.features.size(); ++i) {
         auto &prevLoc = route.features.at(i - 1);
@@ -840,7 +849,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 
         if ((prevLoc.m_z != curLoc.m_z) && (prevLoc.m_x == curLoc.m_x) && (prevLoc.m_y == curLoc.m_y)) {
             for (int z = 0; z < this->l; ++z) {
-                this->add_via_cost(prevLoc, z, viaCost, current_half_via_diameter);
+                this->add_via_cost(prevLoc, z, viaCost, viaRadius);
             }
         }
     }
@@ -1005,7 +1014,7 @@ void BoardGrid::print_features(std::vector<Location> features) {
 }
 
 void BoardGrid::add_route(MultipinRoute &route) {
-    int cost = 10;
+    //int cost = GlobalParam::gTraceBasicCost;
     int via_size = 7;
     int num_pins = route.pins.size();
 
@@ -1031,12 +1040,11 @@ void BoardGrid::add_route(MultipinRoute &route) {
         // this->print_features(route.features);
         // TODO
         // this->add_route_to_base_cost(route, traceWidth, cost, via_size);
-        this->add_route_to_base_cost(route, current_half_trace_width, cost);
+        this->add_route_to_base_cost(route);
     }
 }
 
 void BoardGrid::addRoute(MultipinRoute &route) {
-    int cost = 10;
     int num_pins = route.pins.size();
 
     // TODO
@@ -1075,12 +1083,10 @@ void BoardGrid::addRoute(MultipinRoute &route) {
     }
     // this->print_features(route.features);
     // TODO
-    this->add_route_to_base_cost(route, current_half_trace_width, cost);
+    this->add_route_to_base_cost(route);
 }
 
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
-    int cost = 10;
-
     // TODO
     // check if traceWidth/clearance/viaDiameter persist
 
@@ -1123,7 +1129,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     }
     // this->print_features(route.features);
     // TODO
-    this->add_route_to_base_cost(route, current_half_trace_width, cost);
+    this->add_route_to_base_cost(route);
 }
 
 // void BoardGrid::ripup_route(Route &route)

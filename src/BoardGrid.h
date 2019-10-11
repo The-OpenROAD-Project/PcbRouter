@@ -148,8 +148,10 @@ class BoardGrid {
     void clearAllCameFromId();
 
     //TODO: refactor on the trace/via size and their cost......
-    void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost);
-    void remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost);
+    void add_route_to_base_cost(const MultipinRoute &route);
+    void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
+    void remove_route_from_base_cost(const MultipinRoute &route);
+    //void remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost);
 
     void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
     std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
