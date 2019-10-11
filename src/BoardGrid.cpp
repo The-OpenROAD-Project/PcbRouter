@@ -791,28 +791,15 @@ void BoardGrid::print_came_from(
     }
 }
 
-void BoardGrid::add_via_cost(const Location &l, const int layer, const int viaRadius) {
+void BoardGrid::add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius) {
     int radius = viaRadius;
-    float cost = GlobalParam::gViaInsertionCost;
+    //float cost = GlobalParam::gViaInsertionCost;
     for (int y = -radius; y <= radius; ++y) {
         for (int x = -radius; x <= radius; ++x) {
 #ifdef BOUND_CHECKS
             assert(((l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
             this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].viaCost += cost;
-        }
-    }
-}
-
-void BoardGrid::remove_via_cost(const Location &l, const int layer, const int viaRadius) {
-    int radius = viaRadius;
-    float cost = GlobalParam::gViaInsertionCost;
-    for (int y = -radius; y <= radius; ++y) {
-        for (int x = -radius; x <= radius; ++x) {
-#ifdef BOUND_CHECKS
-            assert(((l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h) < this->size);
-#endif
-            this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].viaCost -= cost;
         }
     }
 }
@@ -845,56 +832,18 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
 
     // Add costs for vias
     // TODO:: Currently handle THROUGH VIA only
+    float viaCost = GlobalParam::gViaInsertionCost;
+
     for (int i = 1; i < route.features.size(); ++i) {
         auto &prevLoc = route.features.at(i - 1);
         auto &curLoc = route.features.at(i);
 
         if ((prevLoc.m_z != curLoc.m_z) && (prevLoc.m_x == curLoc.m_x) && (prevLoc.m_y == curLoc.m_y)) {
             for (int z = 0; z < this->l; ++z) {
-                this->add_via_cost(prevLoc, z, current_half_via_diameter);
+                this->add_via_cost(prevLoc, z, viaCost, current_half_via_diameter);
             }
         }
     }
-}
-
-void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route,
-                                            int radius, float cost) {
-    // std::vector<Location> features = route.features;
-    std::cout << "Starting remove_route_from_base_cost" << std::endl;
-    for (Location l : route.features) {
-        // std::cout << "setting cost for feature " << l << std::endl;
-        int layer = l.m_z;
-
-        if (layer > 2) {
-            std::cout << "Bad layer: " << l << std::endl;
-            exit(-1);
-        }
-
-        for (int current_radius = 0; current_radius <= radius;
-             current_radius += 1) {
-            float current_cost = cost - current_radius;
-            if (current_cost <= 0) break;
-
-            for (int r = l.m_y - current_radius; r <= l.m_y + current_radius;
-                 r += 1) {
-                if (r < 0) continue;
-                if (r >= this->h) continue;
-                for (int c = l.m_x - current_radius;
-                     c <= l.m_x + current_radius; c += 1) {
-                    if (c < 0) continue;
-                    if (c >= this->w) continue;
-                    std::cout << "\tSetting cost at " << Location(c, r, layer)
-                              << std::endl;
-                    this->base_cost_set(
-                        this->base_cost_at(Location(c, r, layer)) -
-                            current_cost,
-                        Location(c, r, layer));
-                    std::cout << "\tFinised setting cost" << std::endl;
-                }
-            }
-        }
-    }
-    std::cout << "Finished remove_route_from_base_cost" << std::endl;
 }
 
 void BoardGrid::came_from_to_features(
@@ -1195,20 +1144,20 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
 // 	std::cout << "Finished ripup" << std::endl;
 // }
 
-void BoardGrid::ripup_route(MultipinRoute &route) {
-    std::cout << "Doing ripup" << std::endl;
-    for (Location l : route.features) {
-        if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l) {
-            std::cout << "Bad route to ripup: " << l << std::endl;
-            exit(-1);
-        }
-    }
-    this->remove_route_from_base_cost(route, 1, 10);
-    std::cout << "Clearing features" << std::endl;
+// void BoardGrid::ripup_route(MultipinRoute &route) {
+//     std::cout << "Doing ripup" << std::endl;
+//     for (Location l : route.features) {
+//         if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l) {
+//             std::cout << "Bad route to ripup: " << l << std::endl;
+//             exit(-1);
+//         }
+//     }
+//     this->remove_route_from_base_cost(route, 1, 10);
+//     std::cout << "Clearing features" << std::endl;
 
-    route.features.clear();
-    std::cout << "Finished ripup" << std::endl;
-}
+//     route.features.clear();
+//     std::cout << "Finished ripup" << std::endl;
+// }
 
 void BoardGrid::set_current_rules(const int clr, const int trWid, int viaDia) {
     current_trace_width = trWid;

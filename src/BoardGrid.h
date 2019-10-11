@@ -205,8 +205,7 @@ class BoardGrid {
     float sized_via_cost_at(const Location &l, const int viaRadius) const;
     bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
     float via_cost_at(const Location &l) const;
-    void add_via_cost(const Location &l, const int layer, const int viaRadius);
-    void remove_via_cost(const Location &l, const int layer, const int viaRadius);
+    void add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius);
     void via_cost_set(const float value, const Location &l);
     void via_cost_add(const float value, const Location &l);
     void via_cost_fill(float value);
