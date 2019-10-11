@@ -7,50 +7,33 @@ void BoardGrid::initilization(int w, int h, int l) {
     this->l = l;
     this->size = w * h * l;
 
-    assert(this->base_cost == nullptr);
-    assert(this->working_cost == nullptr);
-    assert(this->via_cost == nullptr);
-
-    this->base_cost = new float[this->size];
-    this->working_cost = new float[this->size];
-    this->via_cost = new float[this->size];
+    assert(this->grid == nullptr);
     this->grid = new GridCell[this->size];
-
-    assert(this->base_cost != nullptr);
-    assert(this->working_cost != nullptr);
-    assert(this->via_cost != nullptr);
+    assert(this->grid != nullptr);
 }
 
 void BoardGrid::base_cost_fill(float value) {
     for (int i = 0; i < this->size; ++i) {
-        // this->base_cost[i] = value;
         this->grid[i].baseCost = value;
     }
 }
 
 void BoardGrid::working_cost_fill(float value) {
     for (int i = 0; i < this->size; ++i) {
-        // this->working_cost[i] = value;
         this->grid[i].workingCost = value;
     }
 }
 
 void BoardGrid::via_cost_fill(float value) {
     for (int i = 0; i < this->size; ++i) {
-        // this->working_cost[i] = value;
         this->grid[i].viaCost = value;
     }
-}
-
-float BoardGrid::cost_to_occupy(const Location &l) const {
-    return this->base_cost_at(l) + this->via_cost_at(l);
 }
 
 float BoardGrid::base_cost_at(const Location &l) const {
 #ifdef BOUND_CHECKS
     assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-    // return this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
     return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost;
 }
 
@@ -58,7 +41,6 @@ float BoardGrid::via_cost_at(const Location &l) const {
 #ifdef BOUND_CHECKS
     assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-    // return this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
     return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost;
 }
 
@@ -66,7 +48,6 @@ float BoardGrid::working_cost_at(const Location &l) const {
 #ifdef BOUND_CHECKS
     assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-    // return this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h];
     return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].workingCost;
 }
 
@@ -74,7 +55,6 @@ void BoardGrid::base_cost_set(float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    // this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost = value;
 }
 
@@ -82,7 +62,6 @@ void BoardGrid::base_cost_add(float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    // this->base_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost += value;
 }
 
@@ -90,7 +69,6 @@ void BoardGrid::working_cost_set(float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    // this->working_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].workingCost = value;
 }
 
@@ -135,7 +113,6 @@ void BoardGrid::via_cost_set(const float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    // this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] = value;
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost = value;
 }
 
@@ -143,7 +120,6 @@ void BoardGrid::via_cost_add(const float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    // this->via_cost[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h] += value;
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost += value;
 }
 
@@ -528,7 +504,7 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 void BoardGrid::printGnuPlot() {
     float max_val = 0.0;
     for (int i = 0; i < this->size; i += 1) {
-        if (this->base_cost[i] > max_val) max_val = this->base_cost[i];
+        if (this->grid[i].baseCost > max_val) max_val = this->grid[i].baseCost;
     }
 
     std::cout << "printGnuPlot()::Max Cost: " << max_val << std::endl;
@@ -553,10 +529,10 @@ void BoardGrid::printMatPlot() {
     float maxCost = std::numeric_limits<float>::min();
     float minCost = std::numeric_limits<float>::max();
     for (int i = 0; i < this->size; i += 1) {
-        if (this->base_cost[i] > maxCost) {
-            maxCost = this->base_cost[i];
-        } else if (this->base_cost[i] < minCost) {
-            minCost = this->base_cost[i];
+        if (this->grid[i].baseCost > maxCost) {
+            maxCost = this->grid[i].baseCost;
+        } else if (this->grid[i].baseCost < minCost) {
+            minCost = this->grid[i].baseCost;
         }
     }
 
@@ -654,7 +630,7 @@ void BoardGrid::pprint() {
 
     float max_val = 0.0;
     for (int i = 0; i < this->size; i += 1) {
-        if (this->base_cost[i] > max_val) max_val = this->base_cost[i];
+        if (this->grid[i].baseCost > max_val) max_val = this->grid[i].baseCost;
     }
 
     for (int l = 0; l < this->l; l += 1) {
@@ -812,8 +788,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     add_route_to_base_cost(route, current_half_trace_width, GlobalParam::gTraceBasicCost, current_half_via_diameter, GlobalParam::gViaInsertionCost);
 }
 
-void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost,
-                                       const int viaRadius, const float viaCost) {
+void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost) {
     if (route.features.empty())
         return;
 
@@ -841,7 +816,6 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
 
     // Add costs for vias
     // TODO:: Currently handle THROUGH VIA only
-    //float viaCost = GlobalParam::gViaInsertionCost;
 
     for (int i = 1; i < route.features.size(); ++i) {
         auto &prevLoc = route.features.at(i - 1);
@@ -1107,14 +1081,13 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         Location finalEnd{0, 0, 0};
         // this->dijkstrasWithGridCameFrom(route.features, current_half_via_diameter);
         if (route.features.empty()) {
-            //TODO::
             this->aStarWithGridCameFrom(route.gridPins.front().pinWithLayers, finalEnd);
         } else {
             this->aStarWithGridCameFrom(route.features, finalEnd);
         }
 
         std::vector<Location> new_features;
-        // TODO Fix this
+        // TODO Fix this, when THROUGH PAD as a start?
         this->came_from_to_features(finalEnd, new_features);
 
         for (Location f : new_features) {

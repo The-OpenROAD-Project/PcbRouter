@@ -132,58 +132,19 @@ class MultipinRoute {
 };
 
 class BoardGrid {
-    float *base_cost = nullptr;     //Initialize to nullptr
-    float *working_cost = nullptr;  //Initialize to nullptr
-    float *via_cost = nullptr;      //Initialize to nullptr
-    GridCell *grid = nullptr;       //Initialize to nullptr
-    int size = 0;                   //Total number of cells
-
-    void working_cost_fill(float value);
-    float working_cost_at(const Location &l) const;
-    void working_cost_set(float value, const Location &l);
-
-    void setCameFromId(const Location &l, const int id);
-    int getCameFromId(const Location &l) const;
-    int getCameFromId(const int id) const;
-    void clearAllCameFromId();
-
-    //TODO: refactor on the trace/via size and their cost......
-    void add_route_to_base_cost(const MultipinRoute &route);
-    void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
-    void remove_route_from_base_cost(const MultipinRoute &route);
-    //void remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost);
-
-    void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
-    std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
-    void came_from_to_features(const Location &end, std::vector<Location> &features) const;
-
-    void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) const;
-
-    std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
-    std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
-    void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
-    void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
-    void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd);
-    void breadth_first_search(const Location &start, const Location &end);
-    std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
-
-    int locationToId(const Location &l) const;
-    void idToLocation(const int id, Location &l) const;
-
    public:
     int w;  // width
     int h;  // height
     int l;  // layers
-    int current_trace_width;
-    int current_half_trace_width;
-    int current_clearance;
-    int current_via_diameter;
-    int current_half_via_diameter;
-    Location current_targeted_pin;
-    std::vector<Location> currentTargetedPinWithLayers;
 
-    float cost_to_occupy(const Location &l) const;
+    //ctor
+    BoardGrid() {}
 
+    //dtor
+    ~BoardGrid() {
+        delete[] this->grid;
+        this->grid = nullptr;
+    }
     void initilization(int w, int h, int l);
 
     // constraints
@@ -240,20 +201,49 @@ class BoardGrid {
     void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);
     void print_features(std::vector<Location> features);
 
-    //ctor
-    BoardGrid() {}
+   private:
+    GridCell *grid = nullptr;  //Initialize to nullptr
+    int size = 0;              //Total number of cells
 
-    //dtor
-    ~BoardGrid() {
-        delete[] this->base_cost;
-        this->base_cost = nullptr;
-        delete[] this->working_cost;
-        this->working_cost = nullptr;
-        delete[] this->via_cost;
-        this->via_cost = nullptr;
-        delete[] this->grid;
-        this->grid = nullptr;
-    }
+    int current_trace_width;
+    int current_half_trace_width;
+    int current_clearance;
+    int current_via_diameter;
+    int current_half_via_diameter;
+    Location current_targeted_pin;
+    //TODO:: Experiment on this...
+    std::vector<Location> currentTargetedPinWithLayers;
+
+    void working_cost_fill(float value);
+    float working_cost_at(const Location &l) const;
+    void working_cost_set(float value, const Location &l);
+
+    void setCameFromId(const Location &l, const int id);
+    int getCameFromId(const Location &l) const;
+    int getCameFromId(const int id) const;
+    void clearAllCameFromId();
+
+    //TODO: refactor on the trace/via size and their cost......
+    void add_route_to_base_cost(const MultipinRoute &route);
+    void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
+    void remove_route_from_base_cost(const MultipinRoute &route);
+
+    void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
+    std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
+    void came_from_to_features(const Location &end, std::vector<Location> &features) const;
+
+    void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) const;
+
+    std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
+    std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
+    void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
+    void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
+    void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd);
+    void breadth_first_search(const Location &start, const Location &end);
+    std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
+
+    int locationToId(const Location &l) const;
+    void idToLocation(const int id, Location &l) const;
 };
 
 #endif
