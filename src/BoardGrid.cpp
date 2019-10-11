@@ -10,6 +10,9 @@ void BoardGrid::initilization(int w, int h, int l) {
     assert(this->grid == nullptr);
     this->grid = new GridCell[this->size];
     assert(this->grid != nullptr);
+
+    this->base_cost_fill(0.0);
+    this->via_cost_fill(0.0);
 }
 
 void BoardGrid::base_cost_fill(float value) {

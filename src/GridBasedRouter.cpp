@@ -174,8 +174,6 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
 
     // Initialize board grid
     mBg.initilization(w, h, l);
-    mBg.base_cost_fill(0.0);
-    mBg.via_cost_fill(0.0);
 
     // Add all instances' pins to a cost in grid
     auto &instances = mDb.getInstances();
@@ -283,8 +281,6 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
     // Initialize board grid
     mBg.initilization(w, h, l);
-    mBg.base_cost_fill(0.0);
-    mBg.via_cost_fill(0.0);
 
     // Add all instances' pins to a cost in grid
     auto &instances = mDb.getInstances();
@@ -533,8 +529,6 @@ void GridBasedRouter::test_router() {
     std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
 
     mBg.initilization(w, h, l);
-    mBg.base_cost_fill(0.0);
-    mBg.via_cost_fill(0.0);
 
     // Prepare all the nets to route
     for (int i = 0; i < routerInfo.size(); ++i) {

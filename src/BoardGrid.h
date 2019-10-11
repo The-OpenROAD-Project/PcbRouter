@@ -149,21 +149,20 @@ class BoardGrid {
 
     // constraints
     void set_current_rules(const int clr, const int trWid, int viaDia);
-
+    // Routing APIs
+    void add_route(MultipinRoute &route);
+    void addRoute(MultipinRoute &route);
+    void addRouteWithGridPins(MultipinRoute &route);
+    void ripup_route(MultipinRoute &route);
+    // working cost
+    void working_cost_fill(float value);
+    float working_cost_at(const Location &l) const;
+    void working_cost_set(float value, const Location &l);
     // base cost
     void base_cost_fill(float value);
     float base_cost_at(const Location &l) const;
     void base_cost_set(float value, const Location &l);
     void base_cost_add(float value, const Location &l);
-    bool validate_location(const Location &l) const;
-
-    // void add_route(Route &route);
-    void add_route(MultipinRoute &route);
-    void addRoute(MultipinRoute &route);
-    void addRouteWithGridPins(MultipinRoute &route);
-    // void ripup_route(Route &route);
-    void ripup_route(MultipinRoute &route);
-
     // via
     float sized_via_cost_at(const Location &l, const int viaRadius) const;
     bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
@@ -172,28 +171,20 @@ class BoardGrid {
     void via_cost_set(const float value, const Location &l);
     void via_cost_add(const float value, const Location &l);
     void via_cost_fill(float value);
-
-    // trace_width
-    float sized_trace_cost_at(const Location &l, int traceRadius) const;
-
     // targetPin
     void setTargetedPins(const std::vector<Location> &pins);
     void clearTargetedPins(const std::vector<Location> &pins);
     void setTargetedPin(const Location &l);
     void clearTargetedPin(const Location &l);
     bool isTargetedPin(const Location &l);
-
     // via Forbidden
     void setViaForbiddenArea(const std::vector<Location> &locations);
     void clearViaForbiddenArea(const std::vector<Location> &locations);
     void setViaForbidden(const Location &l);
     void clearViaForbidden(const Location &l);
     bool isViaForbidden(const Location &l) const;
-
-    // cost
-    float getEstimatedCost(const Location &l);
-    float getEstimatedCostWithLayers(const Location &l);
-
+    // Helpers
+    bool validate_location(const Location &l) const;
     void printGnuPlot();
     void printMatPlot();
     void pprint();
@@ -214,14 +205,16 @@ class BoardGrid {
     //TODO:: Experiment on this...
     std::vector<Location> currentTargetedPinWithLayers;
 
-    void working_cost_fill(float value);
-    float working_cost_at(const Location &l) const;
-    void working_cost_set(float value, const Location &l);
-
+    // trace_width
+    float sized_trace_cost_at(const Location &l, int traceRadius) const;
+    // came from id
     void setCameFromId(const Location &l, const int id);
     int getCameFromId(const Location &l) const;
     int getCameFromId(const int id) const;
     void clearAllCameFromId();
+    // cost
+    float getEstimatedCost(const Location &l);
+    float getEstimatedCostWithLayers(const Location &l);
 
     //TODO: refactor on the trace/via size and their cost......
     void add_route_to_base_cost(const MultipinRoute &route);
