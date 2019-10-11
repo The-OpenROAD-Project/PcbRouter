@@ -47,6 +47,16 @@ struct LocationQueue {
     }
 };
 
+// Hash function for Location to support unordered_set
+namespace std {
+template <>
+struct hash<Location> {
+    size_t operator()(Location const &x) const {
+        return (((53 + x.m_x) * 53 + x.m_y) * 53 + x.m_z);
+    }
+};
+}  // namespace std
+
 namespace std {
 template <>
 struct greater<std::pair<float, Location>> {
@@ -137,7 +147,8 @@ class BoardGrid {
     int getCameFromId(const int id) const;
     void clearAllCameFromId();
 
-    void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size);
+    //TODO: refactor on the trace/via size and their cost......
+    void add_route_to_base_cost(const MultipinRoute &route, int radius, float cost);
     void remove_route_from_base_cost(const MultipinRoute &route, int radius, float cost);
 
     void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;

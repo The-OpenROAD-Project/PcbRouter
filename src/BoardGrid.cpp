@@ -817,7 +817,7 @@ void BoardGrid::remove_via_cost(const Location &l, const int layer, const int vi
     }
 }
 
-void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, float cost, int via_size) {
+void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, float cost) {
     if (route.features.empty())
         return;
 
@@ -856,55 +856,6 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, int radius, f
         }
     }
 }
-
-// void BoardGrid::remove_route_from_base_cost(const Route &route, int radius,
-// float cost)
-// {
-// 	// std::vector<Location> features = route.features;
-// 	std::cout << "Starting remove_route_from_base_cost" << std::endl;
-// 	for (Location l : route.features)
-// 	{
-// 		// std::cout << "setting cost for feature " << l << std::endl;
-// 		int layer = l.m_z;
-
-// 		if (layer > 2)
-// 		{
-// 			std::cout << "Bad layer: " << l << std::endl;
-// 			exit(-1);
-// 		}
-
-// 		for (int current_radius = 0; current_radius <= radius;
-// current_radius += 1)
-// 		{
-// 			float current_cost = cost - current_radius;
-// 			if (current_cost <= 0)
-// 				break;
-
-// 			for (int r = l.m_y - current_radius; r <= l.m_y +
-// current_radius; r += 1)
-// 			{
-// 				if (r < 0)
-// 					continue;
-// 				if (r >= this->h)
-// 					continue;
-// 				for (int c = l.m_x - current_radius; c <= l.m_x
-// + current_radius; c += 1)
-// 				{
-// 					if (c < 0)
-// 						continue;
-// 					if (c >= this->w)
-// 						continue;
-// 					std::cout << "\tSetting cost at " << Location(c,
-// r, layer) << std::endl;
-// this->base_cost_set(this->base_cost_at(Location(c, r, layer)) - current_cost,
-// Location(c, r, layer)); 					std::cout <<
-// "\tFinised setting cost" << std::endl;
-// 				}
-// 			}
-// 		}
-// 	}
-// 	std::cout << "Finished remove_route_from_base_cost" << std::endl;
-// }
 
 void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route,
                                             int radius, float cost) {
@@ -1131,7 +1082,7 @@ void BoardGrid::add_route(MultipinRoute &route) {
         // this->print_features(route.features);
         // TODO
         // this->add_route_to_base_cost(route, traceWidth, cost, via_size);
-        this->add_route_to_base_cost(route, current_half_trace_width, cost, via_size);
+        this->add_route_to_base_cost(route, current_half_trace_width, cost);
     }
 }
 
@@ -1175,7 +1126,7 @@ void BoardGrid::addRoute(MultipinRoute &route) {
     }
     // this->print_features(route.features);
     // TODO
-    this->add_route_to_base_cost(route, current_half_trace_width, cost, current_half_via_diameter);
+    this->add_route_to_base_cost(route, current_half_trace_width, cost);
 }
 
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
@@ -1223,7 +1174,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     }
     // this->print_features(route.features);
     // TODO
-    this->add_route_to_base_cost(route, current_half_trace_width, cost, current_half_via_diameter);
+    this->add_route_to_base_cost(route, current_half_trace_width, cost);
 }
 
 // void BoardGrid::ripup_route(Route &route)
