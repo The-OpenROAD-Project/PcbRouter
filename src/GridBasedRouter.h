@@ -26,13 +26,14 @@ class GridBasedRouter {
     bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets);
 
    private:
-    bool writeNets(std::vector<MultipinRoute> &multipinNets,
-                   std::ofstream &ofs);
+    bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
+
+    // Setup
+    void setupBoardAndMappingStructure();
 
     // Pin Layers on Grid
     bool getGridLayers(const Pin &, std::vector<int> &layers);
-    bool getGridLayers(const padstack &, const instance &,
-                       std::vector<int> &layers);
+    bool getGridLayers(const padstack &, const instance &, std::vector<int> &layers);
 
     // Utility
     int dbLengthToGridLength(const double dbLength) {
@@ -50,9 +51,13 @@ class GridBasedRouter {
     BoardGrid mBg;
     kicadPcbDataBase &mDb;
 
+    // Layer mapping
     std::vector<std::string> mGridLayerToName;
     std::unordered_map<std::string, int> mLayerNameToGrid;
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
+
+    // Netclass mapping
+    std::vector<GridNetclass> mGridNetclasses;
 
     // TODO
     // Temporary value

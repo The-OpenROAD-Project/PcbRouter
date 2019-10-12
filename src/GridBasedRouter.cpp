@@ -249,19 +249,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
     outputResults2KiCadFile(multipinNets);
 }
 
-void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
-    std::cout << std::fixed << std::setprecision(5);
-    std::cout << std::endl
-              << "=================" << __FUNCTION__ << "==================" << std::endl;
-
-    // TODO
-    // bug at matplot function??
-    // unified structure for Polygon, Rectangle
-
-    // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
-    // Loop Instaces: Add all pins into boardgrid with high cost
-    // ?? Perform rip-up and re-route ??
-
+void GridBasedRouter::setupBoardAndMappingStructure() {
     // Get board dimension
     mDb.getBoardBoundaryByPinLocation(mMinX, mMaxX, mMinY, mMaxY);
     std::cout << "Routing Outline: (" << mMinX << ", " << mMinY << "), (" << mMaxX << ", " << mMaxY << ")" << std::endl;
@@ -272,6 +260,8 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     const unsigned int w = int(std::abs(mMaxX * inputScale - mMinX * inputScale)) + enlargeBoundary;
     const unsigned int l = mDb.getNumCopperLayers();
     std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
+
+    // Setup layer mappings
     for (auto &layerIte : mDb.getCopperLayers()) {
         std::cout << "Grid layer: " << mGridLayerToName.size() << ", mapped to DB: " << layerIte.second << std::endl;
         mLayerNameToGrid[layerIte.second] = mGridLayerToName.size();
@@ -279,8 +269,43 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
         mGridLayerToName.push_back(layerIte.second);
     }
 
+    // Setup netclass mapping
+    for (auto &netclassIte : mDb.getNetclasses()) {
+        int id = dbLengthToGridLength(netclassIte.getId());
+        int clearance = dbLengthToGridLength(netclassIte.getClearance());
+        int traceWidth = dbLengthToGridLength(netclassIte.getTraceWidth());
+        int viaDia = dbLengthToGridLength(netclassIte.getViaDia());
+        int viaDrill = dbLengthToGridLength(netclassIte.getViaDrill());
+        int microViaDia = dbLengthToGridLength(netclassIte.getMicroViaDia());
+        int microViaDrill = dbLengthToGridLength(netclassIte.getMicroViaDrill());
+
+        GridNetclass gridNetclass{id, clearance, traceWidth, viaDia, viaDrill, microViaDia, microViaDrill};
+        mGridNetclasses.push_back(gridNetclass);
+
+        std::cout << "DB netclass: id: " << netclassIte.getId() << ", clearance: " << netclassIte.getClearance() << ", traceWidth: " << netclassIte.getTraceWidth()
+                  << ", viaDia: " << netclassIte.getViaDia() << ", viaDrill: " << netclassIte.getViaDrill() << ", microViaDia: " << netclassIte.getMicroViaDia()
+                  << ", microViaDrill: " << netclassIte.getMicroViaDrill() << std::endl;
+        std::cout << "Grid netclass: id: " << id << ", clearance: " << clearance << ", traceWidth: " << traceWidth
+                  << ", viaDia: " << viaDia << ", viaDrill: " << viaDrill << ", microViaDia: " << microViaDia
+                  << ", microViaDrill: " << microViaDrill << std::endl;
+    }
+
     // Initialize board grid
     mBg.initilization(w, h, l);
+}
+
+void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
+    std::cout << std::fixed << std::setprecision(5);
+    std::cout << std::endl
+              << "=================" << __FUNCTION__ << "==================" << std::endl;
+
+    // TODO
+    // unified structure for Polygon, Rectangle
+
+    // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
+    // ?? Perform rip-up and re-route ??
+
+    this->setupBoardAndMappingStructure();
 
     // Add all instances' pins to a cost in grid
     auto &instances = mDb.getInstances();
@@ -338,17 +363,14 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
             std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
             continue;
         }
-        auto &netclass = mDb.getNetclass(net.getNetclassId());
-        int traceWidth = dbLengthToGridLength(netclass.getTraceWidth());
-        int viaSize = dbLengthToGridLength(netclass.getViaDia());
-        int clearance = dbLengthToGridLength(netclass.getClearance());
-        std::cout << " traceWidth: " << traceWidth << "(db: " << netclass.getTraceWidth() << ")"
-                  << ", viaSize: " << viaSize << "(db: " << netclass.getViaDia() << ")"
-                  << ", clearance: " << clearance << "(db: " << netclass.getClearance() << ")" << std::endl;
+        int gridNetclassId = net.getNetclassId();
+        if (gridNetclassId > this->mGridNetclasses.size()) {
+            // TODO:: ID protection
+            gridNetclassId = 0;
+        }
+        auto &gridNetclass = this->mGridNetclasses.at(gridNetclassId);
+        mBg.set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
 
-        mBg.set_current_rules(clearance, traceWidth, viaSize);
-        //mBg.add_route(multipinNets.back());
-        //mBg.addRoute(multipinNets.back());
         mBg.addRouteWithGridPins(multipinNets.back());
 
         // Put back the pin cost on base cost grid

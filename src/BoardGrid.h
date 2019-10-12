@@ -68,6 +68,38 @@ struct greater<std::pair<float, Location>> {
 };
 }  // namespace std
 
+class GridNetclass {
+   public:
+    //ctor
+    GridNetclass(const int id = -1,
+                 const int clearance = 0,
+                 const int trace_width = 0,
+                 const int via_dia = 0,
+                 const int via_drill = 0,
+                 const int uvia_dia = 0,
+                 const int uvia_drill = 0)
+        : m_id(id), m_clearance(clearance), m_trace_width(trace_width), m_via_dia(via_dia), m_via_drill(via_drill), m_uvia_dia(uvia_dia), m_uvia_drill(uvia_drill) {}
+    //dtor
+    ~GridNetclass() {}
+
+    int getId() { return m_id; }
+    int getClearance() { return m_clearance; }
+    int getTraceWidth() { return m_trace_width; }
+    int getViaDia() { return m_via_dia; }
+    int getViaDrill() { return m_via_drill; }
+    int getMicroViaDia() { return m_uvia_dia; }
+    int getMicroViaDrill() { return m_uvia_drill; }
+
+   private:
+    int m_id = -1;
+    int m_clearance = 0;
+    int m_trace_width = 0;
+    int m_via_dia = 0;
+    int m_via_drill = 0;
+    int m_uvia_dia = 0;
+    int m_uvia_drill = 0;
+};
+
 class GridCell {
    public:
     //ctor

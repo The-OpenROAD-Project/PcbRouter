@@ -1126,20 +1126,21 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
 // 	std::cout << "Finished ripup" << std::endl;
 // }
 
-// void BoardGrid::ripup_route(MultipinRoute &route) {
-//     std::cout << "Doing ripup" << std::endl;
-//     for (Location l : route.features) {
-//         if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l) {
-//             std::cout << "Bad route to ripup: " << l << std::endl;
-//             exit(-1);
-//         }
-//     }
-//     this->remove_route_from_base_cost(route, 1, 10);
-//     std::cout << "Clearing features" << std::endl;
+void BoardGrid::ripup_route(MultipinRoute &route) {
+    std::cout << "Doing ripup" << std::endl;
+    // Basic checking on the routed features
+    for (Location l : route.features) {
+        if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l) {
+            std::cout << "Bad route to ripup: " << l << std::endl;
+            return;
+        }
+    }
+    this->remove_route_from_base_cost(route);
+    std::cout << "Clearing features" << std::endl;
 
-//     route.features.clear();
-//     std::cout << "Finished ripup" << std::endl;
-// }
+    route.features.clear();
+    std::cout << "Finished ripup" << std::endl;
+}
 
 void BoardGrid::set_current_rules(const int clr, const int trWid, int viaDia) {
     current_trace_width = trWid;
