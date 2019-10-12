@@ -34,6 +34,8 @@ class GridBasedRouter {
     // Pin Layers on Grid
     bool getGridLayers(const Pin &, std::vector<int> &layers);
     bool getGridLayers(const padstack &, const instance &, std::vector<int> &layers);
+    // GridNetclass
+    GridNetclass &getGridNetclass(const int gridNetclassId);
 
     // Utility
     int dbLengthToGridLength(const double dbLength) {

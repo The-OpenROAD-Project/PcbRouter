@@ -363,12 +363,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
             std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
             continue;
         }
-        int gridNetclassId = net.getNetclassId();
-        if (gridNetclassId > this->mGridNetclasses.size()) {
-            // TODO:: ID protection
-            gridNetclassId = 0;
-        }
-        auto &gridNetclass = this->mGridNetclasses.at(gridNetclassId);
+        auto &gridNetclass = this->getGridNetclass(net.getNetclassId());
         mBg.set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
 
         mBg.addRouteWithGridPins(multipinNets.back());
@@ -476,6 +471,14 @@ bool GridBasedRouter::getGridLayers(const padstack &pad, const instance &inst, s
         }
     }
     return true;
+}
+
+GridNetclass &GridBasedRouter::getGridNetclass(const int gridNetclassId) {
+    if (gridNetclassId < 0 || gridNetclassId > this->mGridNetclasses.size()) {
+        return this->mGridNetclasses.front();
+    } else {
+        return this->mGridNetclasses.at(gridNetclassId);
+    }
 }
 
 bool GridBasedRouter::dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt) {
