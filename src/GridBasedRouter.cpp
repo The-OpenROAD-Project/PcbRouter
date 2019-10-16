@@ -1,7 +1,7 @@
 //GridBasedRouter.cpp
 #include "GridBasedRouter.h"
 
-bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets) {
+bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets, std::string fileNameStamp = "") {
     std::ifstream ifs;
     ifs.open(mDb.getFileName(), std::ifstream::in);
     if (!ifs) {
@@ -27,7 +27,13 @@ bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets) 
     // Handle output filename
     std::string fileExtension = util::getFileExtension(mDb.getFileName());
     std::string fileNameWoExtension = util::getFileNameWoExtension(mDb.getFileName());
-    std::string outputFileName = fileNameWoExtension + ".routed.ours." + fileExtension;
+    std::string fileNameExtraTag;
+    if (!fileNameStamp.empty()) {
+        fileNameExtraTag = ".routed.ours." + fileNameStamp + ".";
+    } else {
+        fileNameExtraTag = ".routed.ours.";
+    }
+    std::string outputFileName = fileNameWoExtension + fileNameExtraTag + fileExtension;
     outputFileName = util::appendDirectory(GlobalParam::gOutputFolder, outputFileName);
     std::cout << __FUNCTION__ << "() outputFileName: " << outputFileName << std::endl;
 
@@ -186,7 +192,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
         auto &comp = mDb.getComponent(inst.getComponentId());
         for (auto &pad : comp.getPadstacks()) {
             // Add cost to both via/base cost grid
-            addPinAvoidingCostToGrid(pad, inst, pinCost, true, false, true);
+            addPinAvoidingCostToGrid(pad, inst, GlobalParam::gPinObstacleCost, true, false, true);
         }
     }
 
@@ -213,7 +219,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
 
             // Temporary reomve the pin cost on base cost grid
             // TODO:: true, true seems more reasonable
-            addPinAvoidingCostToGrid(pin, -pinCost, true, false, true);
+            addPinAvoidingCostToGrid(pin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
 
         if (!mDb.isNetclassId(net.getNetclassId())) {
@@ -236,7 +242,7 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
         // Put back the pin cost on base cost grid
         for (auto &pin : pins) {
             // TODO: true, true seems more reasonable
-            addPinAvoidingCostToGrid(pin, pinCost, true, false, true);
+            addPinAvoidingCostToGrid(pin, GlobalParam::gPinObstacleCost, true, false, true);
         }
     }
 
@@ -299,12 +305,6 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     std::cout << std::endl
               << "=================" << __FUNCTION__ << "==================" << std::endl;
 
-    // TODO
-    // unified structure for Polygon, Rectangle
-
-    // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
-    // ?? Perform rip-up and re-route ??
-
     this->setupBoardAndMappingStructure();
 
     // Add all instances' pins to a cost in grid
@@ -318,19 +318,14 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
         auto &comp = mDb.getComponent(inst.getComponentId());
         for (auto &pad : comp.getPadstacks()) {
             // Add cost to both via/base cost grid
-            addPinAvoidingCostToGrid(pad, inst, pinCost, true, true, true);
+            addPinAvoidingCostToGrid(pad, inst, GlobalParam::gPinObstacleCost, true, true, true);
         }
     }
 
     // Add all nets to route
     std::vector<MultipinRoute> multipinNets;
     auto &nets = mDb.getNets();
-    //for (int i = nets.size() - 1; i >= 0; --i) {
-    //    auto &net = nets.at(i);
     for (auto &net : nets) {
-        // if (net.getId() != 18)
-        //     continue;
-
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
             continue;
@@ -356,7 +351,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
             route.addPin(pinLocationWithLayers);
             // Temporary reomve the pin cost on base cost grid
-            addPinAvoidingCostToGrid(pin, -pinCost, true, false, true);
+            addPinAvoidingCostToGrid(pin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
 
         if (!mDb.isNetclassId(net.getNetclassId())) {
@@ -370,7 +365,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
         // Put back the pin cost on base cost grid
         for (auto &pin : pins) {
-            addPinAvoidingCostToGrid(pin, pinCost, true, false, true);
+            addPinAvoidingCostToGrid(pin, GlobalParam::gPinObstacleCost, true, false, true);
         }
     }
 
@@ -384,6 +379,178 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
 
     // Output final result to KiCad file
     outputResults2KiCadFile(multipinNets);
+}
+
+void GridBasedRouter::testRouterWithRipUpAndReroute() {
+    std::cout << std::fixed << std::setprecision(5);
+    std::cout << std::endl
+              << "=================" << __FUNCTION__ << "==================" << std::endl;
+
+    // TODO
+    // unified structure for Polygon, Rectangle
+    // ====> Rectangle Template....
+    // ====> Put pin rectangle into GridPin and use the rect template....
+    // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
+
+    this->setupBoardAndMappingStructure();
+
+    // Add all instances' pins to a cost in grid
+    auto &instances = mDb.getInstances();
+    for (auto &inst : instances) {
+        if (!mDb.isComponentId(inst.getComponentId())) {
+            std::cerr << __FUNCTION__ << "(): Illegal component Id: " << inst.getComponentId() << ", from Instance: " << inst.getName() << std::endl;
+            continue;
+        }
+
+        auto &comp = mDb.getComponent(inst.getComponentId());
+        for (auto &pad : comp.getPadstacks()) {
+            // Add cost to both via/base cost grid
+            addPinAvoidingCostToGrid(pad, inst, GlobalParam::gPinObstacleCost, true, true, true);
+        }
+    }
+
+    // Add all nets to grid routes
+    //std::vector<MultipinRoute> multipinNets;
+    double totalCurrentRouteCost = 0.0;
+    double bestTotalRouteCost = 0.0;
+    auto &nets = mDb.getNets();
+    for (auto &net : nets) {
+        // if (net.getId() != 22)
+        //     continue;
+
+        std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+        if (net.getPins().size() < 2)
+            continue;
+
+        gridNets.push_back(MultipinRoute{net.getId()});
+        auto &gridRoute = gridNets.back();
+        auto &pins = net.getPins();
+        for (auto &pin : pins) {
+            point_2d pinDbLocation;
+            mDb.getPinPosition(pin, &pinDbLocation);
+            point_2d pinGridLocation;  // should be in int
+            dbPointToGridPoint(pinDbLocation, pinGridLocation);
+            std::vector<Location> pinLocationWithLayers;
+            std::vector<int> layers;
+            this->getGridLayers(pin, layers);
+
+            std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
+            for (auto layer : layers) {
+                pinLocationWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
+                std::cout << " " << layer;
+            }
+            std::cout << ", #layers:" << pinLocationWithLayers.size() << " " << layers.size() << std::endl;
+
+            gridRoute.addPin(pinLocationWithLayers);
+            // Temporary reomve the pin cost on base cost grid
+            addPinAvoidingCostToGrid(pin, -GlobalParam::gPinObstacleCost, true, false, true);
+        }
+
+        if (!mDb.isNetclassId(net.getNetclassId())) {
+            std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
+            continue;
+        }
+        auto &gridNetclass = this->getGridNetclass(net.getNetclassId());
+        mBg.set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
+
+        mBg.addRouteWithGridPins(gridRoute);
+        totalCurrentRouteCost += gridRoute.currentRouteCost;
+        std::cout << "=====> currentRouteCost: " << gridRoute.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
+
+        // Put back the pin cost on base cost grid
+        for (auto &pin : pins) {
+            addPinAvoidingCostToGrid(pin, GlobalParam::gPinObstacleCost, true, false, true);
+        }
+    }
+
+    // Set up the base solution
+    bestTotalRouteCost = totalCurrentRouteCost;
+    this->bestSolution = this->gridNets;
+
+    outputResults2KiCadFile(this->gridNets, "fristTimeRouteAll");
+    std::cout << "i=-1"
+              << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
+
+    std::cout << "\n\n======= Start Randomly Rip-Up and Re-Route all nets. =======\n\n"
+              << std::endl;
+
+    // Rip-up and Re-route all the nets one-by-one ten times
+    for (int i = 0; i < 5; ++i) {
+        int rippedUpGridNetId = 0;
+
+        for (auto &net : nets) {
+            // int rippedUpGridNetId = getNextRipUpNetId();
+            // if (rippedUpGridNetId > gridNets.size()) {
+            //     std::cout << "!!!!!!! illegal gridNetId: " << rippedUpGridNetId << std::endl;
+            //     continue;
+            // }
+            // std::cout << "\n\nRip-up and re-route gridNetId: " << rippedUpGridNetId << std::endl;
+
+            // //TODOOOOOOOOO
+            // //TODO:: range checking?
+            // auto &net = mDb.getNet(gridNets.at(rippedUpGridNetId).netId);
+
+            // if (net.getId() != 22)
+            //     continue;
+
+            if (net.getPins().size() < 2)
+                continue;
+
+            auto &gridRoute = gridNets.at(rippedUpGridNetId);
+            if (net.getId() != gridRoute.netId)
+                std::cout << "!!!!!!! inconsistent gridNetId: " << rippedUpGridNetId << ", net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
+
+            rippedUpGridNetId++;
+
+            // Ripup 2-pin net only
+            // if (net.getPins().size() > 2)
+            //     continue;
+
+            std::cout << "\n\ni=" << i << ", Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+
+            auto &pins = net.getPins();
+            for (auto &pin : pins) {
+                // Temporary reomve the pin cost on base cost grid
+                addPinAvoidingCostToGrid(pin, -GlobalParam::gPinObstacleCost, true, false, true);
+            }
+
+            if (!mDb.isNetclassId(net.getNetclassId())) {
+                std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
+                continue;
+            }
+            auto &gridNetclass = this->getGridNetclass(net.getNetclassId());
+            mBg.set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
+
+            // Rip-up and re-route
+            mBg.ripup_route(gridRoute);
+            totalCurrentRouteCost -= gridRoute.currentRouteCost;
+            mBg.addRouteWithGridPins(gridRoute);
+            totalCurrentRouteCost += gridRoute.currentRouteCost;
+
+            // Put back the pin cost on base cost grid
+            for (auto &pin : pins) {
+                addPinAvoidingCostToGrid(pin, GlobalParam::gPinObstacleCost, true, false, true);
+            }
+        }
+        outputResults2KiCadFile(this->gridNets, "i_" + std::to_string(i));
+        if (totalCurrentRouteCost < bestTotalRouteCost) {
+            std::cout << "!!!!>!!!!> Found new bestTotalRouteCost: " << totalCurrentRouteCost << ", from: " << bestTotalRouteCost << std::endl;
+            bestTotalRouteCost = totalCurrentRouteCost;
+            this->bestSolution = this->gridNets;
+        }
+        std::cout << "i=" << i << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
+    }
+
+    std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
+              << std::endl;
+
+    // Routing has done
+    // Print the final base cost
+    mBg.printGnuPlot();
+    mBg.printMatPlot();
+
+    // Output final result to KiCad file
+    outputResults2KiCadFile(this->bestSolution, "bestSolution");
 }
 
 void GridBasedRouter::addPinAvoidingCostToGrid(const Pin &p, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
@@ -479,6 +646,10 @@ GridNetclass &GridBasedRouter::getGridNetclass(const int gridNetclassId) {
     } else {
         return this->mGridNetclasses.at(gridNetclassId);
     }
+}
+
+int GridBasedRouter::getNextRipUpNetId() {
+    return rand() % gridNets.size();
 }
 
 bool GridBasedRouter::dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt) {

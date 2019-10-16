@@ -22,8 +22,9 @@ class GridBasedRouter {
         [[deprecated]] void test_router();
     void testRouterWithPinAndKeepoutAvoidance();
     void testRouterWithAvoidanceAndVariousPadType();
+    void testRouterWithRipUpAndReroute();
     // bool outputResults2KiCadFile(std::vector<Route> &nets); // If needed
-    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets);
+    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, std::string fileNameStamp);
 
    private:
     bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
@@ -36,6 +37,8 @@ class GridBasedRouter {
     bool getGridLayers(const padstack &, const instance &, std::vector<int> &layers);
     // GridNetclass
     GridNetclass &getGridNetclass(const int gridNetclassId);
+
+    int getNextRipUpNetId();
 
     // Utility
     int dbLengthToGridLength(const double dbLength) {
@@ -57,13 +60,14 @@ class GridBasedRouter {
     std::vector<std::string> mGridLayerToName;
     std::unordered_map<std::string, int> mLayerNameToGrid;
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
-
     // Netclass mapping
     std::vector<GridNetclass> mGridNetclasses;
 
+    // TODO:: Improve the below......
+    std::vector<MultipinRoute> gridNets;
+    std::vector<MultipinRoute> bestSolution;
+
     // TODO
-    // Temporary value
-    const float pinCost = 1000.0;
     // Put below stuff to globalParam:: ??
     double mMinX = std::numeric_limits<double>::max();
     double mMaxX = std::numeric_limits<double>::min();

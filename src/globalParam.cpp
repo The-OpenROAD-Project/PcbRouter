@@ -12,10 +12,11 @@ double GlobalParam::gDisBetweenWire = 0;
 double GlobalParam::gEpsilon = 0.00000000000001;
 bool GlobalParam::g90DegreeMode = true;
 // BoardGrid
-double GlobalParam::gDiagonalCost = 1.41421356237;
-double GlobalParam::gLayerChangeCost = 10.0;
-double GlobalParam::gViaInsertionCost = 100.0;
-double GlobalParam::gTraceBasicCost = 10.0;
+double GlobalParam::gDiagonalCost = 1.41421356237;  //Cost for path searching
+double GlobalParam::gLayerChangeCost = 10.0;        //Cost for path searching
+double GlobalParam::gViaInsertionCost = 100.0;      //Cost added to the via grid
+double GlobalParam::gTraceBasicCost = 10.0;         //Cost added to the base grid by traces
+double GlobalParam::gPinObstacleCost = 1000.0;      //Cost for obstacle pins added to the via (or/and) base grid
 // Routing Options
 bool GlobalParam::gViaUnderPad = false;
 // Outputfile

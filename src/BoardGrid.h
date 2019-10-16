@@ -135,11 +135,12 @@ class GridPin {
 
 class MultipinRoute {
    public:
+    int netId = -1;
+    float currentRouteCost = 0.0;
     std::vector<Location> pins;
     std::vector<Location> features;
     std::vector<Location> vias;
     std::vector<GridPin> gridPins;
-    int netId;
 
     void addPin(std::vector<Location> &_pinWithLayers) {
         //TODO:: Optimize below for speeding up
@@ -263,7 +264,7 @@ class BoardGrid {
     std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
     void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
     void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
-    void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd);
+    void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost);
     void breadth_first_search(const Location &start, const Location &end);
     std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
 

@@ -298,50 +298,6 @@ inline bool operator==(const Rect &r1, const Rect &r2) {
            (r1.right() == r2.right()) && (r1.top() == r2.top());
 }
 
-// =====================================================
-// Point -----------------------------------------------
-// =====================================================
-class Point {
-   public:
-    Point(double x = 0, double y = 0) : _x(x), _y(y) {}
-    double x() const { return _x; }
-    double y() const { return _y; }
-
-    void set_x_y(double x, double y) {
-        _x = x;
-        _y = y;
-    }
-    void shift(double x, double y) {
-        _x += x;
-        _y += y;
-    }
-    void scale(double sx, double sy) {
-        _x *= sx;
-        _y *= sy;
-    }
-
-    static double dist(const Point &p1, const Point &p2) {
-        return fabs(p1.x() - p2.x()) + fabs(p1.y() - p2.y());
-    }
-    friend ostream &operator<<(ostream &, const Point &);
-    void operator=(const Point &p) {
-        set_x_y(p.x(), p.y());
-    }
-    Point operator+(const Point &p) {
-        return Point(_x + p.x(), _y + p.y());
-    }
-    Point operator-(const Point &p) {
-        return Point(_x - p.x(), _y - p.y());
-    }
-
-   private:
-    double _x, _y;
-};
-inline ostream &operator<<(ostream &out, const Point &p) {
-    out << "(" << p.x() << "," << p.y() << ")";
-    return out;
-}
-
 template <class T>
 class Array2D {
    public:

@@ -319,7 +319,7 @@ void BoardGrid::dijkstrasWithGridCameFrom(const std::vector<Location> &route,
     }
 }
 
-void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd) {
+void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost) {
     std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
     // std::cerr << fixed;
     // std::cout << fixed;
@@ -381,12 +381,14 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
             if (isTargetedPin(next.second)) {
                 bestCostWhenReachTarget = new_cost;
                 finalEnd = next.second;
+                finalCost = bestCostWhenReachTarget;
                 std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
                 return;
             }
         }
     }
     //For Dijkstra to output
+    finalCost = bestCostWhenReachTarget;
     std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
 }
 
@@ -539,7 +541,7 @@ void BoardGrid::printMatPlot() {
         }
     }
 
-    std::cout << "printGnuPlot()::Max Cost: " << maxCost
+    std::cout << "printMatPlot()::Max Cost: " << maxCost
               << ", Min Cost: " << minCost << std::endl;
 
     for (int l = 0; l < this->l; ++l) {
@@ -553,7 +555,7 @@ void BoardGrid::printMatPlot() {
         ofs << "import numpy as np\n";
         ofs << "import matplotlib.pyplot as plt\n";
         ofs << "plt.close()\n";
-        ofs << "viridis = plt.get_cmap('viridis', 12)\n";
+        ofs << "viridis = plt.get_cmap('nipy_spectral', " << int(maxCost) << ")\n";
         ofs << "data = np.array([[";
 
         // for (int r = 0; r < this->h; ++r)
@@ -594,7 +596,7 @@ void BoardGrid::printMatPlot() {
         ofs << "import numpy as np\n";
         ofs << "import matplotlib.pyplot as plt\n";
         ofs << "plt.close()\n";
-        ofs << "viridis = plt.get_cmap('viridis', 12)\n";
+        ofs << "viridis = plt.get_cmap('nipy_spectral', " << int(maxCost) << ")\n";
         ofs << "data = np.array([[";
 
         // for (int r = 0; r < this->h; ++r)
@@ -795,12 +797,11 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
     if (route.features.empty())
         return;
 
+    //cout << __FUNCTION__ << "(): traceCost: " << traceCost << ", viaCost: " << viaCost << std::endl;
+
     // Add costs for traces
     for (auto &l : route.features) {
         for (int current_radius = 0; current_radius <= traceRadius; ++current_radius) {
-            float current_cost = traceCost;
-            if (current_cost <= 0) break;
-
             for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; ++r) {
                 if (r < 0) continue;
                 if (r >= this->h) continue;
@@ -808,7 +809,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
                     if (c < 0) continue;
                     if (c >= this->w) continue;
                     // std::cout << "\tsetting cost at " << Location(c, r, layer) << std::endl;
-                    this->base_cost_add(current_cost, Location(c, r, l.m_z));
+                    this->base_cost_add(traceCost, Location(c, r, l.m_z));
                 }
             }
         }
@@ -1044,7 +1045,7 @@ void BoardGrid::addRoute(MultipinRoute &route) {
         // this->dijkstrasWithGridCameFrom(route.features, via_size);
         // via size is half_width
         Location finalEnd{0, 0, 0};
-        this->aStarWithGridCameFrom(route.features, finalEnd);
+        this->aStarWithGridCameFrom(route.features, finalEnd, route.currentRouteCost);
 
         std::vector<Location> new_features;
         this->came_from_to_features(route.pins[i], new_features);
@@ -1084,9 +1085,9 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         Location finalEnd{0, 0, 0};
         // this->dijkstrasWithGridCameFrom(route.features, current_half_via_diameter);
         if (route.features.empty()) {
-            this->aStarWithGridCameFrom(route.gridPins.front().pinWithLayers, finalEnd);
+            this->aStarWithGridCameFrom(route.gridPins.front().pinWithLayers, finalEnd, route.currentRouteCost);
         } else {
-            this->aStarWithGridCameFrom(route.features, finalEnd);
+            this->aStarWithGridCameFrom(route.features, finalEnd, route.currentRouteCost);
         }
 
         std::vector<Location> new_features;
@@ -1136,8 +1137,6 @@ void BoardGrid::ripup_route(MultipinRoute &route) {
         }
     }
     this->remove_route_from_base_cost(route);
-    std::cout << "Clearing features" << std::endl;
-
     route.features.clear();
     std::cout << "Finished ripup" << std::endl;
 }

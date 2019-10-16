@@ -29,10 +29,12 @@ int main(int argc, char *argv[]) {
     GlobalParam::setUsageStart();
 
     std::cout << "Starting router..." << std::endl;
+    srand(GlobalParam::gSeed);
     GridBasedRouter router(db);
     //router.test_router();
     //router.testRouterWithPinAndKeepoutAvoidance();
-    router.testRouterWithAvoidanceAndVariousPadType();
+    //router.testRouterWithAvoidanceAndVariousPadType();
+    router.testRouterWithRipUpAndReroute();
 
     GlobalParam::showCurrentUsage("GridBasedRouter");
     GlobalParam::showFinalUsage("End of Program");

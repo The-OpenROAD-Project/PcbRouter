@@ -45,6 +45,7 @@ class GlobalParam {
     static double gLayerChangeCost;
     static double gViaInsertionCost;
     static double gTraceBasicCost;
+    static double gPinObstacleCost;
 
     //Routing Options
     static bool gViaUnderPad;
