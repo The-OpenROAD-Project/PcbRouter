@@ -100,7 +100,8 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
         }
 
         auto &netclass = mDb.getNetclass(net.getNetclassId());
-        Location last_location = mpNet.features.front();
+        Location prevLocation = mpNet.features.front();
+        // Location nextLocation = mpNet.features.at(2);
         double netEstWL = 0.0;
         double netEstGridWL = 0.0;
         int netNumVia = 0;
@@ -108,18 +109,23 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
         for (int i = 1; i < mpNet.features.size(); ++i) {
             auto &feature = mpNet.features[i];
             //std::cout << feature << std::endl;
-            // check if close ???????
-            if (
-                abs(feature.m_x - last_location.m_x) <= 1 &&
-                abs(feature.m_y - last_location.m_y) <= 1 &&
-                abs(feature.m_z - last_location.m_z) <= 1) {
+            if (abs(feature.m_x - prevLocation.m_x) <= 1 &&
+                abs(feature.m_y - prevLocation.m_y) <= 1 &&
+                abs(feature.m_z - prevLocation.m_z) <= 1) {
+                // Sanity Check
+                if (feature.m_z != prevLocation.m_z &&
+                    feature.m_y != prevLocation.m_y &&
+                    feature.m_x != prevLocation.m_x) {
+                    std::cerr << __FUNCTION__ << "() Invalid path between feature: " << feature << ", and lasLocation: " << prevLocation << std::endl;
+                    continue;
+                }
                 // Print Through Hole Via
-                if (feature.m_z != last_location.m_z) {
+                if (feature.m_z != prevLocation.m_z) {
                     ++totalNumVia;
                     ++netNumVia;
 
                     ofs << "(via";
-                    ofs << " (at " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+                    ofs << " (at " << grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
                     ofs << " (size " << netclass.getViaDia() << ")";
                     ofs << " (drill " << netclass.getViaDrill() << ")";
                     ofs << " (layers Top Bottom)";
@@ -128,13 +134,13 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
                 }
 
                 // Print Segment/Track/Wire
-                if (feature.m_x != last_location.m_x || feature.m_y != last_location.m_y) {
-                    point_2d start{grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2)};
+                if (feature.m_x != prevLocation.m_x || feature.m_y != prevLocation.m_y) {
+                    point_2d start{grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2)};
                     point_2d end{grid_factor * (feature.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (feature.m_y + mMinY * inputScale - enlargeBoundary / 2)};
                     totalEstWL += point_2d::getDistance(start, end);
-                    totalEstGridWL += Location::getDistance2D(last_location, feature);
+                    totalEstGridWL += Location::getDistance2D(prevLocation, feature);
                     netEstWL += point_2d::getDistance(start, end);
-                    netEstGridWL += Location::getDistance2D(last_location, feature);
+                    netEstGridWL += Location::getDistance2D(prevLocation, feature);
 
                     ofs << "(segment";
                     ofs << " (start " << start.m_x << " " << start.m_y << ")";
@@ -145,7 +151,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
                     ofs << ")" << std::endl;
                 }
             }
-            last_location = feature;
+            prevLocation = feature;
         }
         std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size()
                   << ", Total WL: " << netEstWL << ", Total Grid WL: " << netEstGridWL << ", #Vias: " << netNumVia << std::endl;
@@ -566,8 +572,6 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
     Point_2D<double> pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
     Point_2D<double> pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
     Point_2D<int> pinGridLL, pinGridUR;
-    // dbPointToGridPointCeil(pinDbUR, pinGridUR);
-    // dbPointToGridPointFloor(pinDbLL, pinGridLL);
     dbPointToGridPointRound(pinDbUR, pinGridUR);
     dbPointToGridPointRound(pinDbLL, pinGridLL);
     std::cout << __FUNCTION__ << "()"
@@ -681,8 +685,8 @@ bool GridBasedRouter::dbPointToGridPointRound(const Point_2D<double> &dbPt, Poin
 bool GridBasedRouter::gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt) {
     //TODO: boundary checking
     //TODO: consider integer ceiling or flooring???
-    dbPt.m_x = grid_factor * (gridPt.m_x + mMinX * inputScale - enlargeBoundary / 2);
-    dbPt.m_y = grid_factor * (gridPt.m_y + mMinY * inputScale - enlargeBoundary / 2);
+    dbPt.m_x = grid_factor * (gridPt.m_x + mMinX * inputScale - (double)enlargeBoundary / 2);
+    dbPt.m_y = grid_factor * (gridPt.m_y + mMinY * inputScale - (double)enlargeBoundary / 2);
     return true;
 }
 
