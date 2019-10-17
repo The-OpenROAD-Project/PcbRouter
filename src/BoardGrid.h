@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <list>
 #include <queue>
 #include <string>
 #include <unordered_map>
@@ -133,6 +134,20 @@ class GridPin {
     std::vector<Location> pinWithLayers;
 };
 
+class GridPath {
+   public:
+    //ctor
+    GridPath() {}
+    //dtor
+    ~GridPath() {}
+
+    friend class BoardGrid;
+    friend class MultipinRoute;
+
+   private:
+    std::list<Location> mSegments;  //TODO:: contains vias for now...
+};
+
 class MultipinRoute {
    public:
     int netId = -1;
@@ -141,7 +156,15 @@ class MultipinRoute {
     std::vector<Location> features;
     std::vector<Location> vias;
     std::vector<GridPin> gridPins;
+    // mGridPaths aim to substitue the features
+    std::vector<GridPath> mGridPaths;  //derived from features, doesn't guarantee updated
 
+    void featuresToGridPaths();
+
+    GridPath &getNewGridPath() {
+        mGridPaths.push_back(GridPath{});
+        return mGridPaths.back();
+    }
     void addPin(std::vector<Location> &_pinWithLayers) {
         //TODO:: Optimize below for speeding up
         GridPin gridPin;

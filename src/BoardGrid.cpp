@@ -1,6 +1,71 @@
 // BoardGrid.cpp
 #include "BoardGrid.h"
 
+void MultipinRoute::featuresToGridPaths() {
+    if (this->features.empty() || this->features.size() == 1) {
+        cerr << __FUNCTION__ << "(): No features to translate to segments. Features.size(): " << this->features.size() << std::endl;
+        return;
+    }
+
+    if (this->features.size() == 2) {
+        auto &path = this->getNewGridPath();
+        for (auto &location : this->features) {
+            path.mSegments.emplace_back(location);
+        }
+    }
+
+    // Handle this->features.size() > 2
+    // New start of a path
+    auto &path = this->getNewGridPath();
+    path.mSegments.emplace_back(this->features.front());
+
+    for (int i = 1; i < this->features.size(); ++i) {
+        auto &prevLocation = this->features.at(i - 1);
+        auto &location = this->features.at(i);
+        auto &nextLocation = this->features.at(i);
+
+        // Handle nextLocation
+        if (i + 1 >= this->features.size()) {
+            // End of the Features, put the location into the path
+            path.mSegments.emplace_back(location);
+            break;
+        } else {
+            nextLocation = this->features.at(i + 1);
+        }
+
+        if (abs(location.m_x - prevLocation.m_x) <= 1 &&
+            abs(location.m_y - prevLocation.m_y) <= 1 &&
+            abs(location.m_z - prevLocation.m_z) <= 1) {
+            // Sanity Check
+            if (location.m_z != prevLocation.m_z &&
+                location.m_y != prevLocation.m_y &&
+                location.m_x != prevLocation.m_x) {
+                std::cerr << __FUNCTION__ << "() Invalid path between location: " << location << ", and prevLocation: " << prevLocation << std::endl;
+                continue;
+            }
+
+            // Segment/Track/Wire
+            if (location.m_x - prevLocation.m_x == nextLocation.m_x - location.m_x &&
+                location.m_y - prevLocation.m_y == nextLocation.m_y - location.m_y) {
+                continue;
+            }
+
+            // Via or nextLoc to loc is via
+            if (location.m_z != prevLocation.m_z || nextLocation.m_y != location.m_y) {
+                path.mSegments.emplace_back(location);
+            }
+        } else {
+            if (path.mSegments.back() != prevLocation) {
+                // if the ending is not a via, put the prevLocation as end of the segment
+                path.mSegments.emplace_back(prevLocation);
+            }
+            // New start of a path
+            path = this->getNewGridPath();
+            path.mSegments.emplace_back(location);
+        }
+    }
+}
+
 void BoardGrid::initilization(int w, int h, int l) {
     this->w = w;
     this->h = h;

@@ -101,7 +101,6 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
 
         auto &netclass = mDb.getNetclass(net.getNetclassId());
         Location prevLocation = mpNet.features.front();
-        // Location nextLocation = mpNet.features.at(2);
         double netEstWL = 0.0;
         double netEstGridWL = 0.0;
         int netNumVia = 0;
