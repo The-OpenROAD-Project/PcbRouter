@@ -558,8 +558,8 @@ void BoardGrid::printMatPlot() {
         ofs << "viridis = plt.get_cmap('nipy_spectral', " << int(maxCost) << ")\n";
         ofs << "data = np.array([[";
 
-        // for (int r = 0; r < this->h; ++r)
-        for (int r = this->h - 1; r > -1; --r) {
+        for (int r = 0; r < this->h; ++r) {
+            //for (int r = this->h - 1; r > -1; --r) {
             for (int c = 0; c < this->w; ++c) {
                 ofs << this->base_cost_at(Location(c, r, l)) << " ";
                 if (c < this->w - 1) {
@@ -569,8 +569,8 @@ void BoardGrid::printMatPlot() {
                 }
             }
 
-            // if (r < this->h - 1)
-            if (r > 0) {
+            if (r < this->h - 1) {
+                //if (r > 0) {
                 ofs << ", [";
             }
         }
@@ -582,6 +582,8 @@ void BoardGrid::printMatPlot() {
             << "layer" << std::to_string(l) << " basecost"
             << "')\n";
         ofs << "plt.colorbar()\n";
+        ofs << "plt.axis('equal')\n";
+        ofs << "plt.gca().invert_yaxis()\n";
         ofs << "plt.show()\n";
     }
 
@@ -599,8 +601,8 @@ void BoardGrid::printMatPlot() {
         ofs << "viridis = plt.get_cmap('nipy_spectral', " << int(maxCost) << ")\n";
         ofs << "data = np.array([[";
 
-        // for (int r = 0; r < this->h; ++r)
-        for (int r = this->h - 1; r > -1; --r) {
+        for (int r = 0; r < this->h; ++r) {
+            // for (int r = this->h - 1; r > -1; --r) {
             for (int c = 0; c < this->w; ++c) {
                 ofs << this->via_cost_at(Location(c, r, l)) << " ";
                 if (c < this->w - 1) {
@@ -610,8 +612,8 @@ void BoardGrid::printMatPlot() {
                 }
             }
 
-            // if (r < this->h - 1)
-            if (r > 0) {
+            if (r < this->h - 1) {
+                // if (r > 0) {
                 ofs << ", [";
             }
         }
@@ -623,6 +625,8 @@ void BoardGrid::printMatPlot() {
             << "layer" << std::to_string(l) << " viacost"
             << "')\n";
         ofs << "plt.colorbar()\n";
+        ofs << "plt.axis('equal')\n";
+        ofs << "plt.gca().invert_yaxis()\n";
         ofs << "plt.show()\n";
     }
 }
@@ -1141,12 +1145,12 @@ void BoardGrid::ripup_route(MultipinRoute &route) {
     std::cout << "Finished ripup" << std::endl;
 }
 
-void BoardGrid::set_current_rules(const int clr, const int trWid, int viaDia) {
+void BoardGrid::set_current_rules(const int clr, const int trWid, const int viaDia) {
     current_trace_width = trWid;
-    current_half_trace_width = ceil((double)trWid / 2.0);
+    current_half_trace_width = (int)floor((double)trWid / 2.0);
     current_clearance = clr;
     current_via_diameter = viaDia;
-    current_half_via_diameter = ceil((double)viaDia / 2.0);
+    current_half_via_diameter = (int)floor((double)viaDia / 2.0);
 
     cout << __FUNCTION__ << "() curTraceWid: " << this->current_trace_width
          << ", curHalfTraceWid: " << this->current_half_trace_width

@@ -227,9 +227,9 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
             continue;
         }
         auto &netclass = mDb.getNetclass(net.getNetclassId());
-        int traceWidth = dbLengthToGridLength(netclass.getTraceWidth());
-        int viaSize = dbLengthToGridLength(netclass.getViaDia());
-        int clearance = dbLengthToGridLength(netclass.getClearance());
+        int traceWidth = dbLengthToGridLengthCeil(netclass.getTraceWidth());
+        int viaSize = dbLengthToGridLengthCeil(netclass.getViaDia());
+        int clearance = dbLengthToGridLengthCeil(netclass.getClearance());
         std::cout << " traceWidth: " << traceWidth << "(db: " << netclass.getTraceWidth() << ")"
                   << ", viaSize: " << viaSize << "(db: " << netclass.getViaDia() << ")"
                   << ", clearance: " << clearance << "(db: " << netclass.getClearance() << ")" << std::endl;
@@ -257,8 +257,8 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
 
 void GridBasedRouter::setupBoardAndMappingStructure() {
     // Get board dimension
-    mDb.getBoardBoundaryByPinLocation(mMinX, mMaxX, mMinY, mMaxY);
-    std::cout << "Routing Outline: (" << mMinX << ", " << mMinY << "), (" << mMaxX << ", " << mMaxY << ")" << std::endl;
+    mDb.getBoardBoundaryByPinLocation(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
+    std::cout << "Routing Outline: (" << this->mMinX << ", " << this->mMinY << "), (" << this->mMaxX << ", " << this->mMaxY << ")" << std::endl;
     std::cout << "inputScale: " << inputScale << ", enlargeBoundary: " << enlargeBoundary << ", grid_factor: " << grid_factor << std::endl;
 
     // Get grid dimension
@@ -277,13 +277,13 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
 
     // Setup netclass mapping
     for (auto &netclassIte : mDb.getNetclasses()) {
-        int id = dbLengthToGridLength(netclassIte.getId());
-        int clearance = dbLengthToGridLength(netclassIte.getClearance());
-        int traceWidth = dbLengthToGridLength(netclassIte.getTraceWidth());
-        int viaDia = dbLengthToGridLength(netclassIte.getViaDia());
-        int viaDrill = dbLengthToGridLength(netclassIte.getViaDrill());
-        int microViaDia = dbLengthToGridLength(netclassIte.getMicroViaDia());
-        int microViaDrill = dbLengthToGridLength(netclassIte.getMicroViaDrill());
+        int id = netclassIte.getId();
+        int clearance = dbLengthToGridLengthCeil(netclassIte.getClearance());
+        int traceWidth = dbLengthToGridLengthCeil(netclassIte.getTraceWidth());
+        int viaDia = dbLengthToGridLengthCeil(netclassIte.getViaDia());
+        int viaDrill = dbLengthToGridLengthCeil(netclassIte.getViaDrill());
+        int microViaDia = dbLengthToGridLengthCeil(netclassIte.getMicroViaDia());
+        int microViaDrill = dbLengthToGridLengthCeil(netclassIte.getMicroViaDrill());
 
         GridNetclass gridNetclass{id, clearance, traceWidth, viaDia, viaDrill, microViaDia, microViaDrill};
         mGridNetclasses.push_back(gridNetclass);
@@ -471,7 +471,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     std::cout << "i=-1"
               << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
 
-    std::cout << "\n\n======= Start Randomly Rip-Up and Re-Route all nets. =======\n\n"
+    std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n"
               << std::endl;
 
     // Rip-up and Re-route all the nets one-by-one ten times
@@ -501,10 +501,6 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
                 std::cout << "!!!!!!! inconsistent gridNetId: " << rippedUpGridNetId << ", net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
             rippedUpGridNetId++;
-
-            // Ripup 2-pin net only
-            // if (net.getPins().size() > 2)
-            //     continue;
 
             std::cout << "\n\ni=" << i << ", Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
 
@@ -570,8 +566,10 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
     Point_2D<double> pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
     Point_2D<double> pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
     Point_2D<int> pinGridLL, pinGridUR;
-    dbPointToGridPointCeil(pinDbUR, pinGridUR);
-    dbPointToGridPointFloor(pinDbLL, pinGridLL);
+    // dbPointToGridPointCeil(pinDbUR, pinGridUR);
+    // dbPointToGridPointFloor(pinDbLL, pinGridLL);
+    dbPointToGridPointRound(pinDbUR, pinGridUR);
+    dbPointToGridPointRound(pinDbLL, pinGridLL);
     std::cout << __FUNCTION__ << "()"
               << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
     std::cout << ", cost:" << value << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:"
@@ -591,8 +589,8 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
 
     //const auto &layers = pad.getLayers();
     for (auto &layer : layers) {
-        for (int x = pinGridLL.m_x; x < pinGridUR.m_x; ++x) {
-            for (int y = pinGridLL.m_y; y < pinGridUR.m_y; ++y) {
+        for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {
+            for (int y = pinGridLL.m_y; y <= pinGridUR.m_y; ++y) {
                 Location gridPt{x, y, layer};
                 if (!mBg.validate_location(gridPt)) {
                     //std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
@@ -670,6 +668,13 @@ bool GridBasedRouter::dbPointToGridPointFloor(const Point_2D<double> &dbPt, Poin
     //TODO: boundary checking
     gridPt.m_x = floor(dbPt.m_x * inputScale - mMinX * inputScale + (double)enlargeBoundary / 2);
     gridPt.m_y = floor(dbPt.m_y * inputScale - mMinY * inputScale + (double)enlargeBoundary / 2);
+    return true;
+}
+
+bool GridBasedRouter::dbPointToGridPointRound(const Point_2D<double> &dbPt, Point_2D<int> &gridPt) {
+    //TODO: boundary checking
+    gridPt.m_x = round(dbPt.m_x * inputScale - mMinX * inputScale + (double)enlargeBoundary / 2);
+    gridPt.m_y = round(dbPt.m_y * inputScale - mMinY * inputScale + (double)enlargeBoundary / 2);
     return true;
 }
 

@@ -181,7 +181,7 @@ class BoardGrid {
     void initilization(int w, int h, int l);
 
     // constraints
-    void set_current_rules(const int clr, const int trWid, int viaDia);
+    void set_current_rules(const int clr, const int trWid, const int viaDia);
     // Routing APIs
     void add_route(MultipinRoute &route);
     void addRoute(MultipinRoute &route);
