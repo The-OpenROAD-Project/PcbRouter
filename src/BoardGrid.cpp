@@ -1,11 +1,53 @@
 // BoardGrid.cpp
 #include "BoardGrid.h"
 
+void GridPath::removeRedundantPoints() {
+    if (this->mSegments.size() <= 2) {
+        return;
+    }
+
+    // std::cout << "All pts:" << std::endl;
+    // for (auto pt : this->mSegments) {
+    //     std::cout << pt << std::endl;
+    // }
+    // std::cout << "End of All pts:" << std::endl;
+
+    std::vector<std::list<Location>::iterator> pointsToRemove;
+    auto pointIte = ++this->mSegments.begin();
+    auto prevPointIte = this->mSegments.begin();
+    auto nextPointIte = pointIte;
+    ++nextPointIte;
+
+    for (; nextPointIte != this->mSegments.end();) {
+        // std::cout << "prev: " << *prevPointIte << ", pt: " << *pointIte << ",next: " << *nextPointIte << std::endl;
+        // Watch out the special case for Via over here
+        if (pointIte->m_x - prevPointIte->m_x == nextPointIte->m_x - pointIte->m_x &&
+            pointIte->m_y - prevPointIte->m_y == nextPointIte->m_y - pointIte->m_y) {
+            // std::cerr << *pointIte << "<= Remove this point" << std::endl;
+            pointsToRemove.push_back(pointIte);
+        } else {
+            //std::cerr << *pointIte << std::endl;
+        }
+        ++pointIte;
+        ++nextPointIte;
+        ++prevPointIte;
+    }
+
+    for (auto &removePt : pointsToRemove) {
+        this->mSegments.erase(removePt);
+    }
+}
+
 void MultipinRoute::featuresToGridPaths() {
     if (this->features.empty() || this->features.size() == 1) {
         cerr << __FUNCTION__ << "(): No features to translate to segments. Features.size(): " << this->features.size() << std::endl;
         return;
     }
+
+    // std::cout << "Starting of " << __FUNCTION__ << "() ..." << std::endl;
+
+    // Clean up
+    this->mGridPaths.clear();
 
     if (this->features.size() == 2) {
         auto &path = this->getNewGridPath();
@@ -16,22 +58,18 @@ void MultipinRoute::featuresToGridPaths() {
 
     // Handle this->features.size() > 2
     // New start of a path
-    auto &path = this->getNewGridPath();
-    path.mSegments.emplace_back(this->features.front());
+    this->mGridPaths.push_back(GridPath{});
+    mGridPaths.back().mSegments.emplace_back(this->features.front());
 
+    // Debuging
+    // for (auto &feature : this->features) {
+    //     std::cout << feature << std::endl;
+    // }
+
+    // 1. Separate the features into paths
     for (int i = 1; i < this->features.size(); ++i) {
-        auto &prevLocation = this->features.at(i - 1);
-        auto &location = this->features.at(i);
-        auto &nextLocation = this->features.at(i);
-
-        // Handle nextLocation
-        if (i + 1 >= this->features.size()) {
-            // End of the Features, put the location into the path
-            path.mSegments.emplace_back(location);
-            break;
-        } else {
-            nextLocation = this->features.at(i + 1);
-        }
+        auto prevLocation = this->features.at(i - 1);
+        auto location = this->features.at(i);
 
         if (abs(location.m_x - prevLocation.m_x) <= 1 &&
             abs(location.m_y - prevLocation.m_y) <= 1 &&
@@ -43,27 +81,22 @@ void MultipinRoute::featuresToGridPaths() {
                 std::cerr << __FUNCTION__ << "() Invalid path between location: " << location << ", and prevLocation: " << prevLocation << std::endl;
                 continue;
             }
-
-            // Segment/Track/Wire
-            if (location.m_x - prevLocation.m_x == nextLocation.m_x - location.m_x &&
-                location.m_y - prevLocation.m_y == nextLocation.m_y - location.m_y) {
-                continue;
-            }
-
-            // Via or nextLoc to loc is via
-            if (location.m_z != prevLocation.m_z || nextLocation.m_y != location.m_y) {
-                path.mSegments.emplace_back(location);
-            }
+            mGridPaths.back().mSegments.emplace_back(location);
         } else {
-            if (path.mSegments.back() != prevLocation) {
-                // if the ending is not a via, put the prevLocation as end of the segment
-                path.mSegments.emplace_back(prevLocation);
-            }
             // New start of a path
-            path = this->getNewGridPath();
-            path.mSegments.emplace_back(location);
+            this->mGridPaths.push_back(GridPath{});
+            mGridPaths.back().mSegments.emplace_back(location);
         }
     }
+
+    std::cout << __FUNCTION__ << "(): # paths: " << this->mGridPaths.size() << std::endl;
+
+    // 2. Remove Redundant points in paths
+    for (auto &path : this->mGridPaths) {
+        path.removeRedundantPoints();
+    }
+
+    // std::cout << "End of " << __FUNCTION__ << "()" << std::endl;
 }
 
 void BoardGrid::initilization(int w, int h, int l) {

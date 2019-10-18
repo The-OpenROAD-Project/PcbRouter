@@ -141,6 +141,9 @@ class GridPath {
     //dtor
     ~GridPath() {}
 
+    std::list<Location> &getSegments() { return mSegments; }
+    void removeRedundantPoints();
+
     friend class BoardGrid;
     friend class MultipinRoute;
 
@@ -154,10 +157,12 @@ class MultipinRoute {
     float currentRouteCost = 0.0;
     std::vector<Location> pins;
     std::vector<Location> features;
-    std::vector<Location> vias;
     std::vector<GridPin> gridPins;
-    // mGridPaths aim to substitue the features
-    std::vector<GridPath> mGridPaths;  //derived from features, doesn't guarantee updated
+
+    //derived from features, doesn't guarantee updated
+    std::vector<GridPath> mGridPaths;
+    //TODO
+    // std::vector<Location> vias;
 
     void featuresToGridPaths();
 

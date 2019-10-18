@@ -1,7 +1,7 @@
 //GridBasedRouter.cpp
 #include "GridBasedRouter.h"
 
-bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets, std::string fileNameStamp = "") {
+bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "") {
     std::ifstream ifs;
     ifs.open(mDb.getFileName(), std::ifstream::in);
     if (!ifs) {
@@ -57,7 +57,8 @@ bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets, 
         ofs << str << std::endl;
     }
 
-    if (!writeNets(nets, ofs)) {
+    if ((mergeSegments && !writeNetsFromGridPaths(nets, ofs)) ||
+        (!mergeSegments && !writeNets(nets, ofs))) {
         std::cerr << "Failed to write nets to the output file: " << outputFileName << std::endl;
         ofs.close();
         std::remove(outputFileName.c_str());
@@ -151,6 +152,101 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
                 }
             }
             prevLocation = feature;
+        }
+        std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size()
+                  << ", Total WL: " << netEstWL << ", Total Grid WL: " << netEstGridWL << ", #Vias: " << netNumVia << std::endl;
+    }
+
+    std::cout << "\tEstimated Total WL: " << totalEstWL << ", Total Grid WL: " << totalEstGridWL << ", Total # Vias: " << totalNumVia << std::endl;
+    std::cout << "================= End of " << __FUNCTION__ << "() =================" << std::endl;
+    return true;
+}
+
+bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs) {
+    if (!ofs)
+        return false;
+
+    // Set output precision
+    ofs << std::fixed << std::setprecision(GlobalParam::gOutputPrecision);
+    // Estimated total routed wirelength
+    double totalEstWL = 0.0;
+    double totalEstGridWL = 0.0;
+    int totalNumVia = 0;
+
+    std::cout << "================= Start of " << __FUNCTION__ << "() =================" << std::endl;
+
+    // Multipin net
+    for (auto &mpNet : multipinNets) {
+        if (!mDb.isNetId(mpNet.netId)) {
+            std::cerr << __FUNCTION__ << "() Invalid net id: " << mpNet.netId << std::endl;
+            continue;
+        }
+
+        auto &net = mDb.getNet(mpNet.netId);
+        if (!mDb.isNetclassId(net.getNetclassId())) {
+            std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
+            continue;
+        }
+
+        if (mpNet.features.empty()) {
+            continue;
+        }
+
+        // Convert from features to grid paths
+        mpNet.featuresToGridPaths();
+
+        auto &netclass = mDb.getNetclass(net.getNetclassId());
+        double netEstWL = 0.0;
+        double netEstGridWL = 0.0;
+        int netNumVia = 0;
+
+        for (auto &gridPath : mpNet.mGridPaths) {
+            Location prevLocation = gridPath.getSegments().front();
+
+            for (auto &location : gridPath.getSegments()) {
+                if (prevLocation == location) {
+                    continue;
+                }
+                // Sanity Check
+                if (location.m_z != prevLocation.m_z &&
+                    location.m_y != prevLocation.m_y &&
+                    location.m_x != prevLocation.m_x) {
+                    std::cerr << __FUNCTION__ << "() Invalid path between location: " << location << ", and prevLocation: " << prevLocation << std::endl;
+                    continue;
+                }
+                // Print Through Hole Via
+                if (location.m_z != prevLocation.m_z) {
+                    ++totalNumVia;
+                    ++netNumVia;
+
+                    ofs << "(via";
+                    ofs << " (at " << grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+                    ofs << " (size " << netclass.getViaDia() << ")";
+                    ofs << " (drill " << netclass.getViaDrill() << ")";
+                    ofs << " (layers Top Bottom)";
+                    ofs << " (net " << mpNet.netId << ")";
+                    ofs << ")" << std::endl;
+                }
+
+                // Print Segment/Track/Wire
+                if (location.m_x != prevLocation.m_x || location.m_y != prevLocation.m_y) {
+                    point_2d start{grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2)};
+                    point_2d end{grid_factor * (location.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (location.m_y + mMinY * inputScale - enlargeBoundary / 2)};
+                    totalEstWL += point_2d::getDistance(start, end);
+                    totalEstGridWL += Location::getDistance2D(prevLocation, location);
+                    netEstWL += point_2d::getDistance(start, end);
+                    netEstGridWL += Location::getDistance2D(prevLocation, location);
+
+                    ofs << "(segment";
+                    ofs << " (start " << start.m_x << " " << start.m_y << ")";
+                    ofs << " (end " << end.m_x << " " << end.m_y << ")";
+                    ofs << " (width " << netclass.getTraceWidth() << ")";
+                    ofs << " (layer " << mGridLayerToName.at(location.m_z) << ")";
+                    ofs << " (net " << mpNet.netId << ")";
+                    ofs << ")" << std::endl;
+                }
+                prevLocation = location;
+            }
         }
         std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size()
                   << ", Total WL: " << netEstWL << ", Total Grid WL: " << netEstGridWL << ", #Vias: " << netNumVia << std::endl;
@@ -420,8 +516,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     double bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        // if (net.getId() != 22)
-        //     continue;
+        // if (net.getId() != 18)
+        // continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
@@ -472,7 +568,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     bestTotalRouteCost = totalCurrentRouteCost;
     this->bestSolution = this->gridNets;
 
-    outputResults2KiCadFile(this->gridNets, "fristTimeRouteAll");
+    outputResults2KiCadFile(this->gridNets, true, "fristTimeRouteAll");
     std::cout << "i=-1"
               << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
 
@@ -490,13 +586,6 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
             //     continue;
             // }
             // std::cout << "\n\nRip-up and re-route gridNetId: " << rippedUpGridNetId << std::endl;
-
-            // //TODOOOOOOOOO
-            // //TODO:: range checking?
-            // auto &net = mDb.getNet(gridNets.at(rippedUpGridNetId).netId);
-
-            // if (net.getId() != 22)
-            //     continue;
 
             if (net.getPins().size() < 2)
                 continue;
@@ -533,7 +622,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
                 addPinAvoidingCostToGrid(pin, GlobalParam::gPinObstacleCost, true, false, true);
             }
         }
-        outputResults2KiCadFile(this->gridNets, "i_" + std::to_string(i));
+        outputResults2KiCadFile(this->gridNets, true, "i_" + std::to_string(i));
         if (totalCurrentRouteCost < bestTotalRouteCost) {
             std::cout << "!!!!>!!!!> Found new bestTotalRouteCost: " << totalCurrentRouteCost << ", from: " << bestTotalRouteCost << std::endl;
             bestTotalRouteCost = totalCurrentRouteCost;
@@ -551,7 +640,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     mBg.printMatPlot();
 
     // Output final result to KiCad file
-    outputResults2KiCadFile(this->bestSolution, "bestSolution");
+    outputResults2KiCadFile(this->bestSolution, true, "bestSolutionWithMerging");
+    //outputResults2KiCadFile(this->bestSolution, false, "bestSolutionWoMerging");
 }
 
 void GridBasedRouter::addPinAvoidingCostToGrid(const Pin &p, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
