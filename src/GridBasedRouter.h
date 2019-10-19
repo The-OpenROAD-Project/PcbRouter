@@ -78,9 +78,14 @@ class GridBasedRouter {
     double mMinY = std::numeric_limits<double>::max();
     double mMaxY = std::numeric_limits<double>::min();
     // Take const to below?
+    // Good for bm2
     const unsigned int inputScale = 10;
     const unsigned int enlargeBoundary = 10;
     const float grid_factor = 0.1;  // For outputing
+
+    // const unsigned int inputScale = 20;
+    // const unsigned int enlargeBoundary = 10;
+    // const float grid_factor = 0.05;  // For outputing
 };
 
 #endif
