@@ -29,8 +29,13 @@ class GridBasedRouter {
     bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
     bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
 
-    // Setup
+    // Helpers
     void setupBoardAndMappingStructure();
+    void setupGridNetsAndGridPins();
+    void addAllPinCostToGrid(const int);
+    // void addAllPinInflationCostToGrid(const int);
+    void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool, const int inflate = 0);
+    void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool, const bool, const int inflate = 0);
 
     // Pin Layers on Grid
     bool getGridLayers(const Pin &, std::vector<int> &layers);
@@ -40,7 +45,7 @@ class GridBasedRouter {
 
     int getNextRipUpNetId();
 
-    // Utility
+    // Utilities
     int dbLengthToGridLengthCeil(const double dbLength) {
         return (int)ceil(dbLength * GlobalParam::inputScale);
     }
@@ -53,8 +58,6 @@ class GridBasedRouter {
     bool dbPointToGridPointFloor(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
     bool dbPointToGridPointRound(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
     bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
-    void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool);
-    void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool, const bool);
 
    private:
     BoardGrid mBg;

@@ -29,11 +29,12 @@ int main(int argc, char *argv[]) {
     GlobalParam::setUsageStart();
 
     std::cout << "Starting router..." << std::endl;
+    if (argc >= 3) {
+        GlobalParam::inputScale = atoi(argv[2]);
+        GlobalParam::gridFactor = 1.0 / (float)GlobalParam::inputScale;
+    }
     srand(GlobalParam::gSeed);
     GridBasedRouter router(db);
-    //router.test_router();
-    //router.testRouterWithPinAndKeepoutAvoidance();
-    //router.testRouterWithAvoidanceAndVariousPadType();
     router.testRouterWithRipUpAndReroute();
 
     GlobalParam::showCurrentUsage("GridBasedRouter");

@@ -89,7 +89,7 @@ void MultipinRoute::featuresToGridPaths() {
         }
     }
 
-    std::cout << __FUNCTION__ << "(): # paths: " << this->mGridPaths.size() << std::endl;
+    // std::cout << __FUNCTION__ << "(): # paths: " << this->mGridPaths.size() << std::endl;
 
     // 2. Remove Redundant points in paths
     for (auto &path : this->mGridPaths) {
@@ -508,7 +508,11 @@ float BoardGrid::getEstimatedCostWithLayers(const Location &l) {
     return estCost;
 }
 
-void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) const {
+void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) /*const*/ {
+    // Expansion testing
+    // int clr = this->current_clearance;
+    // this->current_clearance = 0;
+
     // left
     if (l.m_x - 1 > -1) {
         Location left{l.m_x - 1, l.m_y, l.m_z};
@@ -542,11 +546,6 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     }
 
     // up
-    // Location up{l.m_x, l.m_y, l.m_z + 1};
-    // float upCost = GlobalParam::gLayerChangeCost;
-    // upCost += this->sized_via_cost_at(l, current_half_via_diameter + current_clearance);
-    // ns.push_back(std::pair<float, Location>(upCost, up));
-
     if (l.m_z + 1 < this->l) {
         Location up{l.m_x, l.m_y, l.m_z + 1};
         float upCost;
@@ -557,11 +556,6 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     }
 
     // down
-    // Location down{l.m_x, l.m_y, l.m_z - 1};
-    // float downCost = GlobalParam::gLayerChangeCost;
-    // downCost += this->sized_via_cost_at(l, current_half_via_diameter + current_clearance);
-    // ns.push_back(std::pair<float, Location>(downCost, down));
-
     if (l.m_z - 1 > -1) {
         Location down{l.m_x, l.m_y, l.m_z - 1};
         float downCost;
@@ -602,6 +596,9 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
         rbCost += sized_trace_cost_at(rb, current_half_trace_width + current_clearance);
         ns.push_back(std::pair<float, Location>(rbCost, rb));
     }
+
+    // Expansion testing
+    // this->current_clearance = clr;
 }
 
 void BoardGrid::printGnuPlot() {
@@ -889,10 +886,16 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 
 void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
     add_route_to_base_cost(route, current_half_trace_width, -GlobalParam::gTraceBasicCost, current_half_via_diameter, -GlobalParam::gViaInsertionCost);
+    // int traceHalfWidth = this->current_half_trace_width + this->current_clearance;
+    // int viaRadius = this->current_half_via_diameter + this->current_clearance;
+    // add_route_to_base_cost(route, traceHalfWidth, -GlobalParam::gTraceBasicCost, viaRadius, -GlobalParam::gViaInsertionCost);
 }
 
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     add_route_to_base_cost(route, current_half_trace_width, GlobalParam::gTraceBasicCost, current_half_via_diameter, GlobalParam::gViaInsertionCost);
+    // int traceHalfWidth = this->current_half_trace_width + this->current_clearance;
+    // int viaRadius = this->current_half_via_diameter + this->current_clearance;
+    // add_route_to_base_cost(route, traceHalfWidth, GlobalParam::gTraceBasicCost, viaRadius, GlobalParam::gViaInsertionCost);
 }
 
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost) {
@@ -1170,19 +1173,19 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     // TODO
     // check if traceWidth/clearance/viaDiameter persist
 
-    std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.gridPins.size() << std::endl;
+    std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.mGridPins.size() << std::endl;
 
-    if (route.gridPins.size() <= 1) return;
+    if (route.mGridPins.size() <= 1) return;
 
     // Clear and initialize
     this->clearAllCameFromId();
     route.currentRouteCost = 0.0;
 
-    for (size_t i = 1; i < route.gridPins.size(); ++i) {
+    for (size_t i = 1; i < route.mGridPins.size(); ++i) {
         // For early break
-        this->setTargetedPins(route.gridPins.at(i).pinWithLayers);
+        this->setTargetedPins(route.mGridPins.at(i).pinWithLayers);
         // For cost estimation (cares about x and y only)
-        current_targeted_pin = route.gridPins.at(i).pinWithLayers.front();
+        current_targeted_pin = route.mGridPins.at(i).pinWithLayers.front();
         //currentTargetedPinWithLayers = route.gridPins.at(i).pinWithLayers;
 
         // via size is half_width
@@ -1190,7 +1193,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         float routeCost = 0.0;
         // this->dijkstrasWithGridCameFrom(route.features, current_half_via_diameter);
         if (route.features.empty()) {
-            this->aStarWithGridCameFrom(route.gridPins.front().pinWithLayers, finalEnd, routeCost);
+            this->aStarWithGridCameFrom(route.mGridPins.front().pinWithLayers, finalEnd, routeCost);
         } else {
             this->aStarWithGridCameFrom(route.features, finalEnd, routeCost);
         }
@@ -1205,7 +1208,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         }
 
         // For early break
-        this->clearTargetedPins(route.gridPins.at(i).pinWithLayers);
+        this->clearTargetedPins(route.mGridPins.at(i).pinWithLayers);
         // For cost estimation
         current_targeted_pin = Location{0, 0, 0};
         //currentTargetedPinWithLayers.clear();
@@ -1230,11 +1233,11 @@ void BoardGrid::ripup_route(MultipinRoute &route) {
 }
 
 void BoardGrid::set_current_rules(const int clr, const int trWid, const int viaDia) {
-    current_trace_width = trWid;
-    current_half_trace_width = (int)floor((double)trWid / 2.0);
-    current_clearance = clr;
-    current_via_diameter = viaDia;
-    current_half_via_diameter = (int)floor((double)viaDia / 2.0);
+    this->current_trace_width = trWid;
+    this->current_half_trace_width = (int)floor((double)trWid / 2.0);
+    this->current_clearance = clr;
+    this->current_via_diameter = viaDia;
+    this->current_half_via_diameter = (int)floor((double)viaDia / 2.0);
 
     cout << __FUNCTION__ << "() curTraceWid: " << this->current_trace_width
          << ", curHalfTraceWid: " << this->current_half_trace_width

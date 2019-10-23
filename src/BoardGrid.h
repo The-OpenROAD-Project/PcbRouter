@@ -129,9 +129,12 @@ class GridPin {
 
     friend class BoardGrid;
     friend class MultipinRoute;
+    friend class GridBasedRouter;
 
    private:
     std::vector<Location> pinWithLayers;
+    Location pinLL;
+    Location pinUR;
 };
 
 class GridPath {
@@ -157,7 +160,7 @@ class MultipinRoute {
     float currentRouteCost = 0.0;
     std::vector<Location> pins;
     std::vector<Location> features;
-    std::vector<GridPin> gridPins;
+    std::vector<GridPin> mGridPins;
 
     //derived from features, doesn't guarantee updated
     std::vector<GridPath> mGridPaths;
@@ -170,12 +173,16 @@ class MultipinRoute {
         mGridPaths.push_back(GridPath{});
         return mGridPaths.back();
     }
-    void addPin(std::vector<Location> &_pinWithLayers) {
-        //TODO:: Optimize below for speeding up
-        GridPin gridPin;
-        gridPin.pinWithLayers = _pinWithLayers;
-        gridPins.push_back(gridPin);
+    GridPin &getNewGridPin() {
+        mGridPins.push_back(GridPin{});
+        return mGridPins.back();
     }
+    // void addPin(std::vector<Location> &_pinWithLayers) {
+    //     //TODO:: Optimize below for speeding up
+    //     GridPin gridPin;
+    //     gridPin.pinWithLayers = _pinWithLayers;
+    //     mGridPins.push_back(gridPin);
+    // }
 
     MultipinRoute() {
     }
@@ -286,7 +293,7 @@ class BoardGrid {
     std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
     void came_from_to_features(const Location &end, std::vector<Location> &features) const;
 
-    void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) const;
+    void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) /*const*/;
 
     std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
     std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);

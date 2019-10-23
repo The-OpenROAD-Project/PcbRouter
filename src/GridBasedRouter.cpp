@@ -401,6 +401,55 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
     mBg.initilization(w, h, l);
 }
 
+void GridBasedRouter::setupGridNetsAndGridPins() {
+    std::cout << "Starting " << __FUNCTION__ << "()..." << std::endl;
+
+    auto &nets = mDb.getNets();
+    for (auto &net : nets) {
+        std::cout << "Net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+
+        gridNets.push_back(MultipinRoute{net.getId()});
+        auto &gridRoute = gridNets.back();
+        auto &pins = net.getPins();
+        for (auto &pin : pins) {
+            // TODO: Id Range Checking?
+            // DB elements
+            auto &comp = mDb.getComponent(pin.getCompId());
+            auto &inst = mDb.getInstance(pin.getInstId());
+            auto &pad = comp.getPadstack(pin.getPadstackId());
+            // Router grid element
+            auto &gridPin = gridRoute.getNewGridPin();
+
+            // Setup GridPin's location with layers
+            Point_2D<double> pinDbLocation;
+            mDb.getPinPosition(pin, &pinDbLocation);
+            Point_2D<double> pinGridLocation;
+            // TODO:: Should change to round
+            dbPointToGridPoint(pinDbLocation, pinGridLocation);
+            std::vector<int> layers;
+            this->getGridLayers(pin, layers);
+
+            std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
+            for (auto layer : layers) {
+                gridPin.pinWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
+                std::cout << " " << layer;
+            }
+            std::cout << ", #layers:" << gridPin.pinWithLayers.size() << " " << layers.size() << std::endl;
+
+            // Setup GridPin's LL,UR boundary
+            double width = 0, height = 0;
+            mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
+            Point_2D<double> pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
+            Point_2D<double> pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
+            Point_2D<int> pinGridLL, pinGridUR;
+            dbPointToGridPointRound(pinDbUR, pinGridUR);
+            dbPointToGridPointRound(pinDbLL, pinGridLL);
+        }
+    }
+
+    std::cout << "End of " << __FUNCTION__ << "()..." << std::endl;
+}
+
 void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     std::cout << std::fixed << std::setprecision(5);
     std::cout << std::endl
@@ -439,19 +488,18 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
             mDb.getPinPosition(pin, &pinDbLocation);
             point_2d pinGridLocation;  // should be in int
             dbPointToGridPoint(pinDbLocation, pinGridLocation);
-            std::vector<Location> pinLocationWithLayers;
             std::vector<int> layers;
             this->getGridLayers(pin, layers);
+            auto &gridPin = route.getNewGridPin();
 
             std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
             for (auto layer : layers) {
-                pinLocationWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
+                gridPin.pinWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
                 std::cout << " " << layer;
             }
-            std::cout << ", #layers:" << pinLocationWithLayers.size() << " " << layers.size() << std::endl;
+            std::cout << ", #layers:" << gridPin.pinWithLayers.size() << " " << layers.size() << std::endl;
 
-            route.addPin(pinLocationWithLayers);
-            // Temporary reomve the pin cost on base cost grid
+            // Temporary remove the pin cost on base cost grid
             addPinAvoidingCostToGrid(pin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
 
@@ -493,25 +541,14 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     // ====> Put pin rectangle into GridPin and use the rect template....
     // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
 
+    // Initilization
     this->setupBoardAndMappingStructure();
+    this->setupGridNetsAndGridPins();
 
-    // Add all instances' pins to a cost in grid
-    auto &instances = mDb.getInstances();
-    for (auto &inst : instances) {
-        if (!mDb.isComponentId(inst.getComponentId())) {
-            std::cerr << __FUNCTION__ << "(): Illegal component Id: " << inst.getComponentId() << ", from Instance: " << inst.getName() << std::endl;
-            continue;
-        }
-
-        auto &comp = mDb.getComponent(inst.getComponentId());
-        for (auto &pad : comp.getPadstacks()) {
-            // Add cost to both via/base cost grid
-            addPinAvoidingCostToGrid(pad, inst, GlobalParam::gPinObstacleCost, true, true, true);
-        }
-    }
+    // Add all instances' pins to a cost in grid (without inflation for spacing)
+    this->addAllPinCostToGrid(0);
 
     // Add all nets to grid routes
-    //std::vector<MultipinRoute> multipinNets;
     double totalCurrentRouteCost = 0.0;
     double bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
@@ -524,26 +561,12 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
             continue;
 
         gridNets.push_back(MultipinRoute{net.getId()});
-        auto &gridRoute = gridNets.back();
-        auto &pins = net.getPins();
-        for (auto &pin : pins) {
-            point_2d pinDbLocation;
-            mDb.getPinPosition(pin, &pinDbLocation);
-            point_2d pinGridLocation;  // should be in int
-            dbPointToGridPoint(pinDbLocation, pinGridLocation);
-            std::vector<Location> pinLocationWithLayers;
-            std::vector<int> layers;
-            this->getGridLayers(pin, layers);
+        auto &gridRoute = gridNets.at(net.getId());
+        if (net.getId() != gridRoute.netId)
+            std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
-            std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
-            for (auto layer : layers) {
-                pinLocationWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
-                std::cout << " " << layer;
-            }
-            std::cout << ", #layers:" << pinLocationWithLayers.size() << " " << layers.size() << std::endl;
-
-            gridRoute.addPin(pinLocationWithLayers);
-            // Temporary reomve the pin cost on base cost grid
+        // Temporary reomve the pin cost on base cost grid
+        for (auto &pin : net.getPins()) {
             addPinAvoidingCostToGrid(pin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
 
@@ -559,7 +582,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
         std::cout << "=====> currentRouteCost: " << gridRoute.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
 
         // Put back the pin cost on base cost grid
-        for (auto &pin : pins) {
+        for (auto &pin : net.getPins()) {
             addPinAvoidingCostToGrid(pin, GlobalParam::gPinObstacleCost, true, false, true);
         }
     }
@@ -576,30 +599,19 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
               << std::endl;
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < 5; ++i) {
-        int rippedUpGridNetId = 0;
-
+    for (int i = 0; i < 3; ++i) {
         for (auto &net : nets) {
-            // int rippedUpGridNetId = getNextRipUpNetId();
-            // if (rippedUpGridNetId > gridNets.size()) {
-            //     std::cout << "!!!!!!! illegal gridNetId: " << rippedUpGridNetId << std::endl;
-            //     continue;
-            // }
-            // std::cout << "\n\nRip-up and re-route gridNetId: " << rippedUpGridNetId << std::endl;
-
             if (net.getPins().size() < 2)
                 continue;
 
-            auto &gridRoute = gridNets.at(rippedUpGridNetId);
+            //auto &gridRoute = gridNets.at(rippedUpGridNetId);
+            auto &gridRoute = gridNets.at(net.getId());
             if (net.getId() != gridRoute.netId)
-                std::cout << "!!!!!!! inconsistent gridNetId: " << rippedUpGridNetId << ", net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
-
-            rippedUpGridNetId++;
+                std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
             std::cout << "\n\ni=" << i << ", Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
 
-            auto &pins = net.getPins();
-            for (auto &pin : pins) {
+            for (auto &pin : net.getPins()) {
                 // Temporary reomve the pin cost on base cost grid
                 addPinAvoidingCostToGrid(pin, -GlobalParam::gPinObstacleCost, true, false, true);
             }
@@ -618,7 +630,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
             totalCurrentRouteCost += gridRoute.currentRouteCost;
 
             // Put back the pin cost on base cost grid
-            for (auto &pin : pins) {
+            for (auto &pin : net.getPins()) {
                 addPinAvoidingCostToGrid(pin, GlobalParam::gPinObstacleCost, true, false, true);
             }
         }
@@ -644,16 +656,48 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     //outputResults2KiCadFile(this->bestSolution, false, "bestSolutionWoMerging");
 }
 
-void GridBasedRouter::addPinAvoidingCostToGrid(const Pin &p, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
+void GridBasedRouter::addAllPinCostToGrid(const int inflate) {
+    auto &instances = mDb.getInstances();
+    for (auto &inst : instances) {
+        if (!mDb.isComponentId(inst.getComponentId())) {
+            std::cerr << __FUNCTION__ << "(): Illegal component Id: " << inst.getComponentId() << ", from Instance: " << inst.getName() << std::endl;
+            continue;
+        }
+
+        auto &comp = mDb.getComponent(inst.getComponentId());
+        for (auto &pad : comp.getPadstacks()) {
+            // Add cost to both via/base cost grid
+            addPinAvoidingCostToGrid(pad, inst, GlobalParam::gPinObstacleCost, true, true, true, inflate);
+        }
+    }
+}
+
+// void GridBasedRouter::addAllPinInflationCostToGrid(const int inflate) {
+//     auto &instances = mDb.getInstances();
+//     for (auto &inst : instances) {
+//         if (!mDb.isComponentId(inst.getComponentId())) {
+//             std::cerr << __FUNCTION__ << "(): Illegal component Id: " << inst.getComponentId() << ", from Instance: " << inst.getName() << std::endl;
+//             continue;
+//         }
+
+//         auto &comp = mDb.getComponent(inst.getComponentId());
+//         for (auto &pad : comp.getPadstacks()) {
+//             // Add cost to both via/base cost grid
+//             addPinAvoidingCostToGrid(pad, inst, GlobalParam::gPinObstacleCost, true, true, true, inflate);
+//         }
+//     }
+// }
+
+void GridBasedRouter::addPinAvoidingCostToGrid(const Pin &p, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost, const int inflate) {
     // TODO: Id Range Checking?
     auto &comp = mDb.getComponent(p.getCompId());
     auto &inst = mDb.getInstance(p.getInstId());
     auto &pad = comp.getPadstack(p.getPadstackId());
 
-    addPinAvoidingCostToGrid(pad, inst, value, toViaCost, toViaForbidden, toBaseCost);
+    addPinAvoidingCostToGrid(pad, inst, value, toViaCost, toViaForbidden, toBaseCost, inflate);
 }
 
-void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instance &inst, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
+void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instance &inst, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost, const int inflate) {
     Point_2D<double> pinDbLocation;
     mDb.getPinPosition(pad, inst, &pinDbLocation);
     double width = 0, height = 0;
@@ -663,12 +707,18 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
     Point_2D<int> pinGridLL, pinGridUR;
     dbPointToGridPointRound(pinDbUR, pinGridUR);
     dbPointToGridPointRound(pinDbLL, pinGridLL);
+    if (inflate > 0) {
+        pinGridUR.m_x += inflate;
+        pinGridUR.m_y += inflate;
+        pinGridLL.m_x -= inflate;
+        pinGridLL.m_y -= inflate;
+    }
     std::cout << __FUNCTION__ << "()"
               << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
     std::cout << ", cost:" << value << ", inst:" << inst.getName() << "(" << inst.getId() << "), pad:"
               << pad.getName() << ", at(" << pinDbLocation.m_x << ", " << pinDbLocation.m_y
               << "), w:" << width << ", h:" << height << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR
-              << ", layers:";
+              << ", inflate: " << inflate << ", layers:";
 
     // TODO: Unify Rectangle to set costs
     // Get layer from Padstack's type and instance's layers
@@ -680,7 +730,6 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const padstack &pad, const instan
     }
     std::cout << std::endl;
 
-    //const auto &layers = pad.getLayers();
     for (auto &layer : layers) {
         for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {
             for (int y = pinGridLL.m_y; y <= pinGridUR.m_y; ++y) {
