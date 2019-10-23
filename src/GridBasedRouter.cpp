@@ -249,7 +249,7 @@ bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipi
             }
         }
         std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size()
-                  << ", Total WL: " << netEstWL << ", Total Grid WL: " << netEstGridWL << ", #Vias: " << netNumVia << std::endl;
+                  << ", Total WL: " << netEstWL << ", Total Grid WL: " << netEstGridWL << ", #Vias: " << netNumVia << ", currentRouteCost: " << mpNet.currentRouteCost << std::endl;
     }
 
     std::cout << "\tEstimated Total WL: " << totalEstWL << ", Total Grid WL: " << totalEstGridWL << ", Total # Vias: " << totalNumVia << std::endl;

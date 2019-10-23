@@ -1174,7 +1174,9 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
 
     if (route.gridPins.size() <= 1) return;
 
+    // Clear and initialize
     this->clearAllCameFromId();
+    route.currentRouteCost = 0.0;
 
     for (size_t i = 1; i < route.gridPins.size(); ++i) {
         // For early break
@@ -1185,12 +1187,14 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
 
         // via size is half_width
         Location finalEnd{0, 0, 0};
+        float routeCost = 0.0;
         // this->dijkstrasWithGridCameFrom(route.features, current_half_via_diameter);
         if (route.features.empty()) {
-            this->aStarWithGridCameFrom(route.gridPins.front().pinWithLayers, finalEnd, route.currentRouteCost);
+            this->aStarWithGridCameFrom(route.gridPins.front().pinWithLayers, finalEnd, routeCost);
         } else {
-            this->aStarWithGridCameFrom(route.features, finalEnd, route.currentRouteCost);
+            this->aStarWithGridCameFrom(route.features, finalEnd, routeCost);
         }
+        route.currentRouteCost += routeCost;
 
         std::vector<Location> new_features;
         // TODO Fix this, when THROUGH PAD as a start?
