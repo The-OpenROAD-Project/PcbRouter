@@ -17,9 +17,9 @@ class GridBasedRouter {
     // ctor
     GridBasedRouter(kicadPcbDataBase &db) : mDb(db) {}
     // dtor
-    ~GridBasedRouter(){}
+    ~GridBasedRouter() {}
 
-        [[deprecated]] void test_router();
+    void test_router();
     void testRouterWithPinAndKeepoutAvoidance();
     void testRouterWithAvoidanceAndVariousPadType();
     void testRouterWithRipUpAndReroute();
