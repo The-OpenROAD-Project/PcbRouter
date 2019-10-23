@@ -17,6 +17,10 @@ double GlobalParam::gLayerChangeCost = 10.0;        //Cost for path searching
 double GlobalParam::gViaInsertionCost = 100.0;      //Cost added to the via grid
 double GlobalParam::gTraceBasicCost = 10.0;         //100?        //Cost added to the base grid by traces
 double GlobalParam::gPinObstacleCost = 1000.0;      //2000?   //Cost for obstacle pins added to the via (or/and) base grid
+// Grid Setup
+unsigned int GlobalParam::inputScale = 10;
+unsigned int GlobalParam::enlargeBoundary = 10;
+float GlobalParam::gridFactor = 0.1;  // 1/inputScale
 // Routing Options
 bool GlobalParam::gViaUnderPad = false;
 // Outputfile

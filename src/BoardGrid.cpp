@@ -492,7 +492,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 
 float BoardGrid::getEstimatedCost(const Location &l) {
     return max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
-    //return abs(l.m_x - this->current_targeted_pin.m_x) + abs(l.m_y - this->current_targeted_pin.m_y);
+    // return abs(l.m_x - this->current_targeted_pin.m_x) + abs(l.m_y - this->current_targeted_pin.m_y);
     // int absDiffX = abs(l.m_x - this->current_targeted_pin.m_x);
     // int absDiffY = abs(l.m_y - this->current_targeted_pin.m_y);
     // int minDiff = min(absDiffX, absDiffY);

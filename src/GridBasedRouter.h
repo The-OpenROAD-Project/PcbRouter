@@ -42,10 +42,10 @@ class GridBasedRouter {
 
     // Utility
     int dbLengthToGridLengthCeil(const double dbLength) {
-        return (int)ceil(dbLength * inputScale);
+        return (int)ceil(dbLength * GlobalParam::inputScale);
     }
     int dbLengthToGridLengthFloor(const double dbLength) {
-        return (int)floor(dbLength * inputScale);
+        return (int)floor(dbLength * GlobalParam::inputScale);
     }
 
     bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
@@ -79,9 +79,9 @@ class GridBasedRouter {
     double mMaxY = std::numeric_limits<double>::min();
     // Take const to below?
     // Good for bm2
-    const unsigned int inputScale = 10;
-    const unsigned int enlargeBoundary = 10;
-    const float grid_factor = 0.1;  // For outputing
+    //const unsigned int inputScale = 10;
+    //const unsigned int enlargeBoundary = 10;
+    //const float grid_factor = 0.1;  // For outputing
 
     // const unsigned int inputScale = 20;
     // const unsigned int enlargeBoundary = 10;

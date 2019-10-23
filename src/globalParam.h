@@ -47,6 +47,11 @@ class GlobalParam {
     static double gTraceBasicCost;
     static double gPinObstacleCost;
 
+    //Grid Setup
+    static unsigned int inputScale;
+    static unsigned int enlargeBoundary;
+    static float gridFactor;  // For outputing
+
     //Routing Options
     static bool gViaUnderPad;
 

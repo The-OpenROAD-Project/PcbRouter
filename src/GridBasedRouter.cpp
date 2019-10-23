@@ -125,7 +125,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
                     ++netNumVia;
 
                     ofs << "(via";
-                    ofs << " (at " << grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+                    ofs << " (at " << GlobalParam::gridFactor * (prevLocation.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (prevLocation.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
                     ofs << " (size " << netclass.getViaDia() << ")";
                     ofs << " (drill " << netclass.getViaDrill() << ")";
                     ofs << " (layers Top Bottom)";
@@ -135,8 +135,8 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
 
                 // Print Segment/Track/Wire
                 if (feature.m_x != prevLocation.m_x || feature.m_y != prevLocation.m_y) {
-                    point_2d start{grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2)};
-                    point_2d end{grid_factor * (feature.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (feature.m_y + mMinY * inputScale - enlargeBoundary / 2)};
+                    point_2d start{GlobalParam::gridFactor * (prevLocation.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2), GlobalParam::gridFactor * (prevLocation.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2)};
+                    point_2d end{GlobalParam::gridFactor * (feature.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2), GlobalParam::gridFactor * (feature.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2)};
                     totalEstWL += point_2d::getDistance(start, end);
                     totalEstGridWL += Location::getDistance2D(prevLocation, feature);
                     netEstWL += point_2d::getDistance(start, end);
@@ -220,7 +220,7 @@ bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipi
                     ++netNumVia;
 
                     ofs << "(via";
-                    ofs << " (at " << grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+                    ofs << " (at " << GlobalParam::gridFactor * (prevLocation.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (prevLocation.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
                     ofs << " (size " << netclass.getViaDia() << ")";
                     ofs << " (drill " << netclass.getViaDrill() << ")";
                     ofs << " (layers Top Bottom)";
@@ -230,8 +230,8 @@ bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipi
 
                 // Print Segment/Track/Wire
                 if (location.m_x != prevLocation.m_x || location.m_y != prevLocation.m_y) {
-                    point_2d start{grid_factor * (prevLocation.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (prevLocation.m_y + mMinY * inputScale - enlargeBoundary / 2)};
-                    point_2d end{grid_factor * (location.m_x + mMinX * inputScale - enlargeBoundary / 2), grid_factor * (location.m_y + mMinY * inputScale - enlargeBoundary / 2)};
+                    point_2d start{GlobalParam::gridFactor * (prevLocation.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2), GlobalParam::gridFactor * (prevLocation.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2)};
+                    point_2d end{GlobalParam::gridFactor * (location.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2), GlobalParam::gridFactor * (location.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2)};
                     totalEstWL += point_2d::getDistance(start, end);
                     totalEstGridWL += Location::getDistance2D(prevLocation, location);
                     netEstWL += point_2d::getDistance(start, end);
@@ -265,11 +265,11 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
     // Get board dimension
     mDb.getBoardBoundaryByPinLocation(mMinX, mMaxX, mMinY, mMaxY);
     std::cout << "Routing Outline: (" << mMinX << ", " << mMinY << "), (" << mMaxX << ", " << mMaxY << ")" << std::endl;
-    std::cout << "inputScale: " << inputScale << ", enlargeBoundary: " << enlargeBoundary << ", grid_factor: " << grid_factor << std::endl;
+    std::cout << "GlobalParam::inputScale: " << GlobalParam::inputScale << ", GlobalParam::enlargeBoundary: " << GlobalParam::enlargeBoundary << ", GlobalParam::gridFactor: " << GlobalParam::gridFactor << std::endl;
 
     // Get grid dimension
-    const unsigned int h = int(std::abs(mMaxY * inputScale - mMinY * inputScale)) + enlargeBoundary;
-    const unsigned int w = int(std::abs(mMaxX * inputScale - mMinX * inputScale)) + enlargeBoundary;
+    const unsigned int h = int(std::abs(mMaxY * GlobalParam::inputScale - mMinY * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
+    const unsigned int w = int(std::abs(mMaxX * GlobalParam::inputScale - mMinX * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
     const unsigned int l = mDb.getNumCopperLayers();
     std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
     for (auto &layerIte : mDb.getCopperLayers()) {
@@ -360,11 +360,11 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
     // Get board dimension
     mDb.getBoardBoundaryByPinLocation(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
     std::cout << "Routing Outline: (" << this->mMinX << ", " << this->mMinY << "), (" << this->mMaxX << ", " << this->mMaxY << ")" << std::endl;
-    std::cout << "inputScale: " << inputScale << ", enlargeBoundary: " << enlargeBoundary << ", grid_factor: " << grid_factor << std::endl;
+    std::cout << "GlobalParam::inputScale: " << GlobalParam::inputScale << ", GlobalParam::enlargeBoundary: " << GlobalParam::enlargeBoundary << ", GlobalParam::gridFactor: " << GlobalParam::gridFactor << std::endl;
 
     // Get grid dimension
-    const unsigned int h = int(std::abs(mMaxY * inputScale - mMinY * inputScale)) + enlargeBoundary;
-    const unsigned int w = int(std::abs(mMaxX * inputScale - mMinX * inputScale)) + enlargeBoundary;
+    const unsigned int h = int(std::abs(mMaxY * GlobalParam::inputScale - mMinY * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
+    const unsigned int w = int(std::abs(mMaxX * GlobalParam::inputScale - mMinX * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
     const unsigned int l = mDb.getNumCopperLayers();
     std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
 
@@ -745,37 +745,37 @@ int GridBasedRouter::getNextRipUpNetId() {
 
 bool GridBasedRouter::dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt) {
     //TODO: boundary checking
-    gridPt.m_x = dbPt.m_x * inputScale - mMinX * inputScale + enlargeBoundary / 2;
-    gridPt.m_y = dbPt.m_y * inputScale - mMinY * inputScale + enlargeBoundary / 2;
+    gridPt.m_x = dbPt.m_x * GlobalParam::inputScale - mMinX * GlobalParam::inputScale + GlobalParam::enlargeBoundary / 2;
+    gridPt.m_y = dbPt.m_y * GlobalParam::inputScale - mMinY * GlobalParam::inputScale + GlobalParam::enlargeBoundary / 2;
     return true;
 }
 
 bool GridBasedRouter::dbPointToGridPointCeil(const Point_2D<double> &dbPt, Point_2D<int> &gridPt) {
     //TODO: boundary checking
-    gridPt.m_x = ceil(dbPt.m_x * inputScale - mMinX * inputScale + (double)enlargeBoundary / 2);
-    gridPt.m_y = ceil(dbPt.m_y * inputScale - mMinY * inputScale + (double)enlargeBoundary / 2);
+    gridPt.m_x = ceil(dbPt.m_x * GlobalParam::inputScale - mMinX * GlobalParam::inputScale + (double)GlobalParam::enlargeBoundary / 2);
+    gridPt.m_y = ceil(dbPt.m_y * GlobalParam::inputScale - mMinY * GlobalParam::inputScale + (double)GlobalParam::enlargeBoundary / 2);
     return true;
 }
 
 bool GridBasedRouter::dbPointToGridPointFloor(const Point_2D<double> &dbPt, Point_2D<int> &gridPt) {
     //TODO: boundary checking
-    gridPt.m_x = floor(dbPt.m_x * inputScale - mMinX * inputScale + (double)enlargeBoundary / 2);
-    gridPt.m_y = floor(dbPt.m_y * inputScale - mMinY * inputScale + (double)enlargeBoundary / 2);
+    gridPt.m_x = floor(dbPt.m_x * GlobalParam::inputScale - mMinX * GlobalParam::inputScale + (double)GlobalParam::enlargeBoundary / 2);
+    gridPt.m_y = floor(dbPt.m_y * GlobalParam::inputScale - mMinY * GlobalParam::inputScale + (double)GlobalParam::enlargeBoundary / 2);
     return true;
 }
 
 bool GridBasedRouter::dbPointToGridPointRound(const Point_2D<double> &dbPt, Point_2D<int> &gridPt) {
     //TODO: boundary checking
-    gridPt.m_x = round(dbPt.m_x * inputScale - mMinX * inputScale + (double)enlargeBoundary / 2);
-    gridPt.m_y = round(dbPt.m_y * inputScale - mMinY * inputScale + (double)enlargeBoundary / 2);
+    gridPt.m_x = round(dbPt.m_x * GlobalParam::inputScale - mMinX * GlobalParam::inputScale + (double)GlobalParam::enlargeBoundary / 2);
+    gridPt.m_y = round(dbPt.m_y * GlobalParam::inputScale - mMinY * GlobalParam::inputScale + (double)GlobalParam::enlargeBoundary / 2);
     return true;
 }
 
 bool GridBasedRouter::gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt) {
     //TODO: boundary checking
     //TODO: consider integer ceiling or flooring???
-    dbPt.m_x = grid_factor * (gridPt.m_x + mMinX * inputScale - (double)enlargeBoundary / 2);
-    dbPt.m_y = grid_factor * (gridPt.m_y + mMinY * inputScale - (double)enlargeBoundary / 2);
+    dbPt.m_x = GlobalParam::gridFactor * (gridPt.m_x + mMinX * GlobalParam::inputScale - (double)GlobalParam::enlargeBoundary / 2);
+    dbPt.m_y = GlobalParam::gridFactor * (gridPt.m_y + mMinY * GlobalParam::inputScale - (double)GlobalParam::enlargeBoundary / 2);
     return true;
 }
 
@@ -806,8 +806,8 @@ void GridBasedRouter::test_router() {
     std::cout << "Routing Outline From DB: (" << mMinX << ", " << mMinY << "), (" << mMaxX << ", " << mMaxY << ")" << std::endl;
 
     // Initialize board grid
-    const unsigned int h = int(std::abs(mMaxY * inputScale - mMinY * inputScale)) + enlargeBoundary;
-    const unsigned int w = int(std::abs(mMaxX * inputScale - mMinX * inputScale)) + enlargeBoundary;
+    const unsigned int h = int(std::abs(mMaxY * GlobalParam::inputScale - mMinY * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
+    const unsigned int w = int(std::abs(mMaxX * GlobalParam::inputScale - mMinX * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
     // BM*
     const unsigned int l = 2;
     // BBBW
@@ -834,7 +834,7 @@ void GridBasedRouter::test_router() {
         std::vector<Location> pins;
         for (auto ite : routerInfo.at(i)) {
             std::cout << "\t(" << ite.first << ", " << ite.second << ")";
-            pins.push_back(Location(ite.first * inputScale - mMinX * inputScale + enlargeBoundary / 2, ite.second * inputScale - mMinY * inputScale + enlargeBoundary / 2, 0));
+            pins.push_back(Location(ite.first * GlobalParam::inputScale - mMinX * GlobalParam::inputScale + GlobalParam::enlargeBoundary / 2, ite.second * GlobalParam::inputScale - mMinY * GlobalParam::inputScale + GlobalParam::enlargeBoundary / 2, 0));
             std::cout << " location in grid: " << pins.back() << std::endl;
         }
 
@@ -902,7 +902,7 @@ void GridBasedRouter::test_router() {
       if (twoPinNets[r].features[i].m_z != last_location.m_z)
       {
         std::cout << "(via";
-        std::cout << " (at " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (at " << GlobalParam::gridFactor * (last_location.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (last_location.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
         // BM2
         //std::cout << " (size 0.8001)";
         //std::cout << " (drill 0.3937)";
@@ -914,7 +914,7 @@ void GridBasedRouter::test_router() {
         std::cout << ")" << std::endl;
 
         ofs << "(via";
-        ofs << " (at " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (at " << GlobalParam::gridFactor * (last_location.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (last_location.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
         // BM2
         //ofs << " (size 0.8001)";
         //ofs << " (drill 0.3937)";
@@ -930,8 +930,8 @@ void GridBasedRouter::test_router() {
       {
         // Wire/Tack/Segment
         std::cout << "(segment";
-        std::cout << " (start " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
-        std::cout << " (end " << grid_factor * (twoPinNets[r].features[i].m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        std::cout << " (start " << GlobalParam::gridFactor * (last_location.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (last_location.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
+        std::cout << " (end " << GlobalParam::gridFactor * (twoPinNets[r].features[i].m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (twoPinNets[r].features[i].m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
         // BM2
         //std::cout << " (width 0.2032)";
         // BBBW
@@ -941,8 +941,8 @@ void GridBasedRouter::test_router() {
         std::cout << ")" << std::endl;
 
         ofs << "(segment";
-        ofs << " (start " << grid_factor * (last_location.m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (last_location.m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
-        ofs << " (end " << grid_factor * (twoPinNets[r].features[i].m_x + mMinX * inputScale - enlargeBoundary / 2) << " " << grid_factor * (twoPinNets[r].features[i].m_y + mMinY * inputScale - enlargeBoundary / 2) << ")";
+        ofs << " (start " << GlobalParam::gridFactor * (last_location.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (last_location.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
+        ofs << " (end " << GlobalParam::gridFactor * (twoPinNets[r].features[i].m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (twoPinNets[r].features[i].m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
         // BM2
         //ofs << " (width 0.2032)";
         // BBBW
@@ -977,8 +977,8 @@ void GridBasedRouter::test_router() {
           }
 
           std::cout << "\t" << "<wire ";
-          std::cout << "x1=\"" << grid_factor * last_location.m_x << "\" y1=\"" << grid_factor * last_location.m_y << "\" ";
-          std::cout << "x2=\"" << grid_factor * twoPinNets[r].features[i].m_x << "\" y2=\"" << grid_factor * twoPinNets[r].features[i].m_y << "\" ";
+          std::cout << "x1=\"" << GlobalParam::gridFactor * last_location.m_x << "\" y1=\"" << GlobalParam::gridFactor * last_location.m_y << "\" ";
+          std::cout << "x2=\"" << GlobalParam::gridFactor * twoPinNets[r].features[i].m_x << "\" y2=\"" << GlobalParam::gridFactor * twoPinNets[r].features[i].m_y << "\" ";
           std::cout << "width=\"" << 0.6096 << "\" layer=\"" << layer << "\"";
           std::cout << "/>";
           std::cout << std::endl;
@@ -1011,8 +1011,8 @@ void GridBasedRouter::test_router() {
             }
 
             std::cout << "\t" << "<wire ";
-            std::cout << "x1=\"" << grid_factor * last_location.m_x << "\" y1=\"" << grid_factor * last_location.m_y << "\" ";
-            std::cout << "x2=\"" << grid_factor * multipinNets[mpr].features[i].m_x << "\" y2=\"" << grid_factor * multipinNets[mpr].features[i].m_y << "\" ";
+            std::cout << "x1=\"" << GlobalParam::gridFactor * last_location.m_x << "\" y1=\"" << GlobalParam::gridFactor * last_location.m_y << "\" ";
+            std::cout << "x2=\"" << GlobalParam::gridFactor * multipinNets[mpr].features[i].m_x << "\" y2=\"" << GlobalParam::gridFactor * multipinNets[mpr].features[i].m_y << "\" ";
             std::cout << "width=\"" << 0.6096 << "\" layer=\"" << layer << "\"";
             std::cout << "/>";
             std::cout << std::endl;
