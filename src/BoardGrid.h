@@ -288,6 +288,7 @@ class BoardGrid {
     void clearAllCameFromId();
     // cost
     float getEstimatedCost(const Location &l);
+    float getEstimatedCostWithBendingCost(const Location &current, const Location &next);
     float getEstimatedCostWithLayers(const Location &l);
 
     //TODO: refactor on the trace/via size and their cost......

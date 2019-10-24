@@ -646,7 +646,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
               << std::endl;
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 5; ++i) {
         for (auto &net : nets) {
             if (net.getPins().size() < 2)
                 continue;
@@ -787,7 +787,7 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const GridPin &gridPin, const flo
     std::cout << __FUNCTION__ << "()"
               << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
     std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR
-              << ", inflate: " << inflate << ", layers:";
+              << ", inflate: " << inflate << std::endl;
 
     for (auto &location : gridPin.getPinWithLayers()) {
         for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {

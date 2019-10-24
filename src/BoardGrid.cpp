@@ -432,7 +432,6 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         // Walked cost + estimated future cost
         float cost = 0.0 + getEstimatedCost(start);
         this->working_cost_set(0.0, start);
-        //this->working_cost_set(cost, start);
         frontier.push(start, cost);
         // std::cerr << "\tPQ: cost: " << cost << ", at" << start << std::endl;
         // Set a ending for the backtracking
@@ -451,12 +450,11 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 
         for (std::pair<float, Location> next : neighbors) {
             float new_cost = this->working_cost_at(current);
-            // new_cost += this->base_cost_at(next.second);
-            // new_cost += this->via_cost_at(next.second);
             new_cost += next.first;
             // A*
-            float estCost = getEstimatedCost(next.second);
-            //new_cost += getEstimatedCost(next.second);
+            // float estCost = getEstimatedCost(next.second);
+            // Test bending cost
+            float estCost = getEstimatedCostWithBendingCost(current, next.second);
 
             if (new_cost < this->working_cost_at(next.second)) {
                 this->working_cost_set(new_cost, next.second);
@@ -491,13 +489,36 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 }
 
 float BoardGrid::getEstimatedCost(const Location &l) {
-    return max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
+    // return max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
     // return abs(l.m_x - this->current_targeted_pin.m_x) + abs(l.m_y - this->current_targeted_pin.m_y);
-    // int absDiffX = abs(l.m_x - this->current_targeted_pin.m_x);
-    // int absDiffY = abs(l.m_y - this->current_targeted_pin.m_y);
-    // int minDiff = min(absDiffX, absDiffY);
-    // int maxDiff = max(absDiffX, absDiffY);
-    // return minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff;
+    int absDiffX = abs(l.m_x - this->current_targeted_pin.m_x);
+    int absDiffY = abs(l.m_y - this->current_targeted_pin.m_y);
+    int minDiff = min(absDiffX, absDiffY);
+    int maxDiff = max(absDiffX, absDiffY);
+    return (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff;
+}
+
+float BoardGrid::getEstimatedCostWithBendingCost(const Location &current, const Location &next) {
+    int currentId = this->locationToId(current);
+    int prevId = this->getCameFromId(current);
+    float bendingCost = 0;
+    if (prevId != currentId) {
+        Location prev;
+        this->idToLocation(prevId, prev);
+
+        if (prev.z() == current.z() &&
+            current.z() == next.z() &&
+            prev.x() - current.x() == current.x() - next.x() &&
+            prev.y() - current.y() == current.y() - next.y()) {
+            bendingCost = 0.5;
+        }
+    }
+
+    int absDiffX = abs(next.m_x - this->current_targeted_pin.m_x);
+    int absDiffY = abs(next.m_y - this->current_targeted_pin.m_y);
+    int minDiff = min(absDiffX, absDiffY);
+    int maxDiff = max(absDiffX, absDiffY);
+    return (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff - bendingCost;
 }
 
 float BoardGrid::getEstimatedCostWithLayers(const Location &l) {

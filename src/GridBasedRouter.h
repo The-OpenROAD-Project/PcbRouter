@@ -70,9 +70,10 @@ class GridBasedRouter {
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
     // Netclass mapping
     std::vector<GridNetclass> mGridNetclasses;
+
+    // Put below in the BoardGrid?
     // Global GridPins including the pins aren't connected by nets
     std::vector<GridPin> mGridPins;
-
     // TODO:: Improve the below......
     std::vector<MultipinRoute> gridNets;
     std::vector<MultipinRoute> bestSolution;
