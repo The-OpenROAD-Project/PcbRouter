@@ -36,6 +36,7 @@ class GridBasedRouter {
     // void addAllPinInflationCostToGrid(const int);
     void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool, const int inflate = 0);
     void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool, const bool, const int inflate = 0);
+    void addPinAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost, const int inflate = 0);
 
     // Pin Layers on Grid
     bool getGridLayers(const Pin &, std::vector<int> &layers);
@@ -69,6 +70,8 @@ class GridBasedRouter {
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
     // Netclass mapping
     std::vector<GridNetclass> mGridNetclasses;
+    // Global GridPins including the pins aren't connected by nets
+    std::vector<GridPin> mGridPins;
 
     // TODO:: Improve the below......
     std::vector<MultipinRoute> gridNets;

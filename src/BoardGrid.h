@@ -131,10 +131,16 @@ class GridPin {
     friend class MultipinRoute;
     friend class GridBasedRouter;
 
+    const Point_2D<int> &getPinLL() const { return pinLL; }
+    const Point_2D<int> &getPinUR() const { return pinUR; }
+    void setPinLL(Point_2D<int> &point) { pinLL = point; }
+    void setPinUR(Point_2D<int> &point) { pinUR = point; }
+    const std::vector<Location> &getPinWithLayers() const { return pinWithLayers; }
+
    private:
     std::vector<Location> pinWithLayers;
-    Location pinLL;
-    Location pinUR;
+    Point_2D<int> pinLL;
+    Point_2D<int> pinUR;
 };
 
 class GridPath {
