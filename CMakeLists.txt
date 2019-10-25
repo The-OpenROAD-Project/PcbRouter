@@ -15,6 +15,7 @@ set(KICADPCB_HOME
   ${PROJECT_SOURCE_DIR}/module/kicadPcb
 )
 
+find_package(Boost REQUIRED)
 add_subdirectory(${KICADPCB_HOME})
 
 
@@ -37,6 +38,7 @@ set (PCBROUTER_HEADER
 # include directories 
 ############################################################
 include_directories(
+  ${Boost_INCLUDE_DIR}
   ${KICADPCB_HOME}/src
   )
 
