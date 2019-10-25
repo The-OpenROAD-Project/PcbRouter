@@ -24,6 +24,10 @@ CMakeCache.txt
 CMakeFiles
 install_manifest.txt
 
+# KiCad related
+fp-info-cache
+*.pro
+
 # Backup files
 *.bk
 
