@@ -9,6 +9,7 @@
 #include <cassert>      // assert
 #include <cmath>        // fabs
 #include <cstdlib>      // atof
+#include <cstring>      // strerror
 #include <fstream>      // ifstream
 #include <iostream>     // cout, ostream
 #include <sstream>      // stringstream
