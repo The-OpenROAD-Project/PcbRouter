@@ -16,6 +16,7 @@ log/
 *.plt
 *.dat
 *.py
+output.*
 
 # CMake and make files
 Makefile
