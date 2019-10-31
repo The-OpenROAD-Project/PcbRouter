@@ -518,8 +518,6 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             Point_2D<double> pinDbLocation;
             mDb.getPinPosition(pin, &pinDbLocation);
             Point_2D<int> pinGridLocation;
-            // TODO:: Should change to round
-            //dbPointToGridPoint(pinDbLocation, pinGridLocation);
             dbPointToGridPointRound(pinDbLocation, pinGridLocation);
             std::vector<int> layers;
             this->getGridLayers(pin, layers);
@@ -561,9 +559,8 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             // Setup GridPin's location with layers
             Point_2D<double> pinDbLocation;
             mDb.getPinPosition(pad, inst, &pinDbLocation);
-            Point_2D<double> pinGridLocation;
-            // TODO:: Should change to round
-            dbPointToGridPoint(pinDbLocation, pinGridLocation);
+            Point_2D<int> pinGridLocation;
+            dbPointToGridPointRound(pinDbLocation, pinGridLocation);
             std::vector<int> layers;
             this->getGridLayers(pad, inst, layers);
 
