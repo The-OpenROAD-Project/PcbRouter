@@ -22,14 +22,14 @@ add_subdirectory(${KICADPCB_HOME})
 set (PCBROUTER_SRC 
   src/BoardGrid.cpp
   src/GridBasedRouter.cpp
-  src/plotter.cpp
+#  src/plotter.cpp
   src/globalParam.cpp
   )
 
 set (PCBROUTER_HEADER
   src/BoardGrid.h
   src/GridBasedRouter.h
-  src/plotter.h
+#  src/plotter.h
   src/globalParam.h
   src/util.h
   )
