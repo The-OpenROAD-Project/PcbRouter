@@ -4,7 +4,6 @@
 
 #include <math.h>
 #include <stdio.h>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <list>
