@@ -9,6 +9,9 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    // testShapeToCoords();
+    // return 0;
+
     util::showSysInfoComdLine(argc, argv);
     GlobalParam::setFolders();
     GlobalParam::setUsageStart();

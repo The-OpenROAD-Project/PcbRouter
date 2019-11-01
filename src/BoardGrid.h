@@ -138,7 +138,11 @@ class GridPin {
     const std::vector<Location> &getPinWithLayers() const { return pinWithLayers; }
 
    private:
+    // TODO:: Change to layer index only
     std::vector<Location> pinWithLayers;
+
+    // Pin Shape
+    std::vector<Location> pinShapeToGrids;
     Point_2D<int> pinLL;
     Point_2D<int> pinUR;
 };
