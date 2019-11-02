@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
     }
     srand(GlobalParam::gSeed);
     GridBasedRouter router(db);
+    // router.testRouterWithPinShape();
     router.testRouterWithRipUpAndReroute();
 
     GlobalParam::showCurrentUsage("GridBasedRouter");

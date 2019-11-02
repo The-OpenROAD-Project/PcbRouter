@@ -23,6 +23,7 @@ class GridBasedRouter {
     void testRouterWithPinAndKeepoutAvoidance();
     void testRouterWithAvoidanceAndVariousPadType();
     void testRouterWithRipUpAndReroute();
+    void testRouterWithPinShape();
     bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments, std::string fileNameStamp);
 
    private:
@@ -38,6 +39,8 @@ class GridBasedRouter {
     void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool, const int inflate = 0);
     void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool, const bool, const int inflate = 0);
     void addPinAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost, const int inflate = 0);
+    // PadShape version
+    void addPinShapeAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
 
     // Pin Layers on Grid
     bool getGridLayers(const Pin &, std::vector<int> &layers);

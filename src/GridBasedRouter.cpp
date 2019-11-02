@@ -539,6 +539,36 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             dbPointToGridPointRound(pinDbLL, pinGridLL);
             gridPin.setPinLL(pinGridLL);
             gridPin.setPinUR(pinGridUR);
+
+            // Calculate pinShapeToGrids
+            // 1. Make Boost polygon of pad shape
+            polygon_t padShapePoly;
+            for (auto pt : pad.getShapePolygon()) {
+                bg::append(padShapePoly.outer(), point(pt.x() + pinDbLocation.x(), pt.y() + pinDbLocation.y()));
+            }
+            // printPolygon(padShapePoly);
+
+            for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {
+                for (int y = pinGridLL.m_y; y <= pinGridUR.m_y; ++y) {
+                    // 2. Make fake grid box as Boost polygon
+                    point_2d gridDbLL, gridDbUR;
+                    polygon_t gridDbPoly;
+                    this->gridPointToDbPoint(point_2d{(double)x - 0.5, (double)y - 0.5}, gridDbLL);
+                    this->gridPointToDbPoint(point_2d{(double)x + 0.5, (double)y + 0.5}, gridDbUR);
+                    //std::cout << "gridDbLL: " << gridDbLL << ", gridDbUR" << gridDbUR << std::endl;
+                    bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbUR.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbUR.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbLL.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));  // Closed loop
+                    // printPolygon(gridDbPoly);
+
+                    // Compare if the grid box polygon has overlaps with padstack polygon
+                    if (bg::overlaps(gridDbPoly, padShapePoly) || bg::within(gridDbPoly, padShapePoly)) {
+                        gridPin.addPinShapeGridPoint(Point_2D<int>{x, y});
+                    }
+                }
+            }
         }
     }
 
@@ -581,6 +611,36 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             dbPointToGridPointRound(pinDbLL, pinGridLL);
             gridPin.setPinLL(pinGridLL);
             gridPin.setPinUR(pinGridUR);
+
+            // Calculate pinShapeToGrids
+            // 1. Make Boost polygon of pad shape
+            polygon_t padShapePoly;
+            for (auto pt : pad.getShapePolygon()) {
+                bg::append(padShapePoly.outer(), point(pt.x() + pinDbLocation.x(), pt.y() + pinDbLocation.y()));
+            }
+            // printPolygon(padShapePoly);
+
+            for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {
+                for (int y = pinGridLL.m_y; y <= pinGridUR.m_y; ++y) {
+                    // 2. Make fake grid box as Boost polygon
+                    point_2d gridDbLL, gridDbUR;
+                    polygon_t gridDbPoly;
+                    this->gridPointToDbPoint(point_2d{(double)x - 0.5, (double)y - 0.5}, gridDbLL);
+                    this->gridPointToDbPoint(point_2d{(double)x + 0.5, (double)y + 0.5}, gridDbUR);
+                    //std::cout << "gridDbLL: " << gridDbLL << ", gridDbUR" << gridDbUR << std::endl;
+                    bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbUR.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbUR.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbLL.y()));
+                    bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));  // Closed loop
+                    // printPolygon(gridDbPoly);
+
+                    // Compare if the grid box polygon has overlaps with padstack polygon
+                    if (bg::overlaps(gridDbPoly, padShapePoly) || bg::within(gridDbPoly, padShapePoly)) {
+                        gridPin.addPinShapeGridPoint(Point_2D<int>{x, y});
+                    }
+                }
+            }
         }
     }
 
@@ -683,7 +743,10 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     this->setupGridNetsAndGridPins();
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
-    this->addAllPinCostToGrid(0);
+    // this->addAllPinCostToGrid(0);
+    for (auto &gridPin : this->mGridPins) {
+        this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
+    }
 
     // Add all nets to grid routes
     double totalCurrentRouteCost = 0.0;
@@ -705,7 +768,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
 
         // Temporary reomve the pin cost on the cost grid
         for (auto &gridPin : gridRoute.mGridPins) {
-            addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
+            // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
+            this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
 
         // Setup design rules in board grid
@@ -723,7 +787,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
 
         // Put back the pin cost on base cost grid
         for (auto &gridPin : gridRoute.mGridPins) {
-            addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
+            // addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
+            this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
         }
     }
 
@@ -754,7 +819,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
 
             // Temporary reomve the pin cost on the cost grid
             for (auto &gridPin : gridRoute.mGridPins) {
-                addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
+                // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
+                this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
             }
 
             if (!mDb.isNetclassId(net.getNetclassId())) {
@@ -772,7 +838,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
 
             // Put back the pin cost on base cost grid
             for (auto &gridPin : gridRoute.mGridPins) {
-                addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
+                // addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
+                this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
             }
         }
         outputResults2KiCadFile(this->gridNets, true, "i_" + std::to_string(i));
@@ -796,6 +863,31 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     outputResults2KiCadFile(this->bestSolution, true, "bestSolutionWithMerging");
     writeSolutionBackToDbAndSaveOutput(this->bestSolution);
     //outputResults2KiCadFile(this->bestSolution, false, "bestSolutionWoMerging");
+}
+
+void GridBasedRouter::testRouterWithPinShape() {
+    std::cout << std::fixed << std::setprecision(5);
+    std::cout << std::endl
+              << "=================" << __FUNCTION__ << "==================" << std::endl;
+
+    // Initilization
+    this->setupBoardAndMappingStructure();
+    this->setupGridNetsAndGridPins();
+
+    // Add all instances' pins to a cost in grid (without inflation for spacing)
+    //this->addAllPinCostToGrid(0);
+    for (auto &gridPin : this->mGridPins) {
+        this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
+    }
+
+    // Routing has done
+    // Print the final base cost
+    mBg.printGnuPlot();
+    mBg.printMatPlot();
+
+    // Output final result to KiCad file
+    // outputResults2KiCadFile(this->bestSolution, true, "bestSolutionWithMerging");
+    // writeSolutionBackToDbAndSaveOutput(this->bestSolution);
 }
 
 void GridBasedRouter::addAllPinCostToGrid(const int inflate) {
@@ -903,6 +995,36 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const GridPin &gridPin, const flo
                 if (toViaForbidden) {
                     mBg.setViaForbidden(gridPt);
                 }
+            }
+        }
+    }
+}
+
+void GridBasedRouter::addPinShapeAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
+    Point_2D<int> pinGridLL = gridPin.getPinLL();
+    Point_2D<int> pinGridUR = gridPin.getPinUR();
+
+    std::cout << __FUNCTION__ << "()"
+              << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
+    std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR << ", pinShape.size(): " << gridPin.getPinShapeToGrids().size() << std::endl;
+
+    for (auto &location : gridPin.getPinWithLayers()) {
+        for (auto pt : gridPin.getPinShapeToGrids()) {
+            Location gridPt{pt.x(), pt.y(), location.z()};
+            if (!mBg.validate_location(gridPt)) {
+                // std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
+                continue;
+            }
+            //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
+            if (toBaseCost) {
+                mBg.base_cost_add(value, gridPt);
+            }
+            if (toViaCost) {
+                mBg.via_cost_add(value, gridPt);
+            }
+            //TODO:: How to controll clear/set
+            if (toViaForbidden) {
+                mBg.setViaForbidden(gridPt);
             }
         }
     }
