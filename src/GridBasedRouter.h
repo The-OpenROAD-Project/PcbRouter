@@ -24,7 +24,7 @@ class GridBasedRouter {
     void testRouterWithAvoidanceAndVariousPadType();
     void testRouterWithRipUpAndReroute();
     void testRouterWithPinShape();
-    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments, std::string fileNameStamp);
+    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "");
 
    private:
     bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);

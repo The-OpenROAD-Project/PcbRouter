@@ -1,7 +1,7 @@
 //GridBasedRouter.cpp
 #include "GridBasedRouter.h"
 
-bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "") {
+bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments, std::string fileNameStamp) {
     std::ifstream ifs;
     ifs.open(mDb.getFileName(), std::ifstream::in);
     if (!ifs) {
@@ -348,7 +348,7 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(std::vector<MultipinRou
     std::cout << "================= End of " << __FUNCTION__ << "() =================" << std::endl;
 
     // Output the .kicad_pcb file
-    mDb.printKiCad();
+    mDb.printKiCad(GlobalParam::gOutputFolder, "printKiCad");
 }
 
 void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
