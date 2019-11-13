@@ -90,6 +90,9 @@ class GridNetclass {
     int getViaDrill() { return m_via_drill; }
     int getMicroViaDia() { return m_uvia_dia; }
     int getMicroViaDrill() { return m_uvia_drill; }
+    // Via shape
+    void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
+    const std::vector<Point_2D<int>> &getViaShapeToGrids() const { return mViaShapeToGrids; }
 
    private:
     int m_id = -1;
@@ -99,6 +102,9 @@ class GridNetclass {
     int m_via_drill = 0;
     int m_uvia_dia = 0;
     int m_uvia_drill = 0;
+
+    // Via shape, relative to the via center grid
+    std::vector<Point_2D<int>> mViaShapeToGrids;
 };
 
 class GridCell {
@@ -169,6 +175,7 @@ class GridPath {
 class MultipinRoute {
    public:
     int netId = -1;
+    int gridNetclassId = -1;
     float currentRouteCost = 0.0;
     std::vector<Location> pins;
     std::vector<Location> features;
@@ -198,8 +205,12 @@ class MultipinRoute {
 
     MultipinRoute() {
     }
-    MultipinRoute(int netId) {
+    MultipinRoute(const int netId) {
         this->netId = netId;
+    }
+    MultipinRoute(const int netId, const int gridNetclassId) {
+        this->netId = netId;
+        this->gridNetclassId = gridNetclassId;
     }
     MultipinRoute(std::vector<Location> pins) {
         this->pins = pins;
@@ -228,7 +239,10 @@ class BoardGrid {
     void initilization(int w, int h, int l);
 
     // constraints
+    void set_current_rules(const int gridNetclassId);
     void set_current_rules(const int clr, const int trWid, const int viaDia);
+    void addGridNetclass(const GridNetclass &);
+    GridNetclass &getGridNetclass(const int gridNetclassId);
     // Routing APIs
     void add_route(MultipinRoute &route);
     void addRoute(MultipinRoute &route);
@@ -248,6 +262,7 @@ class BoardGrid {
     bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
     float via_cost_at(const Location &l) const;
     void add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius);
+    void add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>>);
     void via_cost_set(const float value, const Location &l);
     void via_cost_add(const float value, const Location &l);
     void via_cost_fill(float value);
@@ -284,6 +299,9 @@ class BoardGrid {
     Location current_targeted_pin;
     //TODO:: Experiment on this...
     std::vector<Location> currentTargetedPinWithLayers;
+
+    // Netclass mapping from DB netclasses, id are aligned
+    std::vector<GridNetclass> mGridNetclasses;
 
     // trace_width
     float sized_trace_cost_at(const Location &l, int traceRadius) const;

@@ -45,8 +45,6 @@ class GridBasedRouter {
     // Pin Layers on Grid
     bool getGridLayers(const Pin &, std::vector<int> &layers);
     bool getGridLayers(const padstack &, const instance &, std::vector<int> &layers);
-    // GridNetclass
-    GridNetclass &getGridNetclass(const int gridNetclassId);
 
     int getNextRipUpNetId();
 
@@ -56,6 +54,9 @@ class GridBasedRouter {
     }
     int dbLengthToGridLengthFloor(const double dbLength) {
         return (int)floor(dbLength * GlobalParam::inputScale);
+    }
+    double dbLengthToGridLength(const double dbLength) {
+        return dbLength * GlobalParam::inputScale;
     }
 
     bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
@@ -72,8 +73,6 @@ class GridBasedRouter {
     std::vector<std::string> mGridLayerToName;
     std::unordered_map<std::string, int> mLayerNameToGrid;
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
-    // Netclass mapping
-    std::vector<GridNetclass> mGridNetclasses;
 
     // Put below in the BoardGrid?
     // Global GridPins including the pins aren't connected by nets

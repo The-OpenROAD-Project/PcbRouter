@@ -894,7 +894,6 @@ void BoardGrid::print_came_from(
 
 void BoardGrid::add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius) {
     int radius = viaRadius;
-    //float cost = GlobalParam::gViaInsertionCost;
     for (int y = -radius; y <= radius; ++y) {
         for (int x = -radius; x <= radius; ++x) {
 #ifdef BOUND_CHECKS
@@ -902,6 +901,15 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 #endif
             this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].viaCost += cost;
         }
+    }
+}
+
+void BoardGrid::add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>> viaShapeToGrids) {
+    for (auto &relativePt : viaShapeToGrids) {
+#ifdef BOUND_CHECKS
+        assert(((l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (layer) * this->w * this->h) < this->size);
+#endif
+        this->grid[(l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (layer) * this->w * this->h].viaCost += cost;
     }
 }
 
@@ -946,7 +954,6 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
 
     // Add costs for vias
     // TODO:: Currently handle THROUGH VIA only
-
     for (int i = 1; i < route.features.size(); ++i) {
         auto &prevLoc = route.features.at(i - 1);
         auto &curLoc = route.features.at(i);
@@ -1253,6 +1260,11 @@ void BoardGrid::ripup_route(MultipinRoute &route) {
     std::cout << "Finished ripup" << std::endl;
 }
 
+void BoardGrid::set_current_rules(const int gridNetclassId) {
+    auto &gridNetclass = this->getGridNetclass(gridNetclassId);
+    this->set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
+}
+
 void BoardGrid::set_current_rules(const int clr, const int trWid, const int viaDia) {
     this->current_trace_width = trWid;
     this->current_half_trace_width = (int)floor((double)trWid / 2.0);
@@ -1265,6 +1277,19 @@ void BoardGrid::set_current_rules(const int clr, const int trWid, const int viaD
          << ", curClearance: " << this->current_clearance
          << ", curViaDiameter: " << this->current_via_diameter
          << ", curHalfViaDiameter: " << this->current_half_via_diameter << std::endl;
+}
+
+void BoardGrid::addGridNetclass(const GridNetclass &gridNetclass) {
+    this->mGridNetclasses.push_back(gridNetclass);
+}
+
+GridNetclass &BoardGrid::getGridNetclass(const int gridNetclassId) {
+    if (gridNetclassId < 0 || gridNetclassId > this->mGridNetclasses.size()) {
+        std::cerr << "Illegal grid netclass id: " << gridNetclassId << std::endl;
+        return this->mGridNetclasses.front();
+    } else {
+        return this->mGridNetclasses.at(gridNetclassId);
+    }
 }
 
 bool BoardGrid::validate_location(const Location &l) const {

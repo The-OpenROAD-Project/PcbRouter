@@ -481,7 +481,36 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         int microViaDrill = dbLengthToGridLengthCeil(netclassIte.getMicroViaDrill());
 
         GridNetclass gridNetclass{id, clearance, traceWidth, viaDia, viaDrill, microViaDia, microViaDrill};
-        mGridNetclasses.push_back(gridNetclass);
+
+        // Update Via Shape
+        int halfViaDia = (int)floor((double)viaDia / 2.0);
+        double viaDiaFloating = dbLengthToGridLengthCeil(netclassIte.getViaDia());
+        double halfViaDiaFloating = viaDiaFloating / 2.0;
+
+        if (viaDia == 1 || halfViaDia == 0) {
+            gridNetclass.addViaShapeGridPoint(Point_2D<int>{0, 0});
+        } else {
+            for (int x = -halfViaDia; x <= halfViaDia; ++x) {
+                for (int y = -halfViaDia; y <= halfViaDia; ++y) {
+                    // Check if any corner of grid is within the halfViaDiaFloating
+                    Point_2D<double> LL{(double)x - 0.5, (double)y - 0.5};
+                    Point_2D<double> LR{(double)x + 0.5, (double)y - 0.5};
+                    Point_2D<double> UL{(double)x - 0.5, (double)y + 0.5};
+                    Point_2D<double> UR{(double)x + 0.5, (double)y + 0.5};
+                    Point_2D<double> center{0.0, 0.0};
+
+                    if (Point_2D<double>::getDistance(LL, center) < halfViaDiaFloating ||
+                        Point_2D<double>::getDistance(LR, center) < halfViaDiaFloating ||
+                        Point_2D<double>::getDistance(UL, center) < halfViaDiaFloating ||
+                        Point_2D<double>::getDistance(UR, center) < halfViaDiaFloating) {
+                        gridNetclass.addViaShapeGridPoint(Point_2D<int>{x, y});
+                    }
+                }
+            }
+        }
+
+        // Put the netclass into class vectors
+        mBg.addGridNetclass(gridNetclass);
 
         std::cout << "DB netclass: id: " << netclassIte.getId() << ", clearance: " << netclassIte.getClearance() << ", traceWidth: " << netclassIte.getTraceWidth()
                   << ", viaDia: " << netclassIte.getViaDia() << ", viaDrill: " << netclassIte.getViaDrill() << ", microViaDia: " << netclassIte.getMicroViaDia()
@@ -502,7 +531,7 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
     for (auto &net : mDb.getNets()) {
         std::cout << "Net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
 
-        gridNets.push_back(MultipinRoute{net.getId()});
+        gridNets.push_back(MultipinRoute{net.getId(), net.getNetclassId()});
         auto &gridRoute = gridNets.back();
         auto &pins = net.getPins();
         for (auto &pin : pins) {
@@ -704,8 +733,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
             std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
             continue;
         }
-        auto &gridNetclass = this->getGridNetclass(net.getNetclassId());
-        mBg.set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
+        mBg.set_current_rules(net.getNetclassId());
 
         mBg.addRouteWithGridPins(multipinNets.back());
 
@@ -777,8 +805,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
             std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
             continue;
         }
-        auto &gridNetclass = this->getGridNetclass(net.getNetclassId());
-        mBg.set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
+        mBg.set_current_rules(net.getNetclassId());
 
         // Route the net
         mBg.addRouteWithGridPins(gridRoute);
@@ -827,8 +854,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
                 std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
                 continue;
             }
-            auto &gridNetclass = this->getGridNetclass(net.getNetclassId());
-            mBg.set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
+            mBg.set_current_rules(net.getNetclassId());
 
             // Rip-up and re-route
             mBg.ripup_route(gridRoute);
@@ -1054,14 +1080,6 @@ bool GridBasedRouter::getGridLayers(const padstack &pad, const instance &inst, s
         }
     }
     return true;
-}
-
-GridNetclass &GridBasedRouter::getGridNetclass(const int gridNetclassId) {
-    if (gridNetclassId < 0 || gridNetclassId > this->mGridNetclasses.size()) {
-        return this->mGridNetclasses.front();
-    } else {
-        return this->mGridNetclasses.at(gridNetclassId);
-    }
 }
 
 int GridBasedRouter::getNextRipUpNetId() {
