@@ -2,61 +2,91 @@
 #ifndef PCBROUTER_GRID_BASED_ROUTER_H
 #define PCBROUTER_GRID_BASED_ROUTER_H
 
-#include <fstream>
-#include <vector>
-#include <string>
 #include <cstdio>
+#include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 #include "BoardGrid.h"
-#include "kicadPcbDataBase.h"
 #include "globalParam.h"
+#include "kicadPcbDataBase.h"
 #include "util.h"
 
-class GridBasedRouter
-{
-public:
-  //ctor
-  GridBasedRouter(kicadPcbDataBase &db) : mDb(db) {}
-  //dtor
-  ~GridBasedRouter(){}
+class GridBasedRouter {
+   public:
+    // ctor
+    GridBasedRouter(kicadPcbDataBase &db) : mDb(db) {}
+    // dtor
+    ~GridBasedRouter() {}
 
-      [[deprecated]] void test_router();
-  void testRouterWithPinAndKeepoutAvoidance();
-  // bool outputResults2KiCadFile(std::vector<Route> &nets); // If needed
-  bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets);
+    void test_router();
+    void testRouterWithPinAndKeepoutAvoidance();
+    void testRouterWithAvoidanceAndVariousPadType();
+    void testRouterWithRipUpAndReroute();
+    void testRouterWithPinShape();
+    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "");
 
-private:
-  bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
+   private:
+    bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
+    bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
+    void writeSolutionBackToDbAndSaveOutput(std::vector<MultipinRoute> &multipinNets);
 
-  // Utility
-  int dbLengthToGridLength(const double dbLength) { return (int)ceil(dbLength * inputScale); }
+    // Helpers
+    void setupBoardAndMappingStructure();
+    void setupGridNetsAndGridPins();
+    void addAllPinCostToGrid(const int);
+    // void addAllPinInflationCostToGrid(const int);
+    void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool, const int inflate = 0);
+    void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool, const bool, const int inflate = 0);
+    void addPinAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost, const int inflate = 0);
+    // PadShape version
+    void addPinShapeAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
 
-  bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
-  bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
-  void addPinCost(const pin &, const float);
-  void addPinCost(const padstack &, const instance &, const float);
-  void add_pin_cost_to_via_cost(const pin &, const float);
-  void add_pin_cost_to_via_cost(const padstack &, const instance &, const float);
+    // Pin Layers on Grid
+    bool getGridLayers(const Pin &, std::vector<int> &layers);
+    bool getGridLayers(const padstack &, const instance &, std::vector<int> &layers);
+    // GridNetclass
+    GridNetclass &getGridNetclass(const int gridNetclassId);
 
-private:
-  BoardGrid mBg;
-  kicadPcbDataBase &mDb;
+    int getNextRipUpNetId();
 
-  std::vector<std::string> mGridLayerToName;
-  std::unordered_map<std::string, int> mLayerNameToGrid;
+    // Utilities
+    int dbLengthToGridLengthCeil(const double dbLength) {
+        return (int)ceil(dbLength * GlobalParam::inputScale);
+    }
+    int dbLengthToGridLengthFloor(const double dbLength) {
+        return (int)floor(dbLength * GlobalParam::inputScale);
+    }
 
-  // TODO
-  // Temporary value
-  const float pinCost = 100000.0;
-  // Put below stuff to globalParam:: ??
-  double mMinX = std::numeric_limits<double>::max();
-  double mMaxX = std::numeric_limits<double>::min();
-  double mMinY = std::numeric_limits<double>::max();
-  double mMaxY = std::numeric_limits<double>::min();
-  // Take const to below?
-  const unsigned int inputScale = 10;
-  const unsigned int enlargeBoundary = 10;
-  const float grid_factor = 0.1; //For outputing
+    bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);
+    bool dbPointToGridPointCeil(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
+    bool dbPointToGridPointFloor(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
+    bool dbPointToGridPointRound(const Point_2D<double> &dbPt, Point_2D<int> &gridPt);
+    bool gridPointToDbPoint(const point_2d &gridPt, point_2d &dbPt);
+
+   private:
+    BoardGrid mBg;
+    kicadPcbDataBase &mDb;
+
+    // Layer mapping
+    std::vector<std::string> mGridLayerToName;
+    std::unordered_map<std::string, int> mLayerNameToGrid;
+    std::unordered_map<int, int> mDbLayerIdToGridLayer;
+    // Netclass mapping
+    std::vector<GridNetclass> mGridNetclasses;
+
+    // Put below in the BoardGrid?
+    // Global GridPins including the pins aren't connected by nets
+    std::vector<GridPin> mGridPins;
+    // TODO:: Improve the below......
+    std::vector<MultipinRoute> gridNets;
+    std::vector<MultipinRoute> bestSolution;
+
+    // Board Boundary
+    double mMinX = std::numeric_limits<double>::max();
+    double mMaxX = std::numeric_limits<double>::min();
+    double mMinY = std::numeric_limits<double>::max();
+    double mMaxY = std::numeric_limits<double>::min();
 };
 
 #endif

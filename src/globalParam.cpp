@@ -12,22 +12,30 @@ double GlobalParam::gDisBetweenWire = 0;
 double GlobalParam::gEpsilon = 0.00000000000001;
 bool GlobalParam::g90DegreeMode = true;
 // BoardGrid
-double GlobalParam::gDiagonalCost = 1.41421356237;
-double GlobalParam::gLayerChangeCost = 1.0;
+double GlobalParam::gDiagonalCost = 1.41421356237;  //Cost for path searching
+double GlobalParam::gLayerChangeCost = 10.0;        //Cost for path searching
+double GlobalParam::gViaInsertionCost = 100.0;      //Cost added to the via grid
+double GlobalParam::gTraceBasicCost = 10.0;         //100?        //Cost added to the base grid by traces
+double GlobalParam::gPinObstacleCost = 1000.0;      //2000?   //Cost for obstacle pins added to the via (or/and) base grid
+// Grid Setup
+unsigned int GlobalParam::inputScale = 10;
+unsigned int GlobalParam::enlargeBoundary = 10;
+float GlobalParam::gridFactor = 0.1;  // 1/inputScale
+// Routing Options
+bool GlobalParam::gViaUnderPad = false;
 // Outputfile
 int GlobalParam::gOutputPrecision = 5;
 string GlobalParam::gOutputFolder = "output";
 // logfile
 string GlobalParam::gLogFolder = "log";
 
-int GlobalParam::gSeed = 1470295829; //time(NULL);
+int GlobalParam::gSeed = 1470295829;  //time(NULL);
 const double GlobalParam::gSqrt2 = sqrt(2);
 const double GlobalParam::gTan22_5 = tan(22.5 * PI / 180.0);
 
 util::TimeUsage GlobalParam::runTime = util::TimeUsage();
 
-void GlobalParam::showParam()
-{
+void GlobalParam::showParam() {
     cout << "=============PARAM============"
          << "\nDesign Related:"
          << "\ngLayerNum: " << gLayerNum
@@ -45,8 +53,7 @@ void GlobalParam::showParam()
          << "\ngSeed: " << gSeed << endl;
 }
 
-void GlobalParam::setDesignRule()
-{
+void GlobalParam::setDesignRule() {
     gHalfWireWidth = gWireWidth / 2.0;
     gHWidthAndSpace = gHalfWireWidth + gWireSpace;
     gHWidthAndWPSpace = gHalfWireWidth + gWirePadSpace;
@@ -56,27 +63,23 @@ void GlobalParam::setDesignRule()
     srand(GlobalParam::gSeed);
 }
 
-void GlobalParam::setFolders()
-{
-    if(!util::createDirectory(gOutputFolder)){
+void GlobalParam::setFolders() {
+    if (!util::createDirectory(gOutputFolder)) {
         gOutputFolder = "";
     }
-    if(!util::createDirectory(gLogFolder)){
+    if (!util::createDirectory(gLogFolder)) {
         gLogFolder = "";
     }
 }
 
-void GlobalParam::showCurrentUsage(const string comment)
-{
+void GlobalParam::showCurrentUsage(const string comment) {
     runTime.showUsage(comment, util::TimeUsage::PARTIAL);
 }
 
-void GlobalParam::showFinalUsage(const string comment)
-{
+void GlobalParam::showFinalUsage(const string comment) {
     runTime.showUsage(comment, util::TimeUsage::FULL);
 }
 
-void GlobalParam::setUsageStart()
-{
+void GlobalParam::setUsageStart() {
     runTime.start(util::TimeUsage::PARTIAL);
 }

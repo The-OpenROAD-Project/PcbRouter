@@ -16,6 +16,7 @@ log/
 *.plt
 *.dat
 *.py
+output.*
 
 # CMake and make files
 Makefile
@@ -23,6 +24,10 @@ CMakeCache.txt
 *.cmake
 CMakeFiles
 install_manifest.txt
+
+# KiCad related
+fp-info-cache
+*.pro
 
 # Backup files
 *.bk

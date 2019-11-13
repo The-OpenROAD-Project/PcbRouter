@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(PcbRouter)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -15,21 +15,21 @@ set(KICADPCB_HOME
   ${PROJECT_SOURCE_DIR}/module/kicadPcb
 )
 
+find_package(Boost REQUIRED)
 add_subdirectory(${KICADPCB_HOME})
 
 
 set (PCBROUTER_SRC 
   src/BoardGrid.cpp
   src/GridBasedRouter.cpp
-  src/plotter.cpp
   src/globalParam.cpp
   )
 
 set (PCBROUTER_HEADER
   src/BoardGrid.h
   src/GridBasedRouter.h
-  src/plotter.h
   src/globalParam.h
+  src/Raserizer.h
   src/util.h
   )
 
@@ -37,6 +37,7 @@ set (PCBROUTER_HEADER
 # include directories 
 ############################################################
 include_directories(
+  ${Boost_INCLUDE_DIR}
   ${KICADPCB_HOME}/src
   )
 
