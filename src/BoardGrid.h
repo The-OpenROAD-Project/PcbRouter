@@ -187,6 +187,7 @@ class MultipinRoute {
     // std::vector<Location> vias;
 
     void featuresToGridPaths();
+    int getNetclassId() const { return gridNetclassId; }
 
     GridPath &getNewGridPath() {
         mGridPaths.push_back(GridPath{});

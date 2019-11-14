@@ -960,7 +960,11 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
 
         if ((prevLoc.m_z != curLoc.m_z) && (prevLoc.m_x == curLoc.m_x) && (prevLoc.m_y == curLoc.m_y)) {
             for (int z = 0; z < this->l; ++z) {
-                this->add_via_cost(prevLoc, z, viaCost, viaRadius);
+                //this->add_via_cost(prevLoc, z, viaCost, viaRadius);
+
+                // Via shape to grids
+                auto &gridNc = this->getGridNetclass(route.getNetclassId());
+                this->add_via_cost(prevLoc, z, viaCost, gridNc.getViaShapeToGrids());
             }
         }
     }
