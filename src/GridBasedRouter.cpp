@@ -774,6 +774,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     // this->addAllPinCostToGrid(0);
     for (auto &gridPin : this->mGridPins) {
         this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
+        // this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
     }
 
     // Add all nets to grid routes
@@ -782,8 +783,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
         //continue;
-        // if (net.getId() != 18)
-        // continue;
+        // if (net.getId() > 2)
+        //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
@@ -831,7 +832,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
               << std::endl;
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 0; ++i) {
         for (auto &net : nets) {
             //continue;
             if (net.getPins().size() < 2)

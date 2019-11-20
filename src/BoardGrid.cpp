@@ -444,7 +444,9 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         Location current = frontier.front();
         frontier.pop();
 
-        // std::cout << "Visiting " << current << ", frontierSize: " << frontier.size() << std::endl;
+        // if (frontier.size() % 500 == 0) {
+        //     std::cout << "Visiting " << current << ", frontierSize: " << frontier.size() << std::endl;
+        // }
         std::vector<std::pair<float, Location>> neighbors;
         this->getNeighbors(current, neighbors);
 
@@ -463,10 +465,9 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
                 frontier.push(next.second, new_cost + estCost);
                 //frontier.push(next.second, new_cost);
 
-                // std::cerr << "\tPQ: cost: " << new_cost << ", at" <<
-                // next.second << std::endl;
+                // std::cerr << "\tPQ: cost: " << new_cost << ", at" << next.second << std::endl;
 
-                // TODO: Test early break
+                // Dijkstra: Update every node with better cost
                 // if (isTargetedPin(next.second) && new_cost < bestCostWhenReachTarget) {
                 //     bestCostWhenReachTarget = new_cost;
                 //     finalEnd = next.second;
