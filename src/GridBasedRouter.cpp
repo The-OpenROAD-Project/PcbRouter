@@ -850,7 +850,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n";
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < GlobalParam::numRipUpReRouteIteration; ++i) {
         for (auto &net : nets) {
             //continue;
             if (net.getPins().size() < 2)

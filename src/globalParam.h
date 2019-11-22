@@ -54,6 +54,7 @@ class GlobalParam {
 
     //Routing Options
     static bool gViaUnderPad;
+    static unsigned int numRipUpReRouteIteration;
 
     //Outputfile
     static int gOutputPrecision;

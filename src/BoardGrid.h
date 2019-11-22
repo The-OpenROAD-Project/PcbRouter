@@ -124,6 +124,8 @@ class GridNetclass {
 
     // Via shape, relative to the via center grid
     std::vector<Point_2D<int>> mViaShapeToGrids;
+    // Trace searching space when caluclating grid cost, relative to trace center grid
+    std::vector<Point_2D<int>> mTraceSearchingSpaceToGrids;
 };
 
 class GridCell {

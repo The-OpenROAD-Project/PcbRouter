@@ -33,8 +33,14 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Starting router..." << std::endl;
     if (argc >= 3) {
-        GlobalParam::inputScale = atoi(argv[2]);
+        GlobalParam::inputScale = abs(atoi(argv[2]));
         GlobalParam::gridFactor = 1.0 / (float)GlobalParam::inputScale;
+    }
+    if (argc >= 4) {
+        GlobalParam::numRipUpReRouteIteration = abs(atoi(argv[3]));
+    }
+    if (argc >= 5) {
+        GlobalParam::enlargeBoundary = abs(atoi(argv[4]));
     }
     srand(GlobalParam::gSeed);
     GridBasedRouter router(db);
