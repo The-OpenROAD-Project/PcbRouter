@@ -86,10 +86,15 @@ class GridNetclass {
     int getId() { return m_id; }
     int getClearance() { return m_clearance; }
     int getTraceWidth() { return m_trace_width; }
+    int getHalfTraceWidth() { return m_half_trace_width; }
     int getViaDia() { return m_via_dia; }
+    int getHalfViaDia() { return m_half_via_dia; }
     int getViaDrill() { return m_via_drill; }
     int getMicroViaDia() { return m_uvia_dia; }
     int getMicroViaDrill() { return m_uvia_drill; }
+    // Setup Derived
+    void setHalfTraceWidth(const int halfTraWid) { m_half_trace_width = halfTraWid; }
+    void setHalfViaDia(const int halfViaDia) { m_half_via_dia = halfViaDia; }
     // Via shape
     void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
     const std::vector<Point_2D<int>> &getViaShapeToGrids() const { return mViaShapeToGrids; }
@@ -102,6 +107,10 @@ class GridNetclass {
     int m_via_drill = 0;
     int m_uvia_dia = 0;
     int m_uvia_drill = 0;
+
+    // Derived
+    int m_half_trace_width = 0;
+    int m_half_via_dia = 0;
 
     // Via shape, relative to the via center grid
     std::vector<Point_2D<int>> mViaShapeToGrids;
@@ -162,7 +171,7 @@ class GridPath {
     //dtor
     ~GridPath() {}
 
-    std::list<Location> &getSegments() { return mSegments; }
+    const std::list<Location> &getSegments() const { return mSegments; }
     void removeRedundantPoints();
 
     friend class BoardGrid;
@@ -240,8 +249,9 @@ class BoardGrid {
     void initilization(int w, int h, int l);
 
     // constraints
-    void set_current_rules(const int gridNetclassId);
-    void set_current_rules(const int clr, const int trWid, const int viaDia);
+    // void set_current_rules(const int gridNetclassId);
+    // void set_current_rules(const int clr, const int trWid, const int viaDia);
+    void setCurrentGridNetclassId(const int id) { currentGridNetclassId = id; }
     void addGridNetclass(const GridNetclass &);
     GridNetclass &getGridNetclass(const int gridNetclassId);
     // Routing APIs
@@ -280,7 +290,7 @@ class BoardGrid {
     void clearViaForbidden(const Location &l);
     bool isViaForbidden(const Location &l) const;
     // Helpers
-    bool validate_location(const Location &l) const;
+    inline bool validate_location(const Location &l) const;
     void printGnuPlot();
     void printMatPlot();
     void pprint();
@@ -292,11 +302,12 @@ class BoardGrid {
     GridCell *grid = nullptr;  //Initialize to nullptr
     int size = 0;              //Total number of cells
 
-    int current_trace_width;
-    int current_half_trace_width;
-    int current_clearance;
-    int current_via_diameter;
-    int current_half_via_diameter;
+    int currentGridNetclassId;
+    // int current_trace_width;
+    // int current_half_trace_width;
+    // int current_clearance;
+    // int current_via_diameter;
+    // int current_half_via_diameter;
     Location current_targeted_pin;
     //TODO:: Experiment on this...
     std::vector<Location> currentTargetedPinWithLayers;
@@ -319,6 +330,7 @@ class BoardGrid {
     //TODO: refactor on the trace/via size and their cost......
     void add_route_to_base_cost(const MultipinRoute &route);
     void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
+    void addGridPathToBaseCost(const GridPath &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
     void remove_route_from_base_cost(const MultipinRoute &route);
 
     void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;

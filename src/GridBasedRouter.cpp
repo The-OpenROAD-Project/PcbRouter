@@ -430,7 +430,8 @@ void GridBasedRouter::testRouterWithPinAndKeepoutAvoidance() {
                   << ", clearance: " << clearance << "(db: " << netclass.getClearance() << ")" << std::endl;
 
         multipinNets.push_back(MultipinRoute(pinLocations, net.getId()));
-        mBg.set_current_rules(clearance, traceWidth, viaSize);
+        //mBg.set_current_rules(clearance, traceWidth, viaSize);
+        mBg.setCurrentGridNetclassId(net.getNetclassId());
         //mBg.add_route(multipinNets.back());
         mBg.addRoute(multipinNets.back());
 
@@ -481,6 +482,10 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         int microViaDrill = dbLengthToGridLengthCeil(netclassIte.getMicroViaDrill());
 
         GridNetclass gridNetclass{id, clearance, traceWidth, viaDia, viaDrill, microViaDia, microViaDrill};
+
+        // Setup derived values
+        gridNetclass.setHalfTraceWidth((int)floor((double)traceWidth / 2.0));
+        gridNetclass.setHalfViaDia((int)floor((double)viaDia / 2.0));
 
         // Update Via Shape
         int halfViaDia = (int)floor((double)viaDia / 2.0);
@@ -733,7 +738,8 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
             std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
             continue;
         }
-        mBg.set_current_rules(net.getNetclassId());
+        //mBg.set_current_rules(net.getNetclassId());
+        mBg.setCurrentGridNetclassId(net.getNetclassId());
 
         mBg.addRouteWithGridPins(multipinNets.back());
 
@@ -806,7 +812,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
             std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
             continue;
         }
-        mBg.set_current_rules(net.getNetclassId());
+        mBg.setCurrentGridNetclassId(net.getNetclassId());
+        //mBg.set_current_rules(net.getNetclassId());
 
         // Route the net
         mBg.addRouteWithGridPins(gridRoute);
@@ -832,7 +839,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
               << std::endl;
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < 0; ++i) {
+    for (int i = 0; i < 3; ++i) {
         for (auto &net : nets) {
             //continue;
             if (net.getPins().size() < 2)
@@ -855,7 +862,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
                 std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
                 continue;
             }
-            mBg.set_current_rules(net.getNetclassId());
+            mBg.setCurrentGridNetclassId(net.getNetclassId());
+            //mBg.set_current_rules(net.getNetclassId());
 
             // Rip-up and re-route
             mBg.ripup_route(gridRoute);
