@@ -919,20 +919,36 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 }
 
 void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
-    auto curGridNetclass = mGridNetclasses.at(currentGridNetclassId);
+    auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
     int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
+    int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
     int viaExpandingRadius = curGridNetclass.getHalfViaDia();
-    add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
+
+    // add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
+
+    for (auto path : route.getGridPaths()) {
+        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
+    }
+
+    // Test for different expansion
     // int traceHalfWidth = this->current_half_trace_width + this->current_clearance;
     // int viaRadius = this->current_half_via_diameter + this->current_clearance;
     // add_route_to_base_cost(route, traceHalfWidth, -GlobalParam::gTraceBasicCost, viaRadius, -GlobalParam::gViaInsertionCost);
 }
 
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
-    auto curGridNetclass = mGridNetclasses.at(currentGridNetclassId);
+    auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
     int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
+    int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
     int viaExpandingRadius = curGridNetclass.getHalfViaDia();
-    add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
+
+    // add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
+
+    for (auto path : route.getGridPaths()) {
+        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
+    }
+
+    // Test for different expansion
     // int traceHalfWidth = this->current_half_trace_width + this->current_clearance;
     // int viaRadius = this->current_half_via_diameter + this->current_clearance;
     // add_route_to_base_cost(route, traceHalfWidth, GlobalParam::gTraceBasicCost, viaRadius, GlobalParam::gViaInsertionCost);
@@ -974,22 +990,19 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
                 //this->add_via_cost(prevLoc, z, viaCost, viaRadius);
 
                 // Via shape to grids
-                auto &gridNc = this->getGridNetclass(route.getNetclassId());
+                auto &gridNc = this->getGridNetclass(route.getGridNetclassId());
                 this->add_via_cost(prevLoc, z, viaCost, gridNc.getViaShapeToGrids());
             }
         }
     }
 }
 
-void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost) {
+void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost) {
     auto &segs = path.getSegments();
     if (segs.empty())
         return;
 
     //cout << __FUNCTION__ << "(): traceCost: " << traceCost << ", viaCost: " << viaCost << std::endl;
-
-    // Get Diagonal Line's Radius
-    // int diagonalTraceRadius =
 
     // Add costs for traces
     auto pointIte = segs.begin();
@@ -1048,10 +1061,74 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int traceRadiu
         // LL -> UR || UR -> LL
         else if ((pointIte->x() < nextPointIte->x() && pointIte->y() < nextPointIte->y()) ||
                  (pointIte->x() > nextPointIte->x() && pointIte->y() > nextPointIte->y())) {
+            auto curZ = pointIte->z();
+            auto startX = min(pointIte->x(), nextPointIte->x());
+            auto endX = max(pointIte->x(), nextPointIte->x());
+            auto startY = min(pointIte->y(), nextPointIte->y());
+            auto endY = max(pointIte->y(), nextPointIte->y());
+            // Central Line
+            for (int curX = startX, curY = startY; curX <= endX && curY <= endY; ++curX, ++curY) {
+                this->base_cost_add(traceCost, Location(curX, curY, curZ));
+            }
+            // Extended Line
+            for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
+                for (int curX = startX, curY = startY; curX <= endX && curY <= endY; ++curX, ++curY) {
+                    auto loc = Location(curX + curRadius, curY - curRadius, curZ);
+                    if (this->validate_location(loc)) {
+                        this->base_cost_add(traceCost, loc);
+                    }
+                    loc = Location(curX - curRadius, curY + curRadius, curZ);
+                    if (this->validate_location(loc)) {
+                        this->base_cost_add(traceCost, loc);
+                    }
+                    if (curX < endX && curY < endY) {
+                        loc = Location(curX + curRadius, curY - curRadius + 1, curZ);
+                        if (this->validate_location(loc)) {
+                            this->base_cost_add(traceCost, loc);
+                        }
+                        loc = Location(curX - curRadius + 1, curY + curRadius, curZ);
+                        if (this->validate_location(loc)) {
+                            this->base_cost_add(traceCost, loc);
+                        }
+                    }
+                }
+            }
         }
         // UL -> LR || LR -> UL
         else if ((pointIte->x() < nextPointIte->x() && pointIte->y() > nextPointIte->y()) ||
                  (pointIte->x() > nextPointIte->x() && pointIte->y() < nextPointIte->y())) {
+            auto curZ = pointIte->z();
+            auto startX = min(pointIte->x(), nextPointIte->x());
+            auto endX = max(pointIte->x(), nextPointIte->x());
+            auto startY = min(pointIte->y(), nextPointIte->y());
+            auto endY = max(pointIte->y(), nextPointIte->y());
+            // Central Line
+            for (int curX = startX, curY = endY; curX <= endX && curY >= startY; ++curX, --curY) {
+                this->base_cost_add(traceCost, Location(curX, curY, curZ));
+            }
+            // Extended Line
+            for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
+                for (int curX = startX, curY = endY; curX <= endX && curY >= startY; ++curX, --curY) {
+                    auto loc = Location(curX + curRadius, curY + curRadius, curZ);
+                    if (this->validate_location(loc)) {
+                        this->base_cost_add(traceCost, loc);
+                    }
+                    loc = Location(curX - curRadius, curY - curRadius, curZ);
+                    if (this->validate_location(loc)) {
+                        this->base_cost_add(traceCost, loc);
+                    }
+                    if (curX < endX && curY > startY) {
+                        loc = Location(curX + curRadius, curY + curRadius - 1, curZ);
+                        if (this->validate_location(loc)) {
+                            this->base_cost_add(traceCost, loc);
+                        }
+                        loc = Location(curX - curRadius + 1, curY - curRadius, curZ);
+                        if (this->validate_location(loc)) {
+                            this->base_cost_add(traceCost, loc);
+                        }
+                    }
+                }
+            }
         }
 
         // Move to the next segment
@@ -1059,40 +1136,28 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int traceRadiu
         ++nextPointIte;
     }
 
-    for (auto &l : segs) {
-        for (int current_radius = 0; current_radius <= traceRadius; ++current_radius) {
-            for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; ++r) {
-                if (r < 0) continue;
-                if (r >= this->h) continue;
-                for (int c = l.m_x - current_radius; c <= l.m_x + current_radius; ++c) {
-                    if (c < 0) continue;
-                    if (c >= this->w) continue;
-                    // std::cout << "\tsetting cost at " << Location(c, r, layer) << std::endl;
-                    this->base_cost_add(traceCost, Location(c, r, l.m_z));
-                }
-            }
-        }
-    }
-
     if (segs.size() < 2)
         return;
 
-    // Add costs for vias
-    // TODO:: Currently handle THROUGH VIA only
-    // for (int i = 1; i < route.features.size(); ++i) {
-    //     auto &prevLoc = route.features.at(i - 1);
-    //     auto &curLoc = route.features.at(i);
+    // Handle Vias
+    pointIte = segs.begin();
+    nextPointIte = ++segs.begin();
 
-    //     if ((prevLoc.m_z != curLoc.m_z) && (prevLoc.m_x == curLoc.m_x) && (prevLoc.m_y == curLoc.m_y)) {
-    //         for (int z = 0; z < this->l; ++z) {
-    //             //this->add_via_cost(prevLoc, z, viaCost, viaRadius);
+    for (; nextPointIte != segs.end();) {
+        if (pointIte->x() == nextPointIte->x() && pointIte->y() == nextPointIte->y() &&
+            pointIte->z() != nextPointIte->z()) {
+            // Handle Through Hole Via only
+            for (int z = 0; z < this->l; ++z) {
+                // Via shape to grids
+                auto &gridNc = this->getGridNetclass(gridNetclassId);
+                this->add_via_cost(*pointIte, z, viaCost, gridNc.getViaShapeToGrids());
+            }
+        }
 
-    //             // Via shape to grids
-    //             auto &gridNc = this->getGridNetclass(route.getNetclassId());
-    //             this->add_via_cost(prevLoc, z, viaCost, gridNc.getViaShapeToGrids());
-    //         }
-    //     }
-    // }
+        // Move to the next segment
+        ++pointIte;
+        ++nextPointIte;
+    }
 }
 
 void BoardGrid::came_from_to_features(
@@ -1371,7 +1436,9 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         //currentTargetedPinWithLayers.clear();
     }
     // this->print_features(route.features);
-    // TODO
+
+    // Convert from features to grid paths
+    route.featuresToGridPaths();
     this->add_route_to_base_cost(route);
 }
 
@@ -1388,29 +1455,6 @@ void BoardGrid::ripup_route(MultipinRoute &route) {
     route.features.clear();
     std::cout << "Finished ripup" << std::endl;
 }
-
-// void BoardGrid::set_current_rules(const int gridNetclassId) {
-//     auto &gridNetclass = this->getGridNetclass(gridNetclassId);
-//     // Setup
-//     gridNetclass.setHalfTraceWidth((int)floor((double)gridNetclass.getTraceWidth() / 2.0));
-//     gridNetclass.setHalfViaDia((int)floor((double)gridNetclass.getViaDia() / 2.0));
-
-//     //this->set_current_rules(gridNetclass.getClearance(), gridNetclass.getTraceWidth(), gridNetclass.getViaDia());
-// }
-
-// void BoardGrid::set_current_rules(const int clr, const int trWid, const int viaDia) {
-//     this->current_trace_width = trWid;
-//     this->current_half_trace_width = (int)floor((double)trWid / 2.0);
-//     this->current_clearance = clr;
-//     this->current_via_diameter = viaDia;
-//     this->current_half_via_diameter = (int)floor((double)viaDia / 2.0);
-
-//     cout << __FUNCTION__ << "() curTraceWid: " << this->current_trace_width
-//          << ", curHalfTraceWid: " << this->current_half_trace_width
-//          << ", curClearance: " << this->current_clearance
-//          << ", curViaDiameter: " << this->current_via_diameter
-//          << ", curHalfViaDiameter: " << this->current_half_via_diameter << std::endl;
-// }
 
 void BoardGrid::addGridNetclass(const GridNetclass &gridNetclass) {
     this->mGridNetclasses.push_back(gridNetclass);

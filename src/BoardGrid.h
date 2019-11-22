@@ -85,8 +85,11 @@ class GridNetclass {
 
     int getId() { return m_id; }
     int getClearance() { return m_clearance; }
+    int getDiagonalClearance() { return m_clearance_diagonal; }
     int getTraceWidth() { return m_trace_width; }
+    int getDiagonalTraceWidth() { return m_trace_width_diagonal; }
     int getHalfTraceWidth() { return m_half_trace_width; }
+    int getHalfDiagonalTraceWidth() { return m_half_trace_width_diagonal; }
     int getViaDia() { return m_via_dia; }
     int getHalfViaDia() { return m_half_via_dia; }
     int getViaDrill() { return m_via_drill; }
@@ -95,6 +98,10 @@ class GridNetclass {
     // Setup Derived
     void setHalfTraceWidth(const int halfTraWid) { m_half_trace_width = halfTraWid; }
     void setHalfViaDia(const int halfViaDia) { m_half_via_dia = halfViaDia; }
+    // Derived diagonal cases values
+    void setDiagonalTraceWidth(const int diagonalTraWid) { m_trace_width_diagonal = diagonalTraWid; }
+    void setHalfDiagonalTraceWidth(const int halfDiagonalTraWid) { m_half_trace_width_diagonal = halfDiagonalTraWid; }
+    void setDiagonalClearance(const int diagonalClr) { m_clearance_diagonal = diagonalClr; }
     // Via shape
     void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
     const std::vector<Point_2D<int>> &getViaShapeToGrids() const { return mViaShapeToGrids; }
@@ -110,7 +117,10 @@ class GridNetclass {
 
     // Derived
     int m_half_trace_width = 0;
+    int m_trace_width_diagonal = 0;
+    int m_half_trace_width_diagonal = 0;
     int m_half_via_dia = 0;
+    int m_clearance_diagonal = 0;
 
     // Via shape, relative to the via center grid
     std::vector<Point_2D<int>> mViaShapeToGrids;
@@ -196,7 +206,8 @@ class MultipinRoute {
     // std::vector<Location> vias;
 
     void featuresToGridPaths();
-    int getNetclassId() const { return gridNetclassId; }
+    int getGridNetclassId() const { return gridNetclassId; }
+    const std::vector<GridPath> &getGridPaths() const { return mGridPaths; }
 
     GridPath &getNewGridPath() {
         mGridPaths.push_back(GridPath{});
@@ -206,12 +217,6 @@ class MultipinRoute {
         mGridPins.push_back(GridPin{});
         return mGridPins.back();
     }
-    // void addPin(std::vector<Location> &_pinWithLayers) {
-    //     //TODO:: Optimize below for speeding up
-    //     GridPin gridPin;
-    //     gridPin.pinWithLayers = _pinWithLayers;
-    //     mGridPins.push_back(gridPin);
-    // }
 
     MultipinRoute() {
     }
@@ -249,8 +254,6 @@ class BoardGrid {
     void initilization(int w, int h, int l);
 
     // constraints
-    // void set_current_rules(const int gridNetclassId);
-    // void set_current_rules(const int clr, const int trWid, const int viaDia);
     void setCurrentGridNetclassId(const int id) { currentGridNetclassId = id; }
     void addGridNetclass(const GridNetclass &);
     GridNetclass &getGridNetclass(const int gridNetclassId);
@@ -303,11 +306,6 @@ class BoardGrid {
     int size = 0;              //Total number of cells
 
     int currentGridNetclassId;
-    // int current_trace_width;
-    // int current_half_trace_width;
-    // int current_clearance;
-    // int current_via_diameter;
-    // int current_half_via_diameter;
     Location current_targeted_pin;
     //TODO:: Experiment on this...
     std::vector<Location> currentTargetedPinWithLayers;
@@ -330,7 +328,7 @@ class BoardGrid {
     //TODO: refactor on the trace/via size and their cost......
     void add_route_to_base_cost(const MultipinRoute &route);
     void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
-    void addGridPathToBaseCost(const GridPath &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
+    void addGridPathToBaseCost(const GridPath &route, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost);
     void remove_route_from_base_cost(const MultipinRoute &route);
 
     void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;

@@ -487,6 +487,13 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         gridNetclass.setHalfTraceWidth((int)floor((double)traceWidth / 2.0));
         gridNetclass.setHalfViaDia((int)floor((double)viaDia / 2.0));
 
+        // Diagnoal cases
+        int diagonalTraceWidth = (int)ceil(dbLengthToGridLength(netclassIte.getTraceWidth()) / sqrt(2));
+        gridNetclass.setDiagonalTraceWidth(diagonalTraceWidth);
+        gridNetclass.setHalfDiagonalTraceWidth((int)floor((double)diagonalTraceWidth / 2.0));
+        int diagonalClearance = (int)ceil(dbLengthToGridLength(netclassIte.getClearance()) / sqrt(2));
+        gridNetclass.setDiagonalClearance(diagonalClearance);
+
         // Update Via Shape
         int halfViaDia = (int)floor((double)viaDia / 2.0);
         double viaDiaFloating = dbLengthToGridLengthCeil(netclassIte.getViaDia());
@@ -517,12 +524,16 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // Put the netclass into class vectors
         mBg.addGridNetclass(gridNetclass);
 
-        std::cout << "DB netclass: id: " << netclassIte.getId() << ", clearance: " << netclassIte.getClearance() << ", traceWidth: " << netclassIte.getTraceWidth()
-                  << ", viaDia: " << netclassIte.getViaDia() << ", viaDrill: " << netclassIte.getViaDrill() << ", microViaDia: " << netclassIte.getMicroViaDia()
-                  << ", microViaDrill: " << netclassIte.getMicroViaDrill() << std::endl;
-        std::cout << "Grid netclass: id: " << id << ", clearance: " << clearance << ", traceWidth: " << traceWidth
-                  << ", viaDia: " << viaDia << ", viaDrill: " << viaDrill << ", microViaDia: " << microViaDia
-                  << ", microViaDrill: " << microViaDrill << std::endl;
+        std::cout << "==============DB netclass: id: " << netclassIte.getId() << "==============" << std::endl;
+        std::cout << "clearance: " << netclassIte.getClearance() << ", traceWidth: " << netclassIte.getTraceWidth() << std::endl;
+        std::cout << "viaDia: " << netclassIte.getViaDia() << ", viaDrill: " << netclassIte.getViaDrill() << std::endl;
+        std::cout << "microViaDia: " << netclassIte.getMicroViaDia() << ", microViaDrill: " << netclassIte.getMicroViaDrill() << std::endl;
+        std::cout << "==============Grid netclass: id: " << id << "==============" << std::endl;
+        std::cout << "clearance: " << gridNetclass.getClearance() << ", diagonal clearance: " << gridNetclass.getDiagonalClearance() << std::endl;
+        std::cout << "traceWidth: " << gridNetclass.getTraceWidth() << ", half traceWidth: " << gridNetclass.getHalfTraceWidth() << std::endl;
+        std::cout << "diagonal traceWidth: " << gridNetclass.getDiagonalTraceWidth() << ", half diagonal traceWidth: " << gridNetclass.getHalfDiagonalTraceWidth() << std::endl;
+        std::cout << "viaDia: " << gridNetclass.getViaDia() << ", viaDrill: " << gridNetclass.getViaDrill() << std::endl;
+        std::cout << "microViaDia: " << gridNetclass.getMicroViaDia() << ", microViaDrill: " << gridNetclass.getMicroViaDrill() << std::endl;
     }
 
     // Initialize board grid
@@ -828,18 +839,18 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     }
 
     // Set up the base solution
+    std::vector<int> iterativeCost;
+    iterativeCost.push_back(totalCurrentRouteCost);
     bestTotalRouteCost = totalCurrentRouteCost;
     this->bestSolution = this->gridNets;
 
     outputResults2KiCadFile(this->gridNets, true, "fristTimeRouteAll");
-    std::cout << "i=-1"
-              << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
+    std::cout << "i=0, totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
 
-    std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n"
-              << std::endl;
+    std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n";
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 5; ++i) {
         for (auto &net : nets) {
             //continue;
             if (net.getPins().size() < 2)
@@ -877,13 +888,18 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
                 this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
             }
         }
-        outputResults2KiCadFile(this->gridNets, true, "i_" + std::to_string(i));
+        outputResults2KiCadFile(this->gridNets, true, "i_" + std::to_string(i + 1));
         if (totalCurrentRouteCost < bestTotalRouteCost) {
             std::cout << "!!!!>!!!!> Found new bestTotalRouteCost: " << totalCurrentRouteCost << ", from: " << bestTotalRouteCost << std::endl;
             bestTotalRouteCost = totalCurrentRouteCost;
             this->bestSolution = this->gridNets;
         }
-        std::cout << "i=" << i << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
+        iterativeCost.push_back(totalCurrentRouteCost);
+        std::cout << "i=" << i + 1 << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
+    }
+    std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
+    for (int i = 0; i < iterativeCost.size(); ++i) {
+        cout << "i=" << i << ", cost: " << iterativeCost.at(i) << std::endl;
     }
 
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
@@ -891,7 +907,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
 
     // Routing has done
     // Print the final base cost
-    mBg.printGnuPlot();
+    //mBg.printGnuPlot();
     mBg.printMatPlot();
 
     // Output final result to KiCad file

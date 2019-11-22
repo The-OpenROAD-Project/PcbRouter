@@ -19,7 +19,7 @@ double GlobalParam::gTraceBasicCost = 100.0;        //100?    //Cost added to th
 double GlobalParam::gPinObstacleCost = 1000.0;      //2000?   //Cost for obstacle pins added to the via (or/and) base grid
 // Grid Setup
 unsigned int GlobalParam::inputScale = 10;
-unsigned int GlobalParam::enlargeBoundary = 50;  //from 10 -> 50
+unsigned int GlobalParam::enlargeBoundary = 10;  //from 10 -> 50
 float GlobalParam::gridFactor = 0.1;             // 1/inputScale
 // Routing Options
 bool GlobalParam::gViaUnderPad = false;
