@@ -540,6 +540,30 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
     mBg.initilization(w, h, l);
 }
 
+void GridBasedRouter::getRasterizedCircle(const int radius, const double radiusFloating, std::vector<Point_2D<int>> &grids) {
+    if (radius == 0) {
+        grids.push_back(Point_2D<int>{0, 0});
+    } else {
+        for (int x = -radius; x <= radius; ++x) {
+            for (int y = -radius; y <= radius; ++y) {
+                // Check if any corner of grid is within the halfViaDiaFloating
+                Point_2D<double> LL{(double)x - 0.5, (double)y - 0.5};
+                Point_2D<double> LR{(double)x + 0.5, (double)y - 0.5};
+                Point_2D<double> UL{(double)x - 0.5, (double)y + 0.5};
+                Point_2D<double> UR{(double)x + 0.5, (double)y + 0.5};
+                Point_2D<double> center{0.0, 0.0};
+
+                if (Point_2D<double>::getDistance(LL, center) < radiusFloating ||
+                    Point_2D<double>::getDistance(LR, center) < radiusFloating ||
+                    Point_2D<double>::getDistance(UL, center) < radiusFloating ||
+                    Point_2D<double>::getDistance(UR, center) < radiusFloating) {
+                    grids.push_back(Point_2D<int>{x, y});
+                }
+            }
+        }
+    }
+}
+
 void GridBasedRouter::setupGridNetsAndGridPins() {
     std::cout << "Starting " << __FUNCTION__ << "()..." << std::endl;
 
@@ -799,8 +823,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     double bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        //continue;
-        // if (net.getId() > 2)
+        // if (net.getId() != 18 && net.getId() != 19)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
