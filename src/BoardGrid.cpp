@@ -430,7 +430,10 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
     LocationQueue<Location, float> frontier;  // search frontier
     for (Location start : route) {
         // Walked cost + estimated future cost
+        // 2D cost estimation
         float cost = 0.0 + getEstimatedCost(start);
+        // 3D cost estimation
+        //float cost = 0.0 + getEstimatedCostWithLayers(start);
         this->working_cost_set(0.0, start);
         frontier.push(start, cost);
         // std::cerr << "\tPQ: cost: " << cost << ", at" << start << std::endl;
@@ -438,10 +441,22 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         this->setCameFromId(start, this->locationToId(start));
     }
 
-    std::cout << " frontier.size(): " << frontier.size() << std::endl;
+    std::cout << " frontier.size(): " << frontier.size() << ", current targeted pin:  " << std::endl;
+    for (auto pt : currentTargetedPinWithLayers) {
+        std::cout << "  " << pt << std::endl;
+    }
 
     while (!frontier.empty()) {
         Location current = frontier.front();
+        // A* termination
+        if (isTargetedPin(current)) {
+            bestCostWhenReachTarget = frontier.frontKey();
+            finalEnd = current;
+            finalCost = bestCostWhenReachTarget;
+            std::cout << "=> Find the target: " << current << " with cost at " << bestCostWhenReachTarget << std::endl;
+            return;
+        }
+
         frontier.pop();
 
         // if (frontier.size() % 500 == 0) {
@@ -457,13 +472,17 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
             // float estCost = getEstimatedCost(next.second);
             // Test bending cost
             float estCost = getEstimatedCostWithBendingCost(current, next.second);
+            // Test bending cost + multi-layers (3D estimation cost)
+            //float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
 
             if (new_cost < this->working_cost_at(next.second)) {
                 this->working_cost_set(new_cost, next.second);
                 this->setCameFromId(next.second, this->locationToId(current));
 
                 frontier.push(next.second, new_cost + estCost);
-                //frontier.push(next.second, new_cost);
+                if (estCost < 0.5) {
+                    std::cerr << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+                }
 
                 // std::cerr << "\tPQ: cost: " << new_cost << ", at" << next.second << std::endl;
 
@@ -475,13 +494,14 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
             }
 
             // Test early break
-            if (isTargetedPin(next.second)) {
-                bestCostWhenReachTarget = new_cost;
-                finalEnd = next.second;
-                finalCost = bestCostWhenReachTarget;
-                std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
-                return;
-            }
+            // Wrong A* terminated condition
+            // if (isTargetedPin(next.second) /*&& frontier.frontKey() > this->working_cost_at(next.second)*/) {
+            //     bestCostWhenReachTarget = new_cost;
+            //     finalEnd = next.second;
+            //     finalCost = bestCostWhenReachTarget;
+            //     std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
+            //     return;
+            // }
         }
     }
     //For Dijkstra to output
@@ -523,9 +543,45 @@ float BoardGrid::getEstimatedCostWithBendingCost(const Location &current, const 
 }
 
 float BoardGrid::getEstimatedCostWithLayers(const Location &l) {
-    float estCost = max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
+    int absDiffX = abs(l.m_x - this->currentTargetedPinWithLayers.front().m_x);
+    int absDiffY = abs(l.m_y - this->currentTargetedPinWithLayers.front().m_y);
+    int minDiff = min(absDiffX, absDiffY);
+    int maxDiff = max(absDiffX, absDiffY);
+    float estCost = (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff;
+
+    // If is SMD pin, add the layer changing cost
     if (currentTargetedPinWithLayers.size() == 1) {
-        estCost += GlobalParam::gLayerChangeCost * abs(current_targeted_pin.m_z - l.m_z);
+        estCost += GlobalParam::gLayerChangeCost * abs(this->currentTargetedPinWithLayers.front().m_z - l.m_z);
+    }
+    return estCost;
+}
+
+float BoardGrid::getEstimatedCostWithLayersAndBendingCost(const Location &current, const Location &next) {
+    // Bending cost
+    int currentId = this->locationToId(current);
+    int prevId = this->getCameFromId(current);
+    float bendingCost = 0;
+    if (prevId != currentId) {
+        Location prev;
+        this->idToLocation(prevId, prev);
+
+        if (prev.z() == current.z() &&
+            current.z() == next.z() &&
+            prev.x() - current.x() == current.x() - next.x() &&
+            prev.y() - current.y() == current.y() - next.y()) {
+            bendingCost = 0.5;
+        }
+    }
+
+    int absDiffX = abs(next.m_x - this->currentTargetedPinWithLayers.front().m_x);
+    int absDiffY = abs(next.m_y - this->currentTargetedPinWithLayers.front().m_y);
+    int minDiff = min(absDiffX, absDiffY);
+    int maxDiff = max(absDiffX, absDiffY);
+    float estCost = (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff - bendingCost;
+
+    // If is SMD pin, add the layer changing cost
+    if (currentTargetedPinWithLayers.size() == 1) {
+        estCost += GlobalParam::gLayerChangeCost * abs(this->currentTargetedPinWithLayers.front().m_z - next.m_z);
     }
     return estCost;
 }
@@ -1406,15 +1462,19 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     for (size_t i = 1; i < route.mGridPins.size(); ++i) {
         // For early break
         this->setTargetedPins(route.mGridPins.at(i).pinWithLayers);
-        // For cost estimation (cares about x and y only)
+        // For 2D cost estimation (cares about x and y only)
         current_targeted_pin = route.mGridPins.at(i).pinWithLayers.front();
-        //currentTargetedPinWithLayers = route.gridPins.at(i).pinWithLayers;
+        // For 3D cost estimation
+        currentTargetedPinWithLayers = route.mGridPins.at(i).pinWithLayers;
 
         // via size is half_width
         Location finalEnd{0, 0, 0};
         float routeCost = 0.0;
-        // this->dijkstrasWithGridCameFrom(route.features, current_half_via_diameter);
         if (route.features.empty()) {
+            std::cout << " A* Start from: " << std::endl;
+            for (auto pt : route.mGridPins.front().pinWithLayers) {
+                std::cout << "  " << pt << std::endl;
+            }
             this->aStarWithGridCameFrom(route.mGridPins.front().pinWithLayers, finalEnd, routeCost);
         } else {
             this->aStarWithGridCameFrom(route.features, finalEnd, routeCost);
@@ -1431,9 +1491,10 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
 
         // For early break
         this->clearTargetedPins(route.mGridPins.at(i).pinWithLayers);
-        // For cost estimation
+        // For 2D cost estimation
         current_targeted_pin = Location{0, 0, 0};
-        //currentTargetedPinWithLayers.clear();
+        // For 3D cost estimation
+        currentTargetedPinWithLayers.clear();
     }
     // this->print_features(route.features);
 
@@ -1467,11 +1528,4 @@ GridNetclass &BoardGrid::getGridNetclass(const int gridNetclassId) {
     } else {
         return this->mGridNetclasses.at(gridNetclassId);
     }
-}
-
-bool BoardGrid::validate_location(const Location &l) const {
-    if (l.m_x >= this->w || l.m_x < 0) return false;
-    if (l.m_y >= this->h || l.m_y < 0) return false;
-    if (l.m_z >= this->l || l.m_z < 0) return false;
-    return true;
 }

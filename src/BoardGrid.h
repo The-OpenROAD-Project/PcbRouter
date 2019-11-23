@@ -39,8 +39,10 @@ struct LocationQueue {
 
     T front() {
         return elements.top().second;  // best item
-                                       // T best_item = elements.top().second;
-                                       // return best_item;
+    }
+
+    priority_t frontKey() {
+        return elements.top().first;  // best item's key values
     }
 
     inline void pop() {
@@ -104,7 +106,11 @@ class GridNetclass {
     void setDiagonalClearance(const int diagonalClr) { m_clearance_diagonal = diagonalClr; }
     // Via shape
     void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
+    void setViaShapeGridPoint(const std::vector<Point_2D<int>> &grids) { mViaShapeToGrids = grids; }
     const std::vector<Point_2D<int>> &getViaShapeToGrids() const { return mViaShapeToGrids; }
+    // Trace searching space
+    void setTraceSearchingSpaceToGrids(const std::vector<Point_2D<int>> &grids) { mTraceSearchingSpaceToGrids = grids; }
+    const std::vector<Point_2D<int>> &getTraceSearchingSpaceToGrids() const { return mTraceSearchingSpaceToGrids; }
 
    private:
     int m_id = -1;
@@ -261,7 +267,7 @@ class BoardGrid {
     GridNetclass &getGridNetclass(const int gridNetclassId);
     // Routing APIs
     void add_route(MultipinRoute &route);
-    void addRoute(MultipinRoute &route);
+    [[deprecated]] void addRoute(MultipinRoute &route);
     void addRouteWithGridPins(MultipinRoute &route);
     void ripup_route(MultipinRoute &route);
     // working cost
@@ -295,7 +301,12 @@ class BoardGrid {
     void clearViaForbidden(const Location &l);
     bool isViaForbidden(const Location &l) const;
     // Helpers
-    inline bool validate_location(const Location &l) const;
+    inline bool validate_location(const Location &l) const {
+        if (l.m_x >= this->w || l.m_x < 0) return false;
+        if (l.m_y >= this->h || l.m_y < 0) return false;
+        if (l.m_z >= this->l || l.m_z < 0) return false;
+        return true;
+    }
     void printGnuPlot();
     void printMatPlot();
     void pprint();
@@ -322,10 +333,12 @@ class BoardGrid {
     int getCameFromId(const Location &l) const;
     int getCameFromId(const int id) const;
     void clearAllCameFromId();
-    // cost
+    // 2D cost estimation
     float getEstimatedCost(const Location &l);
     float getEstimatedCostWithBendingCost(const Location &current, const Location &next);
-    float getEstimatedCostWithLayers(const Location &l);
+    // 3D cost esitmation
+    float getEstimatedCostWithLayers(const Location &current);
+    float getEstimatedCostWithLayersAndBendingCost(const Location &current, const Location &next);
 
     //TODO: refactor on the trace/via size and their cost......
     void add_route_to_base_cost(const MultipinRoute &route);
