@@ -494,32 +494,21 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         int diagonalClearance = (int)ceil(dbLengthToGridLength(netclassIte.getClearance()) / sqrt(2));
         gridNetclass.setDiagonalClearance(diagonalClearance);
 
-        // Update Via Shape
+        // Update Via shape grids
         int halfViaDia = (int)floor((double)viaDia / 2.0);
-        double viaDiaFloating = dbLengthToGridLengthCeil(netclassIte.getViaDia());
+        double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
         double halfViaDiaFloating = viaDiaFloating / 2.0;
 
-        if (viaDia == 1 || halfViaDia == 0) {
-            gridNetclass.addViaShapeGridPoint(Point_2D<int>{0, 0});
-        } else {
-            for (int x = -halfViaDia; x <= halfViaDia; ++x) {
-                for (int y = -halfViaDia; y <= halfViaDia; ++y) {
-                    // Check if any corner of grid is within the halfViaDiaFloating
-                    Point_2D<double> LL{(double)x - 0.5, (double)y - 0.5};
-                    Point_2D<double> LR{(double)x + 0.5, (double)y - 0.5};
-                    Point_2D<double> UL{(double)x - 0.5, (double)y + 0.5};
-                    Point_2D<double> UR{(double)x + 0.5, (double)y + 0.5};
-                    Point_2D<double> center{0.0, 0.0};
+        std::vector<Point_2D<int>> viaGrids;
+        getRasterizedCircle(halfViaDia, halfViaDiaFloating, viaGrids);
+        gridNetclass.setViaShapeGrids(viaGrids);
 
-                    if (Point_2D<double>::getDistance(LL, center) < halfViaDiaFloating ||
-                        Point_2D<double>::getDistance(LR, center) < halfViaDiaFloating ||
-                        Point_2D<double>::getDistance(UL, center) < halfViaDiaFloating ||
-                        Point_2D<double>::getDistance(UR, center) < halfViaDiaFloating) {
-                        gridNetclass.addViaShapeGridPoint(Point_2D<int>{x, y});
-                    }
-                }
-            }
-        }
+        // Update trace searching grids
+        std::vector<Point_2D<int>> traceSearchingGrids;
+        int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
+        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLengthCeil(netclassIte.getClearance());
+        getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
+        gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
 
         // Put the netclass into class vectors
         mBg.addGridNetclass(gridNetclass);
@@ -541,24 +530,28 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
 }
 
 void GridBasedRouter::getRasterizedCircle(const int radius, const double radiusFloating, std::vector<Point_2D<int>> &grids) {
+    // Center grid
+    grids.push_back(Point_2D<int>{0, 0});
     if (radius == 0) {
-        grids.push_back(Point_2D<int>{0, 0});
-    } else {
-        for (int x = -radius; x <= radius; ++x) {
-            for (int y = -radius; y <= radius; ++y) {
-                // Check if any corner of grid is within the halfViaDiaFloating
-                Point_2D<double> LL{(double)x - 0.5, (double)y - 0.5};
-                Point_2D<double> LR{(double)x + 0.5, (double)y - 0.5};
-                Point_2D<double> UL{(double)x - 0.5, (double)y + 0.5};
-                Point_2D<double> UR{(double)x + 0.5, (double)y + 0.5};
-                Point_2D<double> center{0.0, 0.0};
+        return;
+    }
+    // The rests
+    for (int x = -radius; x <= radius; ++x) {
+        for (int y = -radius; y <= radius; ++y) {
+            if (x == 0 && y == 0) continue;
 
-                if (Point_2D<double>::getDistance(LL, center) < radiusFloating ||
-                    Point_2D<double>::getDistance(LR, center) < radiusFloating ||
-                    Point_2D<double>::getDistance(UL, center) < radiusFloating ||
-                    Point_2D<double>::getDistance(UR, center) < radiusFloating) {
-                    grids.push_back(Point_2D<int>{x, y});
-                }
+            // Check if any corner of grid is within the halfViaDiaFloating
+            Point_2D<double> LL{(double)x - 0.5, (double)y - 0.5};
+            Point_2D<double> LR{(double)x + 0.5, (double)y - 0.5};
+            Point_2D<double> UL{(double)x - 0.5, (double)y + 0.5};
+            Point_2D<double> UR{(double)x + 0.5, (double)y + 0.5};
+            Point_2D<double> center{0.0, 0.0};
+
+            if (Point_2D<double>::getDistance(LL, center) < radiusFloating ||
+                Point_2D<double>::getDistance(LR, center) < radiusFloating ||
+                Point_2D<double>::getDistance(UL, center) < radiusFloating ||
+                Point_2D<double>::getDistance(UR, center) < radiusFloating) {
+                grids.push_back(Point_2D<int>{x, y});
             }
         }
     }
@@ -824,6 +817,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
         // if (net.getId() != 18 && net.getId() != 19)
+        //     continue;
+        // if (net.getId() > 24)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;

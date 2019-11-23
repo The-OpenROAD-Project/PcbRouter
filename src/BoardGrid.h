@@ -106,7 +106,7 @@ class GridNetclass {
     void setDiagonalClearance(const int diagonalClr) { m_clearance_diagonal = diagonalClr; }
     // Via shape
     void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
-    void setViaShapeGridPoint(const std::vector<Point_2D<int>> &grids) { mViaShapeToGrids = grids; }
+    void setViaShapeGrids(const std::vector<Point_2D<int>> &grids) { mViaShapeToGrids = grids; }
     const std::vector<Point_2D<int>> &getViaShapeToGrids() const { return mViaShapeToGrids; }
     // Trace searching space
     void setTraceSearchingSpaceToGrids(const std::vector<Point_2D<int>> &grids) { mTraceSearchingSpaceToGrids = grids; }
@@ -327,7 +327,8 @@ class BoardGrid {
     std::vector<GridNetclass> mGridNetclasses;
 
     // trace_width
-    float sized_trace_cost_at(const Location &l, int traceRadius) const;
+    float sized_trace_cost_at(const Location &l, const int traceRadius) const;
+    float sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> traRelativeSearchGrids) const;
     // came from id
     void setCameFromId(const Location &l, const int id);
     int getCameFromId(const Location &l) const;

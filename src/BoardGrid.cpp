@@ -594,12 +594,14 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     auto curGridNetclass = mGridNetclasses.at(currentGridNetclassId);
     int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
     int viaSearchRadius = curGridNetclass.getHalfViaDia() + curGridNetclass.getClearance();
+    auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
 
     // left
     if (l.m_x - 1 > -1) {
         Location left{l.m_x - 1, l.m_y, l.m_z};
         float leftCost = 1.0;
-        leftCost += sized_trace_cost_at(left, traceSearchRadius);
+        //leftCost += sized_trace_cost_at(left, traceSearchRadius);
+        leftCost += sized_trace_cost_at(left, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(leftCost, left));
     }
 
@@ -607,7 +609,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_x + 1 < this->w) {
         Location right{l.m_x + 1, l.m_y, l.m_z};
         float rightCost = 1.0;
-        rightCost += sized_trace_cost_at(right, traceSearchRadius);
+        //rightCost += sized_trace_cost_at(right, traceSearchRadius);
+        rightCost += sized_trace_cost_at(right, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(rightCost, right));
     }
 
@@ -615,7 +618,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_y + 1 < this->h) {
         Location forward{l.m_x, l.m_y + 1, l.m_z};
         float forwardCost = 1.0;
-        forwardCost += sized_trace_cost_at(forward, traceSearchRadius);
+        //forwardCost += sized_trace_cost_at(forward, traceSearchRadius);
+        forwardCost += sized_trace_cost_at(forward, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(forwardCost, forward));
     }
 
@@ -623,7 +627,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_y - 1 > -1) {
         Location backward{l.m_x, l.m_y - 1, l.m_z};
         float backwardCost = 1.0;
-        backwardCost += sized_trace_cost_at(backward, traceSearchRadius);
+        //backwardCost += sized_trace_cost_at(backward, traceSearchRadius);
+        backwardCost += sized_trace_cost_at(backward, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(backwardCost, backward));
     }
 
@@ -651,7 +656,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_x - 1 > -1 && l.m_y + 1 < this->h) {
         Location lf{l.m_x - 1, l.m_y + 1, l.m_z};
         float lfCost = GlobalParam::gDiagonalCost;
-        lfCost += sized_trace_cost_at(lf, traceSearchRadius);
+        //lfCost += sized_trace_cost_at(lf, traceSearchRadius);
+        lfCost += sized_trace_cost_at(lf, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(lfCost, lf));
     }
 
@@ -659,7 +665,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_x - 1 > -1 && l.m_y - 1 > -1) {
         Location lb{l.m_x - 1, l.m_y - 1, l.m_z};
         float lbCost = GlobalParam::gDiagonalCost;
-        lbCost += sized_trace_cost_at(lb, traceSearchRadius);
+        //lbCost += sized_trace_cost_at(lb, traceSearchRadius);
+        lbCost += sized_trace_cost_at(lb, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(lbCost, lb));
     }
 
@@ -667,7 +674,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_x + 1 < this->w && l.m_y + 1 < this->h) {
         Location rf{l.m_x + 1, l.m_y + 1, l.m_z};
         float rfCost = GlobalParam::gDiagonalCost;
-        rfCost += sized_trace_cost_at(rf, traceSearchRadius);
+        //rfCost += sized_trace_cost_at(rf, traceSearchRadius);
+        rfCost += sized_trace_cost_at(rf, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(rfCost, rf));
     }
 
@@ -675,7 +683,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_x + 1 < this->w && l.m_y - 1 > -1) {
         Location rb{l.m_x + 1, l.m_y - 1, l.m_z};
         float rbCost = GlobalParam::gDiagonalCost;
-        rbCost += sized_trace_cost_at(rb, traceSearchRadius);
+        //rbCost += sized_trace_cost_at(rb, traceSearchRadius);
+        rbCost += sized_trace_cost_at(rb, traceRelativeSearchGrids);
         ns.push_back(std::pair<float, Location>(rbCost, rb));
     }
 
@@ -883,6 +892,21 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius
         }
     }
     return true;
+}
+
+float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> traRelativeSearchGrids) const {
+    float cost = 0.0;
+    for (auto gridPt : traRelativeSearchGrids) {
+        Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
+        if (!validate_location(current_l)) {
+            // TODO: cost to model the clearance to boundary
+            cost += 100000;
+            continue;
+        }
+        cost += this->base_cost_at(current_l);
+        cost += this->via_cost_at(current_l);
+    }
+    return cost;
 }
 
 float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const {
