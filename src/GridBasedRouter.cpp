@@ -503,10 +503,17 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         getRasterizedCircle(halfViaDia, halfViaDiaFloating, viaGrids);
         gridNetclass.setViaShapeGrids(viaGrids);
 
+        // Update via searching grids
+        std::vector<Point_2D<int>> viaSearchingGrids;
+        int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
+        int viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
+        getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
+        gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
+
         // Update trace searching grids
         std::vector<Point_2D<int>> traceSearchingGrids;
         int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
-        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLengthCeil(netclassIte.getClearance());
+        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
 

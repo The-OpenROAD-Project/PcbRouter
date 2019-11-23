@@ -111,6 +111,9 @@ class GridNetclass {
     // Trace searching space
     void setTraceSearchingSpaceToGrids(const std::vector<Point_2D<int>> &grids) { mTraceSearchingSpaceToGrids = grids; }
     const std::vector<Point_2D<int>> &getTraceSearchingSpaceToGrids() const { return mTraceSearchingSpaceToGrids; }
+    // Via searching space
+    void setViaSearchingSpaceToGrids(const std::vector<Point_2D<int>> &grids) { mViaSearchingSpaceToGrids = grids; }
+    const std::vector<Point_2D<int>> &getViaSearchingSpaceToGrids() const { return mViaSearchingSpaceToGrids; }
 
    private:
     int m_id = -1;
@@ -132,6 +135,8 @@ class GridNetclass {
     std::vector<Point_2D<int>> mViaShapeToGrids;
     // Trace searching space when caluclating grid cost, relative to trace center grid
     std::vector<Point_2D<int>> mTraceSearchingSpaceToGrids;
+    // Via searching space when caluclating grid cost, relative to via center grid
+    std::vector<Point_2D<int>> mViaSearchingSpaceToGrids;
 };
 
 class GridCell {
@@ -282,6 +287,7 @@ class BoardGrid {
     // via
     float sized_via_cost_at(const Location &l, const int viaRadius) const;
     bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
+    bool sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> viaRelativeSearchGrids, float &cost) const;
     float via_cost_at(const Location &l) const;
     void add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius);
     void add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>>);

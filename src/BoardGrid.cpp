@@ -595,6 +595,7 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
     int viaSearchRadius = curGridNetclass.getHalfViaDia() + curGridNetclass.getClearance();
     auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
+    auto &viaRelativeSearchGrids = curGridNetclass.getViaSearchingSpaceToGrids();
 
     // left
     if (l.m_x - 1 > -1) {
@@ -636,7 +637,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_z + 1 < this->l) {
         Location up{l.m_x, l.m_y, l.m_z + 1};
         float upCost;
-        if (sizedViaExpandableAndCost(l, viaSearchRadius, upCost)) {
+        //if (sizedViaExpandableAndCost(l, viaSearchRadius, upCost)) {
+        if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, upCost)) {
             upCost += GlobalParam::gLayerChangeCost;
             ns.push_back(std::pair<float, Location>(upCost, up));
         }
@@ -646,7 +648,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     if (l.m_z - 1 > -1) {
         Location down{l.m_x, l.m_y, l.m_z - 1};
         float downCost;
-        if (sizedViaExpandableAndCost(l, viaSearchRadius, downCost)) {
+        //if (sizedViaExpandableAndCost(l, viaSearchRadius, downCost)) {
+        if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, downCost)) {
             downCost += GlobalParam::gLayerChangeCost;
             ns.push_back(std::pair<float, Location>(downCost, down));
         }
@@ -889,6 +892,26 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius
                 cost += this->via_cost_at(current_l);
                 cost += this->base_cost_at(current_l);
             }
+        }
+    }
+    return true;
+}
+
+bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> viaRelativeSearchGrids, float &cost) const {
+    cost = 0.0;
+    for (int z = 0; z < this->l; ++z) {
+        for (auto gridPt : viaRelativeSearchGrids) {
+            Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), z);
+            if (!validate_location(current_l)) {
+                // TODO: cost to model the clearance to boundary
+                cost += 1000;
+                continue;
+            }
+            if (this->isViaForbidden(current_l)) {
+                return false;
+            }
+            cost += this->via_cost_at(current_l);
+            cost += this->base_cost_at(current_l);
         }
     }
     return true;
