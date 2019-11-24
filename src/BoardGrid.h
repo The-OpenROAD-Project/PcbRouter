@@ -97,6 +97,10 @@ class GridNetclass {
     int getViaDrill() { return m_via_drill; }
     int getMicroViaDia() { return m_uvia_dia; }
     int getMicroViaDrill() { return m_uvia_drill; }
+    int getViaExpansion() { return m_via_expansion; }
+    int getObstacleExpansion() { return m_obstacle_expansion; }
+    int getTraceExpansion() { return m_trace_expansion; }
+    int getDiagonalTraceExpansion() { return m_trace_expansion_diagonal; }
     // Setup Derived
     void setHalfTraceWidth(const int halfTraWid) { m_half_trace_width = halfTraWid; }
     void setHalfViaDia(const int halfViaDia) { m_half_via_dia = halfViaDia; }
@@ -104,6 +108,10 @@ class GridNetclass {
     void setDiagonalTraceWidth(const int diagonalTraWid) { m_trace_width_diagonal = diagonalTraWid; }
     void setHalfDiagonalTraceWidth(const int halfDiagonalTraWid) { m_half_trace_width_diagonal = halfDiagonalTraWid; }
     void setDiagonalClearance(const int diagonalClr) { m_clearance_diagonal = diagonalClr; }
+    void setViaExpansion(const int viaExp) { m_via_expansion = viaExp; }
+    void setTraceExpansion(const int traExp) { m_trace_expansion = traExp; }
+    void setObstacleExpansion(const int obsExp) { m_obstacle_expansion = obsExp; }
+    void setDiagonalTraceExpansion(const int traExp) { m_trace_expansion_diagonal = traExp; }
     // Via shape
     void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
     void setViaShapeGrids(const std::vector<Point_2D<int>> &grids) { mViaShapeToGrids = grids; }
@@ -131,6 +139,11 @@ class GridNetclass {
     int m_half_via_dia = 0;
     int m_clearance_diagonal = 0;
 
+    int m_trace_expansion = 0;
+    int m_trace_expansion_diagonal = 0;
+    int m_obstacle_expansion = 0;
+    int m_via_expansion = 0;
+
     // Via shape, relative to the via center grid
     std::vector<Point_2D<int>> mViaShapeToGrids;
     // Trace searching space when caluclating grid cost, relative to trace center grid
@@ -149,9 +162,12 @@ class GridCell {
     friend class BoardGrid;
 
    private:
-    float baseCost = 0.0;
-    float workingCost = 0.0;
-    float viaCost = 0.0;
+    float baseCost = 0.0;  //Record Routed Nets's traces
+    float viaCost = 0.0;   //Record Routed Nets's vias
+
+    float workingCost = 0.0;  //Walked Cost
+    //float surroundingPenalites = -1.0;  //Walked Cost
+
     int cameFromId = -1;
     //TODO:: Use integer's bit to represent the flag;// Or Enum to represent everything
     bool targetedPin = false;

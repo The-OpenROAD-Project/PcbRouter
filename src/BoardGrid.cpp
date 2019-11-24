@@ -1023,9 +1023,12 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 
 void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
     auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
-    int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
-    int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
-    int viaExpandingRadius = curGridNetclass.getHalfViaDia();
+    // int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
+    // int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
+    // int viaExpandingRadius = curGridNetclass.getHalfViaDia();
+    int traceExpandingRadius = curGridNetclass.getTraceExpansion();
+    int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
+    int viaExpandingRadius = curGridNetclass.getViaExpansion();
 
     // add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
 
@@ -1041,9 +1044,12 @@ void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
 
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
-    int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
-    int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
-    int viaExpandingRadius = curGridNetclass.getHalfViaDia();
+    // int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
+    // int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
+    // int viaExpandingRadius = curGridNetclass.getHalfViaDia();
+    int traceExpandingRadius = curGridNetclass.getTraceExpansion();
+    int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
+    int viaExpandingRadius = curGridNetclass.getViaExpansion();
 
     // add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
 

@@ -34,6 +34,7 @@ class GridBasedRouter {
     // Helpers
     void setupBoardAndMappingStructure();
     void setupGridNetsAndGridPins();
+    void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
     void addAllPinCostToGrid(const int);
     // void addAllPinInflationCostToGrid(const int);
     void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool, const int inflate = 0);
