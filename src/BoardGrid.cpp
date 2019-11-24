@@ -1,6 +1,8 @@
 // BoardGrid.cpp
 #include "BoardGrid.h"
 
+int GridNetclass::m_obstacle_expansion = 0;
+
 void GridPath::removeRedundantPoints() {
     if (this->mSegments.size() <= 2) {
         return;

@@ -494,38 +494,44 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         int diagonalClearance = (int)ceil(dbLengthToGridLength(netclassIte.getClearance()) / sqrt(2));
         gridNetclass.setDiagonalClearance(diagonalClearance);
 
+        // !!! Move below expanding functions to a new function, to handle multiple netclasses
+
+        // Setup expansion values
+        // gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia());
+        // gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth());
+        // gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth());
+        // GridNetclass::setObstacleExpansion(0);
+        gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia() + gridNetclass.getClearance());
+        gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance());
+        gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth() + gridNetclass.getDiagonalClearance());
+        GridNetclass::setObstacleExpansion(gridNetclass.getClearance());
+
         // Update Via shape grids
-        int halfViaDia = (int)floor((double)viaDia / 2.0);
         double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
-        double halfViaDiaFloating = viaDiaFloating / 2.0;
+        // int halfViaDia = (int)floor((double)viaDia / 2.0);
+        // double halfViaDiaFloating = viaDiaFloating / 2.0;
+        int halfViaDia = gridNetclass.getViaExpansion();
+        double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
 
         std::vector<Point_2D<int>> viaGrids;
         getRasterizedCircle(halfViaDia, halfViaDiaFloating, viaGrids);
         gridNetclass.setViaShapeGrids(viaGrids);
 
-        // Move below expanding functions to a new function
-
-        // Setup expansion values
-        // gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia() + gridNetclass.getClearance());
-        // gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance());
-        // gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth() + gridNetclass.getDiagonalClearance());
-        // gridNetclass.setObstacleExpansion(gridNetclass.getClearance());
-        gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia());
-        gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth());
-        gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth());
-        gridNetclass.setObstacleExpansion(0);
-
         // Update via searching grids
         std::vector<Point_2D<int>> viaSearchingGrids;
-        int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
-        int viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
+        //int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
+        //int viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
+        int viaSearchRadius = gridNetclass.getHalfViaDia();
+        int viaSearchRadiusFloating = halfViaDiaFloating;
         getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
         gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
 
         // Update trace searching grids
         std::vector<Point_2D<int>> traceSearchingGrids;
-        int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
-        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        // int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
+        // int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        int traceSearchRadius = gridNetclass.getHalfTraceWidth();
+        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
 
@@ -540,8 +546,13 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         std::cout << "clearance: " << gridNetclass.getClearance() << ", diagonal clearance: " << gridNetclass.getDiagonalClearance() << std::endl;
         std::cout << "traceWidth: " << gridNetclass.getTraceWidth() << ", half traceWidth: " << gridNetclass.getHalfTraceWidth() << std::endl;
         std::cout << "diagonal traceWidth: " << gridNetclass.getDiagonalTraceWidth() << ", half diagonal traceWidth: " << gridNetclass.getHalfDiagonalTraceWidth() << std::endl;
-        std::cout << "viaDia: " << gridNetclass.getViaDia() << ", viaDrill: " << gridNetclass.getViaDrill() << std::endl;
+        std::cout << "viaDia: " << gridNetclass.getViaDia() << ", halfViaDia: " << gridNetclass.getHalfViaDia() << ", viaDrill: " << gridNetclass.getViaDrill() << std::endl;
         std::cout << "microViaDia: " << gridNetclass.getMicroViaDia() << ", microViaDrill: " << gridNetclass.getMicroViaDrill() << std::endl;
+        std::cout << "==============Grid netclass: id: " << id << ", Expansions==============" << std::endl;
+        std::cout << "viaExpansion: " << gridNetclass.getViaExpansion() << std::endl;
+        std::cout << "traceExpansion: " << gridNetclass.getTraceExpansion() << std::endl;
+        std::cout << "DiagonalTraceExpansion: " << gridNetclass.getDiagonalTraceExpansion() << std::endl;
+        std::cout << "(static)obstacleExpansion: " << GridNetclass::getObstacleExpansion() << std::endl;
     }
 
     // Initialize board grid
@@ -624,6 +635,10 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
 }
 
 void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin) {
+    getGridPin(pad, inst, GridNetclass::getObstacleExpansion(), gridPin);
+}
+
+void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin) {
     // Setup GridPin's location with layers
     Point_2D<double> pinDbLocation;
     mDb.getPinPosition(pad, inst, &pinDbLocation);
@@ -647,13 +662,24 @@ void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, Grid
     Point_2D<int> pinGridLL, pinGridUR;
     dbPointToGridPointRound(pinDbUR, pinGridUR);
     dbPointToGridPointRound(pinDbLL, pinGridLL);
+    pinGridUR.m_x += gridExpansion;
+    pinGridUR.m_y += gridExpansion;
+    pinGridLL.m_x -= gridExpansion;
+    pinGridLL.m_y -= gridExpansion;
     gridPin.setPinLL(pinGridLL);
     gridPin.setPinUR(pinGridUR);
+
+    // Handle expanded pad shape polygon
+    double dbExpansion = gridLengthToDbLength((double)gridExpansion);
+    Point_2D<double> expandedPadSize = pad.getSize();
+    expandedPadSize.m_x += (2.0 * dbExpansion);
+    expandedPadSize.m_y += (2.0 * dbExpansion);
+    std::vector<Point_2D<double>> expandedPadPoly = shape_to_coords(expandedPadSize, point_2d{0, 0}, pad.getPadShape(), inst.getAngle(), pad.getAngle(), pad.getRoundRectRatio(), 32);
 
     // Calculate pinShapeToGrids
     // 1. Make Boost polygon of pad shape
     polygon_t padShapePoly;
-    for (auto pt : pad.getShapePolygon()) {
+    for (auto pt : expandedPadPoly) {
         bg::append(padShapePoly.outer(), point(pt.x() + pinDbLocation.x(), pt.y() + pinDbLocation.y()));
     }
     // printPolygon(padShapePoly);

@@ -35,6 +35,7 @@ class GridBasedRouter {
     void setupBoardAndMappingStructure();
     void setupGridNetsAndGridPins();
     void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
+    void getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);
     void addAllPinCostToGrid(const int);
     // void addAllPinInflationCostToGrid(const int);
     void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool, const int inflate = 0);
@@ -61,6 +62,9 @@ class GridBasedRouter {
     }
     double dbLengthToGridLength(const double dbLength) {
         return dbLength * GlobalParam::inputScale;
+    }
+    double gridLengthToDbLength(const double gridLength) {
+        return gridLength / GlobalParam::inputScale;
     }
 
     bool dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt);

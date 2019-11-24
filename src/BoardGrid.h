@@ -98,7 +98,7 @@ class GridNetclass {
     int getMicroViaDia() { return m_uvia_dia; }
     int getMicroViaDrill() { return m_uvia_drill; }
     int getViaExpansion() { return m_via_expansion; }
-    int getObstacleExpansion() { return m_obstacle_expansion; }
+    static int getObstacleExpansion() { return m_obstacle_expansion; }
     int getTraceExpansion() { return m_trace_expansion; }
     int getDiagonalTraceExpansion() { return m_trace_expansion_diagonal; }
     // Setup Derived
@@ -110,7 +110,7 @@ class GridNetclass {
     void setDiagonalClearance(const int diagonalClr) { m_clearance_diagonal = diagonalClr; }
     void setViaExpansion(const int viaExp) { m_via_expansion = viaExp; }
     void setTraceExpansion(const int traExp) { m_trace_expansion = traExp; }
-    void setObstacleExpansion(const int obsExp) { m_obstacle_expansion = obsExp; }
+    static void setObstacleExpansion(const int obsExp) { m_obstacle_expansion = obsExp; }
     void setDiagonalTraceExpansion(const int traExp) { m_trace_expansion_diagonal = traExp; }
     // Via shape
     void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
@@ -141,8 +141,10 @@ class GridNetclass {
 
     int m_trace_expansion = 0;
     int m_trace_expansion_diagonal = 0;
-    int m_obstacle_expansion = 0;
     int m_via_expansion = 0;
+
+    // Refactor below static memeber....
+    static int m_obstacle_expansion;
 
     // Via shape, relative to the via center grid
     std::vector<Point_2D<int>> mViaShapeToGrids;
@@ -345,7 +347,7 @@ class BoardGrid {
     //TODO:: Experiment on this...
     std::vector<Location> currentTargetedPinWithLayers;
 
-    // Netclass mapping from DB netclasses, id are aligned
+    // Netclass mapping from DB netclasses, indices are aligned
     std::vector<GridNetclass> mGridNetclasses;
 
     // trace_width
