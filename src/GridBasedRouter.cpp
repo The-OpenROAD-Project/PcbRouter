@@ -599,64 +599,6 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             auto &gridPin = gridRoute.getNewGridPin();
             // Setup the GridPin
             this->getGridPin(pad, inst, gridPin);
-
-            // // Setup GridPin's location with layers
-            // Point_2D<double> pinDbLocation;
-            // //mDb.getPinPosition(pin, &pinDbLocation);
-            // mDb.getPinPosition(pad, inst, &pinDbLocation);
-            // Point_2D<int> pinGridLocation;
-            // dbPointToGridPointRound(pinDbLocation, pinGridLocation);
-            // std::vector<int> layers;
-            // //this->getGridLayers(pin, layers);
-            // this->getGridLayers(pad, inst, layers);
-
-            // std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
-            // for (auto layer : layers) {
-            //     gridPin.pinWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
-            //     std::cout << " " << layer;
-            // }
-            // std::cout << ", #layers:" << gridPin.pinWithLayers.size() << " " << layers.size() << std::endl;
-
-            // // Setup GridPin's LL,UR boundary
-            // double width = 0, height = 0;
-            // mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
-            // Point_2D<double> pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
-            // Point_2D<double> pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
-            // Point_2D<int> pinGridLL, pinGridUR;
-            // dbPointToGridPointRound(pinDbUR, pinGridUR);
-            // dbPointToGridPointRound(pinDbLL, pinGridLL);
-            // gridPin.setPinLL(pinGridLL);
-            // gridPin.setPinUR(pinGridUR);
-
-            // // Calculate pinShapeToGrids
-            // // 1. Make Boost polygon of pad shape
-            // polygon_t padShapePoly;
-            // for (auto pt : pad.getShapePolygon()) {
-            //     bg::append(padShapePoly.outer(), point(pt.x() + pinDbLocation.x(), pt.y() + pinDbLocation.y()));
-            // }
-            // // printPolygon(padShapePoly);
-
-            // for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {
-            //     for (int y = pinGridLL.m_y; y <= pinGridUR.m_y; ++y) {
-            //         // 2. Make fake grid box as Boost polygon
-            //         point_2d gridDbLL, gridDbUR;
-            //         polygon_t gridDbPoly;
-            //         this->gridPointToDbPoint(point_2d{(double)x - 0.5, (double)y - 0.5}, gridDbLL);
-            //         this->gridPointToDbPoint(point_2d{(double)x + 0.5, (double)y + 0.5}, gridDbUR);
-            //         //std::cout << "gridDbLL: " << gridDbLL << ", gridDbUR" << gridDbUR << std::endl;
-            //         bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbUR.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbUR.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbLL.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));  // Closed loop
-            //         // printPolygon(gridDbPoly);
-
-            //         // Compare if the grid box polygon has overlaps with padstack polygon
-            //         if (bg::overlaps(gridDbPoly, padShapePoly) || bg::within(gridDbPoly, padShapePoly)) {
-            //             gridPin.addPinShapeGridPoint(Point_2D<int>{x, y});
-            //         }
-            //     }
-            // }
         }
     }
 
@@ -675,62 +617,6 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             auto &gridPin = mGridPins.back();
             // Setup the GridPin
             this->getGridPin(pad, inst, gridPin);
-
-            // // Setup GridPin's location with layers
-            // Point_2D<double> pinDbLocation;
-            // mDb.getPinPosition(pad, inst, &pinDbLocation);
-            // Point_2D<int> pinGridLocation;
-            // dbPointToGridPointRound(pinDbLocation, pinGridLocation);
-            // std::vector<int> layers;
-            // this->getGridLayers(pad, inst, layers);
-
-            // std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
-            // for (auto layer : layers) {
-            //     gridPin.pinWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
-            //     std::cout << " " << layer;
-            // }
-            // std::cout << ", #layers:" << gridPin.pinWithLayers.size() << " " << layers.size() << std::endl;
-
-            // // Setup GridPin's LL,UR boundary
-            // double width = 0, height = 0;
-            // mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
-            // Point_2D<double> pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
-            // Point_2D<double> pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
-            // Point_2D<int> pinGridLL, pinGridUR;
-            // dbPointToGridPointRound(pinDbUR, pinGridUR);
-            // dbPointToGridPointRound(pinDbLL, pinGridLL);
-            // gridPin.setPinLL(pinGridLL);
-            // gridPin.setPinUR(pinGridUR);
-
-            // // Calculate pinShapeToGrids
-            // // 1. Make Boost polygon of pad shape
-            // polygon_t padShapePoly;
-            // for (auto pt : pad.getShapePolygon()) {
-            //     bg::append(padShapePoly.outer(), point(pt.x() + pinDbLocation.x(), pt.y() + pinDbLocation.y()));
-            // }
-            // // printPolygon(padShapePoly);
-
-            // for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {
-            //     for (int y = pinGridLL.m_y; y <= pinGridUR.m_y; ++y) {
-            //         // 2. Make fake grid box as Boost polygon
-            //         point_2d gridDbLL, gridDbUR;
-            //         polygon_t gridDbPoly;
-            //         this->gridPointToDbPoint(point_2d{(double)x - 0.5, (double)y - 0.5}, gridDbLL);
-            //         this->gridPointToDbPoint(point_2d{(double)x + 0.5, (double)y + 0.5}, gridDbUR);
-            //         //std::cout << "gridDbLL: " << gridDbLL << ", gridDbUR" << gridDbUR << std::endl;
-            //         bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbUR.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbUR.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbUR.x(), gridDbLL.y()));
-            //         bg::append(gridDbPoly.outer(), point(gridDbLL.x(), gridDbLL.y()));  // Closed loop
-            //         // printPolygon(gridDbPoly);
-
-            //         // Compare if the grid box polygon has overlaps with padstack polygon
-            //         if (bg::overlaps(gridDbPoly, padShapePoly) || bg::within(gridDbPoly, padShapePoly)) {
-            //             gridPin.addPinShapeGridPoint(Point_2D<int>{x, y});
-            //         }
-            //     }
-            // }
         }
     }
 
