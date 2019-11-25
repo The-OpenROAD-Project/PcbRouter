@@ -59,6 +59,7 @@ class GlobalParam {
     //Outputfile
     static int gOutputPrecision;
     static string gOutputFolder;
+    static bool gOutputDebuggingKiCadFile;
 
     //Log
     static string gLogFolder;

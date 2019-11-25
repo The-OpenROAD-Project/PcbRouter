@@ -27,6 +27,7 @@ unsigned int GlobalParam::numRipUpReRouteIteration = 5;
 // Outputfile
 int GlobalParam::gOutputPrecision = 5;
 string GlobalParam::gOutputFolder = "output";
+bool GlobalParam::gOutputDebuggingKiCadFile = false;
 // logfile
 string GlobalParam::gLogFolder = "log";
 
