@@ -28,6 +28,12 @@ int main(int argc, char *argv[]) {
     db.printFile();
     db.printPcbRouterInfo();
 
+    // Report current WL & # vias
+    db.printRoutedSegmentsWLAndNumVias();
+
+    // Remove all the routed nets
+    db.removeRoutedSegmentsAndVias();
+
     GlobalParam::showCurrentUsage("Parser");
     GlobalParam::setUsageStart();
 
@@ -47,6 +53,8 @@ int main(int argc, char *argv[]) {
     // router.testRouterWithPinShape();
     router.testRouterWithRipUpAndReroute();
 
+    db.printRoutedSegmentsWLAndNumVias();
+    
     GlobalParam::showCurrentUsage("GridBasedRouter");
     GlobalParam::showFinalUsage("End of Program");
 

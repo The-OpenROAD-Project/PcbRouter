@@ -497,21 +497,23 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // !!! Move below expanding functions to a new function, to handle multiple netclasses
 
         // Setup expansion values
-        // gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia());
-        // gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth());
-        // gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth());
-        // GridNetclass::setObstacleExpansion(0);
-        gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia() + gridNetclass.getClearance());
-        gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance());
-        gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth() + gridNetclass.getDiagonalClearance());
-        GridNetclass::setObstacleExpansion(gridNetclass.getClearance());
+        gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia());
+        gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth());
+        gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth());
+        GridNetclass::setObstacleExpansion(0);
+        // Expanded cases
+        // gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia() + gridNetclass.getClearance());
+        // gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance());
+        // gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth() + gridNetclass.getDiagonalClearance());
+        // GridNetclass::setObstacleExpansion(gridNetclass.getClearance());
 
         // Update Via shape grids
         double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
-        // int halfViaDia = (int)floor((double)viaDia / 2.0);
-        // double halfViaDiaFloating = viaDiaFloating / 2.0;
-        int halfViaDia = gridNetclass.getViaExpansion();
-        double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        int halfViaDia = (int)floor((double)viaDia / 2.0);
+        double halfViaDiaFloating = viaDiaFloating / 2.0;
+        // Expanded cases
+        // int halfViaDia = gridNetclass.getViaExpansion();
+        // double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
 
         std::vector<Point_2D<int>> viaGrids;
         getRasterizedCircle(halfViaDia, halfViaDiaFloating, viaGrids);
@@ -519,19 +521,21 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
 
         // Update via searching grids
         std::vector<Point_2D<int>> viaSearchingGrids;
-        //int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
-        //int viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
-        int viaSearchRadius = gridNetclass.getHalfViaDia();
-        int viaSearchRadiusFloating = halfViaDiaFloating;
+        int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
+        int viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
+        // Expanded cases
+        // int viaSearchRadius = gridNetclass.getHalfViaDia();
+        // int viaSearchRadiusFloating = halfViaDiaFloating;
         getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
         gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
 
         // Update trace searching grids
         std::vector<Point_2D<int>> traceSearchingGrids;
-        // int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
-        // int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
-        int traceSearchRadius = gridNetclass.getHalfTraceWidth();
-        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
+        int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
+        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        // Expanded cases
+        // int traceSearchRadius = gridNetclass.getHalfTraceWidth();
+        // int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
 
