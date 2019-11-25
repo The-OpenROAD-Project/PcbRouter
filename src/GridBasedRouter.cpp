@@ -257,7 +257,7 @@ bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipi
     return true;
 }
 
-void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(std::vector<MultipinRoute> &multipinNets) {
+void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileNameTag, std::vector<MultipinRoute> &multipinNets) {
     // Estimated total routed wirelength
     double totalEstWL = 0.0;
     double totalEstGridWL = 0.0;
@@ -348,8 +348,9 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(std::vector<MultipinRou
     std::cout << "================= End of " << __FUNCTION__ << "() =================" << std::endl;
 
     // Output the .kicad_pcb file
-    std::string nameTag = "printKiCad";
-    nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    std::string nameTag = fileNameTag;
+    //std::string nameTag = "printKiCad";
+    //nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
     mDb.printKiCad(GlobalParam::gOutputFolder, nameTag);
 }
 
@@ -869,7 +870,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     if (GlobalParam::gOutputDebuggingKiCadFile) {
         std::string nameTag = "fristTimeRouteAll";
         nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
-        outputResults2KiCadFile(this->gridNets, true, nameTag);
+        // outputResults2KiCadFile(this->gridNets, true, nameTag);
+        writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
     }
     std::cout << "i=0, totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
 
@@ -917,7 +919,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
         if (GlobalParam::gOutputDebuggingKiCadFile) {
             std::string nameTag = "i_" + std::to_string(i + 1);
             nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
-            outputResults2KiCadFile(this->gridNets, true, nameTag);
+            //outputResults2KiCadFile(this->gridNets, true, nameTag);
+            writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
         }
         if (totalCurrentRouteCost < bestTotalRouteCost) {
             std::cout << "!!!!>!!!!> Found new bestTotalRouteCost: " << totalCurrentRouteCost << ", from: " << bestTotalRouteCost << std::endl;
@@ -941,12 +944,10 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     mBg.printMatPlot();
 
     // Output final result to KiCad file
-    if (GlobalParam::gOutputDebuggingKiCadFile) {
-        std::string nameTag = "bestSolutionWithMerging";
-        nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
-        outputResults2KiCadFile(this->bestSolution, true, nameTag);
-    }
-    writeSolutionBackToDbAndSaveOutput(this->bestSolution);
+    std::string nameTag = "bestSolutionWithMerging";
+    nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    // outputResults2KiCadFile(this->bestSolution, true, nameTag);
+    writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
     //outputResults2KiCadFile(this->bestSolution, false, "bestSolutionWoMerging");
 }
 

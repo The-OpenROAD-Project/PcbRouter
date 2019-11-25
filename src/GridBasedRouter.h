@@ -29,7 +29,7 @@ class GridBasedRouter {
    private:
     bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
     bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
-    void writeSolutionBackToDbAndSaveOutput(std::vector<MultipinRoute> &multipinNets);
+    void writeSolutionBackToDbAndSaveOutput(const std::string fileNameTag, std::vector<MultipinRoute> &multipinNets);
 
     // Helpers
     void setupBoardAndMappingStructure();
