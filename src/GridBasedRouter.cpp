@@ -941,7 +941,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     // Routing has done
     // Print the final base cost
     //mBg.printGnuPlot();
-    mBg.printMatPlot();
+    mBg.printMatPlot(util::getFileNameWoExtension(mDb.getFileName()));
 
     // Output final result to KiCad file
     std::string nameTag = "bestSolutionWithMerging";

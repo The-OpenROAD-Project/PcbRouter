@@ -332,7 +332,7 @@ class BoardGrid {
         return true;
     }
     void printGnuPlot();
-    void printMatPlot();
+    void printMatPlot(const std::string fileNameTag = "");
     void pprint();
     void print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end);
     void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);

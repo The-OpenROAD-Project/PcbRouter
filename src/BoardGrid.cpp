@@ -721,7 +721,7 @@ void BoardGrid::printGnuPlot() {
     }
 }
 
-void BoardGrid::printMatPlot() {
+void BoardGrid::printMatPlot(const std::string fileNameTag) {
     float maxCost = std::numeric_limits<float>::min();
     float minCost = std::numeric_limits<float>::max();
     for (int i = 0; i < this->size; i += 1) {
@@ -736,7 +736,7 @@ void BoardGrid::printMatPlot() {
               << ", Min Cost: " << minCost << std::endl;
 
     for (int l = 0; l < this->l; ++l) {
-        std::string outFileName = "layer" + std::to_string(l) + "_baseCost.py";
+        std::string outFileName = fileNameTag + ".layer" + std::to_string(l) + "_baseCost.py";
         outFileName =
             util::appendDirectory(GlobalParam::gOutputFolder, outFileName);
         std::ofstream ofs(outFileName, std::ofstream::out);
@@ -779,7 +779,7 @@ void BoardGrid::printMatPlot() {
     }
 
     for (int l = 0; l < this->l; ++l) {
-        std::string outFileName = "layer" + std::to_string(l) + "_viaCost.py";
+        std::string outFileName = fileNameTag + ".layer" + std::to_string(l) + "_viaCost.py";
         outFileName =
             util::appendDirectory(GlobalParam::gOutputFolder, outFileName);
         std::ofstream ofs(outFileName, std::ofstream::out);
