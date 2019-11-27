@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
     db.printNet();
     db.printFile();
     db.printPcbRouterInfo();
+    db.printDesignStatistics();
 
     // Report current WL & # vias
     db.printRoutedSegmentsWLAndNumVias();
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]) {
     router.testRouterWithRipUpAndReroute();
 
     db.printRoutedSegmentsWLAndNumVias();
-    
+
     GlobalParam::showCurrentUsage("GridBasedRouter");
     GlobalParam::showFinalUsage("End of Program");
 
