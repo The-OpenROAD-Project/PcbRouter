@@ -525,22 +525,27 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // Update via searching grids
         std::vector<Point_2D<int>> viaSearchingGrids;
         int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
-        int viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
+        double viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
         // Expanded cases
         // int viaSearchRadius = gridNetclass.getHalfViaDia();
-        // int viaSearchRadiusFloating = halfViaDiaFloating;
+        // double viaSearchRadiusFloating = halfViaDiaFloating;
         getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
         gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
 
         // Update trace searching grids
         std::vector<Point_2D<int>> traceSearchingGrids;
         int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
-        int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
         // Expanded cases
         // int traceSearchRadius = gridNetclass.getHalfTraceWidth();
-        // int traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
+        // double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
+        // Debugging
+        // std::cout << "Relative trace searching grids points: " << std::endl;
+        // for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
+        //     std::cout << pt << std::endl;
+        // }
 
         // Put the netclass into class vectors
         mBg.addGridNetclass(gridNetclass);
@@ -565,9 +570,6 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
     // Initialize board grid
     mBg.initilization(w, h, l);
 }
-
-// void GridBasedRouter::setupTraceIncrementalSearchingSpaces(std::vector<Point_2D<int>> &grids) {
-// }
 
 void GridBasedRouter::getRasterizedCircle(const int radius, const double radiusFloating, std::vector<Point_2D<int>> &grids) {
     // Center grid
