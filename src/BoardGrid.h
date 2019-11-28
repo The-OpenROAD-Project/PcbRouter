@@ -71,6 +71,53 @@ struct greater<std::pair<float, Location>> {
 };
 }  // namespace std
 
+class IncrementalSearchGrids {
+   public:
+    IncrementalSearchGrids() {}
+    ~IncrementalSearchGrids() {}
+
+    std::vector<Point_2D<int>> &getLeftAddGrids() { return mAdditionGridsL; }
+    std::vector<Point_2D<int>> &getLeftDedGrids() { return mDeductionGridsL; }
+    std::vector<Point_2D<int>> &getRightAddGrids() { return mAdditionGridsR; }
+    std::vector<Point_2D<int>> &getRightDedGrids() { return mDeductionGridsR; }
+    std::vector<Point_2D<int>> &getForwardAddGrids() { return mAdditionGridsF; }
+    std::vector<Point_2D<int>> &getForwardDedGrids() { return mDeductionGridsF; }
+    std::vector<Point_2D<int>> &getBackwardAddGrids() { return mAdditionGridsB; }
+    std::vector<Point_2D<int>> &getBackwardDedGrids() { return mDeductionGridsB; }
+
+    std::vector<Point_2D<int>> &getLBAddGrids() { return mAdditionGridsLB; }
+    std::vector<Point_2D<int>> &getLBDedGrids() { return mDeductionGridsLB; }
+    std::vector<Point_2D<int>> &getRBAddGrids() { return mAdditionGridsRB; }
+    std::vector<Point_2D<int>> &getRBDedGrids() { return mDeductionGridsRB; }
+    std::vector<Point_2D<int>> &getLFAddGrids() { return mAdditionGridsLF; }
+    std::vector<Point_2D<int>> &getLFDedGrids() { return mDeductionGridsLF; }
+    std::vector<Point_2D<int>> &getRFAddGrids() { return mAdditionGridsRF; }
+    std::vector<Point_2D<int>> &getRFDedGrids() { return mDeductionGridsRF; }
+
+    friend class GridNetclass;
+    friend class GridBasedRouter;
+
+   private:
+    // For incremental costs
+    std::vector<Point_2D<int>> mAdditionGridsR;
+    std::vector<Point_2D<int>> mDeductionGridsR;
+    std::vector<Point_2D<int>> mAdditionGridsL;
+    std::vector<Point_2D<int>> mDeductionGridsL;
+    std::vector<Point_2D<int>> mAdditionGridsF;
+    std::vector<Point_2D<int>> mDeductionGridsF;
+    std::vector<Point_2D<int>> mAdditionGridsB;
+    std::vector<Point_2D<int>> mDeductionGridsB;
+
+    std::vector<Point_2D<int>> mAdditionGridsRB;
+    std::vector<Point_2D<int>> mDeductionGridsRB;
+    std::vector<Point_2D<int>> mAdditionGridsRF;
+    std::vector<Point_2D<int>> mDeductionGridsRF;
+    std::vector<Point_2D<int>> mAdditionGridsLF;
+    std::vector<Point_2D<int>> mDeductionGridsLF;
+    std::vector<Point_2D<int>> mAdditionGridsLB;
+    std::vector<Point_2D<int>> mDeductionGridsLB;
+};
+
 class GridNetclass {
    public:
     //ctor
@@ -122,6 +169,16 @@ class GridNetclass {
     // Via searching space
     void setViaSearchingSpaceToGrids(const std::vector<Point_2D<int>> &grids) { mViaSearchingSpaceToGrids = grids; }
     const std::vector<Point_2D<int>> &getViaSearchingSpaceToGrids() const { return mViaSearchingSpaceToGrids; }
+    // Incremental searching grids
+    IncrementalSearchGrids &getTraceIncrementalSearchGrids() { return mTraceIncrementalSearchGrids; }
+    IncrementalSearchGrids &getViaIncrementalSearchGrids() { return mViaIncrementalSearchGrids; }
+    // Setup the incremental search grids
+    void setupViaIncrementalSearchGrids();
+    void setupTraceIncrementalSearchGrids();
+    void setupIncrementalSearchGrids(const std::vector<Point_2D<int>> &searchGrids, IncrementalSearchGrids &incrementalSearchGrids);
+
+private:
+    void getAddDedSearchGrids(const std::vector<Point_2D<int>> &searchGrids, const std::vector<Point_2D<int>> &shiftedSearchGrids, std::vector<Point_2D<int>> &add, std::vector<Point_2D<int>> &ded);
 
    private:
     int m_id = -1;
@@ -152,6 +209,9 @@ class GridNetclass {
     std::vector<Point_2D<int>> mTraceSearchingSpaceToGrids;
     // Via searching space when caluclating grid cost, relative to via center grid
     std::vector<Point_2D<int>> mViaSearchingSpaceToGrids;
+
+    IncrementalSearchGrids mTraceIncrementalSearchGrids;
+    IncrementalSearchGrids mViaIncrementalSearchGrids;
 };
 
 class GridCell {
@@ -168,7 +228,9 @@ class GridCell {
     float viaCost = 0.0;   //Record Routed Nets's vias
 
     float workingCost = 0.0;  //Walked Cost
-    //float surroundingPenalites = -1.0;  //Walked Cost
+
+    //For incremental cost calculation
+    float penaltyCost = -1.0;
 
     int cameFromId = -1;
     //TODO:: Use integer's bit to represent the flag;// Or Enum to represent everything
@@ -297,6 +359,10 @@ class BoardGrid {
     void working_cost_fill(float value);
     float working_cost_at(const Location &l) const;
     void working_cost_set(float value, const Location &l);
+    // penalty cost
+    void penalty_cost_fill(float value);
+    float penalty_cost_at(const Location &l) const;
+    void penalty_cost_set(float value, const Location &l);
     // base cost
     void base_cost_fill(float value);
     float base_cost_at(const Location &l) const;

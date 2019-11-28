@@ -542,11 +542,14 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
         // Debugging
-        // std::cout << "Relative trace searching grids points: " << std::endl;
-        // for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
-        //     std::cout << pt << std::endl;
-        // }
+        std::cout << "Relative trace searching grids points: " << std::endl;
+        for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
+            std::cout << pt << std::endl;
+        }
 
+        // Setup incremental searching grids
+        gridNetclass.setupTraceIncrementalSearchGrids();
+        gridNetclass.setupViaIncrementalSearchGrids();
         // Put the netclass into class vectors
         mBg.addGridNetclass(gridNetclass);
 
@@ -823,6 +826,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     double bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
+        // if (net.getId() != 18)
+        //     continue;
         // if (net.getId() != 18 && net.getId() != 19)
         //     continue;
         // if (net.getId() > 24)
