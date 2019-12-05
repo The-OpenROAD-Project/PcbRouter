@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
@@ -16,6 +16,13 @@ set(KICADPCB_HOME
 )
 
 find_package(Boost REQUIRED)
+find_package( PythonInterp 2.7 REQUIRED )
+find_package( PythonLibs 2.7 REQUIRED )
+
+find_library(SWIG_EXECUTABLE swig)
+if(NOT SWIG_EXECUTABLE)
+set(SWIG_EXECUTABLE "/bin/swig")
+endif()
 add_subdirectory(${KICADPCB_HOME})
 
 
@@ -23,6 +30,7 @@ set (PCBROUTER_SRC
   src/BoardGrid.cpp
   src/GridBasedRouter.cpp
   src/globalParam.cpp
+  src/PcbRouter_wrapper.cpp
   )
 
 set (PCBROUTER_HEADER
@@ -33,12 +41,17 @@ set (PCBROUTER_HEADER
   src/util.h
   )
 
+set (ROUTER_SWIG_FILES
+  src/PcbRouter.i
+)
+
 ############################################################
 # include directories 
 ############################################################
 include_directories(
   ${Boost_INCLUDE_DIR}
   ${KICADPCB_HOME}/src
+  ${PYTHON_INCLUDE_DIRS}
   )
 
 ############################################################
@@ -58,6 +71,13 @@ set_target_properties( pcbrouterlib
 ############################################################
 # Create an executable
 ############################################################
+
+add_custom_command( OUTPUT ${PCBROUTER_HOME}/src/PcbRouter_wrapper.cpp ${PCBROUTER_LIB_FILES}
+  COMMAND ${SWIG_EXECUTABLE} -python -c++ -o ${PCBROUTER_HOME}/src/PcbRouter_wrapper.cpp ${PCBROUTER_HOME}/src/PcbRouter.i
+  WORKING_DIRECTORY ${PCBROUTER_HOME}
+  DEPENDS ${ROUTER_SWIG_FILES}
+)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PCBROUTER_HOME}/bin)
 
 add_executable( pcbrouter src/main.cpp )
@@ -67,6 +87,7 @@ add_dependencies( pcbrouter kicadpcbparserlib )
 target_link_libraries( pcbrouter
   pcbrouterlib
   kicadpcbparserlib
+  ${PYTHON_LIBRARIES}
 )
 
 ############################################################
@@ -76,4 +97,3 @@ target_link_libraries( pcbrouter
 install(FILES ${PCBROUTER_HEADER} DESTINATION include)
 install(TARGETS pcbrouter DESTINATION bin)
 install(TARGETS pcbrouterlib DESTINATION lib)
-
