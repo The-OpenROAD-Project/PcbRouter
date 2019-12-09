@@ -215,7 +215,7 @@ void BoardGrid::initilization(int w, int h, int l) {
     assert(this->grid != nullptr);
 
     this->base_cost_fill(0.0);
-    this->via_cost_fill(0.0);
+    // this->via_cost_fill(0.0);
 }
 
 void BoardGrid::base_cost_fill(float value) {
@@ -236,12 +236,12 @@ void BoardGrid::penalty_cost_fill(float value) {
     }
 }
 
-void BoardGrid::via_cost_fill(float value) {
-    for (int i = 0; i < this->size; ++i) {
-        //this->grid[i].viaCost = value;
-        this->grid[i].baseCost = value;
-    }
-}
+// void BoardGrid::via_cost_fill(float value) {
+//     for (int i = 0; i < this->size; ++i) {
+//         //this->grid[i].viaCost = value;
+//         this->grid[i].baseCost = value;
+//     }
+// }
 
 float BoardGrid::base_cost_at(const Location &l) const {
 #ifdef BOUND_CHECKS
@@ -1077,30 +1077,6 @@ void BoardGrid::pprint() {
         }
     }
 }
-
-// float BoardGrid::sized_via_cost_at(const Location &l, const int viaRadius) const {
-//     // TODO: THROUGH HOLE only, should be extended to uVia and blind/burried
-//     // vias
-//     int radius = viaRadius;
-//     float cost = 0.0;
-//     for (int z = 0; z < this->l; z += 1) {
-//         for (int y = -radius; y <= radius; y += 1) {
-//             for (int x = -radius; x <= radius; x += 1) {
-//                 Location current_l = Location(l.m_x + x, l.m_y + y, z);
-//                 if (!validate_location(current_l)) {
-//                     // std::cerr << 'Invalid location: ' << current_l <<
-//                     // std::endl;
-//                     // TODO: cost to model the clearance to boundary
-//                     cost += 1000;
-//                     continue;
-//                 }
-//                 cost += this->via_cost_at(current_l);
-//                 cost += this->base_cost_at(current_l);
-//             }
-//         }
-//     }
-//     return cost;
-// }
 
 bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const {
     int radius = viaRadius;

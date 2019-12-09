@@ -369,7 +369,6 @@ class BoardGrid {
     void base_cost_set(float value, const Location &l);
     void base_cost_add(float value, const Location &l);
     // via
-    // float sized_via_cost_at(const Location &l, const int viaRadius) const;
     bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
     bool sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const;
     float via_cost_at(const Location &l) const;
@@ -377,7 +376,7 @@ class BoardGrid {
     void add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>> &);
     void via_cost_set(const float value, const Location &l);
     void via_cost_add(const float value, const Location &l);
-    void via_cost_fill(float value);
+    // void via_cost_fill(float value);
     // targetPin
     void setTargetedPins(const std::vector<Location> &pins);
     void clearTargetedPins(const std::vector<Location> &pins);
