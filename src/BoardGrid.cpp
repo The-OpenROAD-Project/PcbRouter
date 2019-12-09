@@ -729,12 +729,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
             // Radius based searching
             //leftCost += sized_trace_cost_at(left, traceSearchRadius);
             // Vector based searching
-            // leftCost += sized_trace_cost_at(left, traceRelativeSearchGrids);
+            leftCost += sized_trace_cost_at(left, traceRelativeSearchGrids);
 
             // Incremental searching
-            leftCost += currentGridPenalty;
-            leftCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLeftAddGrids());
-            leftCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLeftDedGrids());
+            // leftCost += currentGridPenalty;
+            // leftCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLeftAddGrids());
+            // leftCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLeftDedGrids());
 
             // Put in the cache
             this->penalty_cost_set(leftCost - 1.0, left);
@@ -755,12 +755,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
         if (this->penalty_cost_at(right) == -1) {
             //rightCost += sized_trace_cost_at(right, traceSearchRadius);
-            // rightCost += sized_trace_cost_at(right, traceRelativeSearchGrids);
+            rightCost += sized_trace_cost_at(right, traceRelativeSearchGrids);
 
             // Incremental searching
-            rightCost += currentGridPenalty;
-            rightCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRightAddGrids());
-            rightCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRightDedGrids());
+            // rightCost += currentGridPenalty;
+            // rightCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRightAddGrids());
+            // rightCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRightDedGrids());
 
             // Put in cache
             this->penalty_cost_set(rightCost - 1.0, right);
@@ -777,12 +777,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
         if (this->penalty_cost_at(forward) == -1) {
             //forwardCost += sized_trace_cost_at(forward, traceSearchRadius);
-            // forwardCost += sized_trace_cost_at(forward, traceRelativeSearchGrids);
+            forwardCost += sized_trace_cost_at(forward, traceRelativeSearchGrids);
 
             // Incremental searching
-            forwardCost += currentGridPenalty;
-            forwardCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getForwardAddGrids());
-            forwardCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getForwardDedGrids());
+            // forwardCost += currentGridPenalty;
+            // forwardCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getForwardAddGrids());
+            // forwardCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getForwardDedGrids());
 
             // Put in cache
             this->penalty_cost_set(forwardCost - 1.0, forward);
@@ -799,12 +799,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
         if (this->penalty_cost_at(backward) == -1) {
             //backwardCost += sized_trace_cost_at(backward, traceSearchRadius);
-            // backwardCost += sized_trace_cost_at(backward, traceRelativeSearchGrids);
+            backwardCost += sized_trace_cost_at(backward, traceRelativeSearchGrids);
 
             // Incremental searching
-            backwardCost += currentGridPenalty;
-            backwardCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getBackwardAddGrids());
-            backwardCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getBackwardDedGrids());
+            // backwardCost += currentGridPenalty;
+            // backwardCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getBackwardAddGrids());
+            // backwardCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getBackwardDedGrids());
 
             // Put in cache
             this->penalty_cost_set(backwardCost - 1.0, backward);
@@ -824,7 +824,7 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
             ns.push_back(std::pair<float, Location>(upCost, up));
 
             // Incremental searching
-            this->penalty_cost_set(sized_trace_cost_at(up, traceRelativeSearchGrids), up);
+            // this->penalty_cost_set(sized_trace_cost_at(up, traceRelativeSearchGrids), up);
         }
     }
 
@@ -838,7 +838,7 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
             ns.push_back(std::pair<float, Location>(downCost, down));
 
             // Incremental searching
-            this->penalty_cost_set(sized_trace_cost_at(down, traceRelativeSearchGrids), down);
+            // this->penalty_cost_set(sized_trace_cost_at(down, traceRelativeSearchGrids), down);
         }
     }
 
@@ -849,12 +849,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
         if (this->penalty_cost_at(lf) == -1) {
             //lfCost += sized_trace_cost_at(lf, traceSearchRadius);
-            // lfCost += sized_trace_cost_at(lf, traceRelativeSearchGrids);
+            lfCost += sized_trace_cost_at(lf, traceRelativeSearchGrids);
 
             // Incremental searching
-            lfCost += currentGridPenalty;
-            lfCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLFAddGrids());
-            lfCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLFDedGrids());
+            // lfCost += currentGridPenalty;
+            // lfCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLFAddGrids());
+            // lfCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLFDedGrids());
 
             // Put in cache
             this->penalty_cost_set(lfCost - GlobalParam::gDiagonalCost, lf);
@@ -872,12 +872,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
         if (this->penalty_cost_at(lb) == -1) {
             //lbCost += sized_trace_cost_at(lb, traceSearchRadius);
-            // lbCost += sized_trace_cost_at(lb, traceRelativeSearchGrids);
+            lbCost += sized_trace_cost_at(lb, traceRelativeSearchGrids);
 
             // Incremental searching
-            lbCost += currentGridPenalty;
-            lbCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLBAddGrids());
-            lbCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLBDedGrids());
+            // lbCost += currentGridPenalty;
+            // lbCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLBAddGrids());
+            // lbCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getLBDedGrids());
 
             // Put in cache
             this->penalty_cost_set(lbCost - GlobalParam::gDiagonalCost, lb);
@@ -895,12 +895,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
         if (this->penalty_cost_at(rf) == -1) {
             //rfCost += sized_trace_cost_at(rf, traceSearchRadius);
-            // rfCost += sized_trace_cost_at(rf, traceRelativeSearchGrids);
+            rfCost += sized_trace_cost_at(rf, traceRelativeSearchGrids);
 
             // Incremental searching
-            rfCost += currentGridPenalty;
-            rfCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRFAddGrids());
-            rfCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRFDedGrids());
+            // rfCost += currentGridPenalty;
+            // rfCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRFAddGrids());
+            // rfCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRFDedGrids());
 
             // Put in cache
             this->penalty_cost_set(rfCost - GlobalParam::gDiagonalCost, rf);
@@ -918,12 +918,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
         if (this->penalty_cost_at(rb) == -1) {
             //rbCost += sized_trace_cost_at(rb, traceSearchRadius);
-            // rbCost += sized_trace_cost_at(rb, traceRelativeSearchGrids);
+            rbCost += sized_trace_cost_at(rb, traceRelativeSearchGrids);
 
             // Incremental searching
-            rbCost += currentGridPenalty;
-            rbCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRBAddGrids());
-            rbCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRBDedGrids());
+            // rbCost += currentGridPenalty;
+            // rbCost += sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRBAddGrids());
+            // rbCost -= sized_trace_cost_at(l, curGridNetclass.getTraceIncrementalSearchGrids().getRBDedGrids());
 
             // Put in cache
             this->penalty_cost_set(rbCost - GlobalParam::gDiagonalCost, rb);
