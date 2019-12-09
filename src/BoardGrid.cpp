@@ -238,7 +238,8 @@ void BoardGrid::penalty_cost_fill(float value) {
 
 void BoardGrid::via_cost_fill(float value) {
     for (int i = 0; i < this->size; ++i) {
-        this->grid[i].viaCost = value;
+        //this->grid[i].viaCost = value;
+        this->grid[i].baseCost = value;
     }
 }
 
@@ -253,7 +254,8 @@ float BoardGrid::via_cost_at(const Location &l) const {
 #ifdef BOUND_CHECKS
     assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
-    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost;
+    //return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost;
+    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost;
 }
 
 float BoardGrid::working_cost_at(const Location &l) const {
@@ -339,14 +341,16 @@ void BoardGrid::via_cost_set(const float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost = value;
+    //this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost = value;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost = value;
 }
 
 void BoardGrid::via_cost_add(const float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost += value;
+    //this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaCost += value;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost += value;
 }
 
 void BoardGrid::setTargetedPin(const Location &l) {
@@ -544,8 +548,6 @@ void BoardGrid::dijkstrasWithGridCameFrom(const std::vector<Location> &route,
 
 void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost) {
     std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
-    // std::cerr << fixed;
-    // std::cout << fixed;
 
     // For path to multiple points
     // Searches from the multiple points to every other point
@@ -559,6 +561,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         float cost = 0.0 + getEstimatedCost(start);
         // 3D cost estimation
         //float cost = 0.0 + getEstimatedCostWithLayers(start);
+
         this->working_cost_set(0.0, start);
         frontier.push(start, cost);
         // std::cerr << "\tPQ: cost: " << cost << ", at" << start << std::endl;
@@ -606,28 +609,13 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
                 this->setCameFromId(next.second, this->locationToId(current));
 
                 frontier.push(next.second, new_cost + estCost);
+                // Show if the target is reached
                 if (estCost < 0.5) {
                     std::cerr << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
                 }
 
                 // std::cerr << "\tPQ: cost: " << new_cost << ", at" << next.second << std::endl;
-
-                // Dijkstra: Update every node with better cost
-                // if (isTargetedPin(next.second) && new_cost < bestCostWhenReachTarget) {
-                //     bestCostWhenReachTarget = new_cost;
-                //     finalEnd = next.second;
-                // }
             }
-
-            // Test early break
-            // Wrong A* terminated condition
-            // if (isTargetedPin(next.second) /*&& frontier.frontKey() > this->working_cost_at(next.second)*/) {
-            //     bestCostWhenReachTarget = new_cost;
-            //     finalEnd = next.second;
-            //     finalCost = bestCostWhenReachTarget;
-            //     std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
-            //     return;
-            // }
         }
     }
     //For Dijkstra to output
@@ -1090,29 +1078,29 @@ void BoardGrid::pprint() {
     }
 }
 
-float BoardGrid::sized_via_cost_at(const Location &l, const int viaRadius) const {
-    // TODO: THROUGH HOLE only, should be extended to uVia and blind/burried
-    // vias
-    int radius = viaRadius;
-    float cost = 0.0;
-    for (int z = 0; z < this->l; z += 1) {
-        for (int y = -radius; y <= radius; y += 1) {
-            for (int x = -radius; x <= radius; x += 1) {
-                Location current_l = Location(l.m_x + x, l.m_y + y, z);
-                if (!validate_location(current_l)) {
-                    // std::cerr << 'Invalid location: ' << current_l <<
-                    // std::endl;
-                    // TODO: cost to model the clearance to boundary
-                    cost += 1000;
-                    continue;
-                }
-                cost += this->via_cost_at(current_l);
-                cost += this->base_cost_at(current_l);
-            }
-        }
-    }
-    return cost;
-}
+// float BoardGrid::sized_via_cost_at(const Location &l, const int viaRadius) const {
+//     // TODO: THROUGH HOLE only, should be extended to uVia and blind/burried
+//     // vias
+//     int radius = viaRadius;
+//     float cost = 0.0;
+//     for (int z = 0; z < this->l; z += 1) {
+//         for (int y = -radius; y <= radius; y += 1) {
+//             for (int x = -radius; x <= radius; x += 1) {
+//                 Location current_l = Location(l.m_x + x, l.m_y + y, z);
+//                 if (!validate_location(current_l)) {
+//                     // std::cerr << 'Invalid location: ' << current_l <<
+//                     // std::endl;
+//                     // TODO: cost to model the clearance to boundary
+//                     cost += 1000;
+//                     continue;
+//                 }
+//                 cost += this->via_cost_at(current_l);
+//                 cost += this->base_cost_at(current_l);
+//             }
+//         }
+//     }
+//     return cost;
+// }
 
 bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const {
     int radius = viaRadius;
@@ -1129,7 +1117,7 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius
                 if (this->isViaForbidden(current_l)) {
                     return false;
                 }
-                cost += this->via_cost_at(current_l);
+                //cost += this->via_cost_at(current_l);
                 cost += this->base_cost_at(current_l);
             }
         }
@@ -1137,7 +1125,7 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius
     return true;
 }
 
-bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> viaRelativeSearchGrids, float &cost) const {
+bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const {
     cost = 0.0;
     for (int z = 0; z < this->l; ++z) {
         for (auto gridPt : viaRelativeSearchGrids) {
@@ -1150,14 +1138,14 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
             if (this->isViaForbidden(current_l)) {
                 return false;
             }
-            cost += this->via_cost_at(current_l);
+            //cost += this->via_cost_at(current_l);
             cost += this->base_cost_at(current_l);
         }
     }
     return true;
 }
 
-float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> traRelativeSearchGrids) const {
+float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> &traRelativeSearchGrids) const {
     float cost = 0.0;
     for (auto gridPt : traRelativeSearchGrids) {
         Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
@@ -1167,7 +1155,7 @@ float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_
             continue;
         }
         cost += this->base_cost_at(current_l);
-        cost += this->via_cost_at(current_l);
+        // cost += this->via_cost_at(current_l);
     }
     return cost;
 }
@@ -1184,7 +1172,7 @@ float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const {
                 continue;
             }
             cost += this->base_cost_at(current_l);
-            cost += this->via_cost_at(current_l);
+            // cost += this->via_cost_at(current_l);
         }
     }
     return cost;
@@ -1247,17 +1235,19 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 #ifdef BOUND_CHECKS
             assert(((l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
-            this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].viaCost += cost;
+            //this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].viaCost += cost;
+            this->grid[(l.m_x + x) + (l.m_y + y) * this->w + (layer) * this->w * this->h].baseCost += cost;
         }
     }
 }
 
-void BoardGrid::add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>> viaShapeToGrids) {
+void BoardGrid::add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>> &viaShapeToGrids) {
     for (auto &relativePt : viaShapeToGrids) {
 #ifdef BOUND_CHECKS
         assert(((l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
-        this->grid[(l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (layer) * this->w * this->h].viaCost += cost;
+        //this->grid[(l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (layer) * this->w * this->h].viaCost += cost;
+        this->grid[(l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (layer) * this->w * this->h].baseCost += cost;
     }
 }
 

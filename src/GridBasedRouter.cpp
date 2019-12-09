@@ -869,7 +869,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     }
 
     // Set up the base solution
-    std::vector<int> iterativeCost;
+    std::vector<double> iterativeCost;
     iterativeCost.push_back(totalCurrentRouteCost);
     bestTotalRouteCost = totalCurrentRouteCost;
     this->bestSolution = this->gridNets;

@@ -177,7 +177,7 @@ class GridNetclass {
     void setupTraceIncrementalSearchGrids();
     void setupIncrementalSearchGrids(const std::vector<Point_2D<int>> &searchGrids, IncrementalSearchGrids &incrementalSearchGrids);
 
-private:
+   private:
     void getAddDedSearchGrids(const std::vector<Point_2D<int>> &searchGrids, const std::vector<Point_2D<int>> &shiftedSearchGrids, std::vector<Point_2D<int>> &add, std::vector<Point_2D<int>> &ded);
 
    private:
@@ -225,7 +225,7 @@ class GridCell {
 
    private:
     float baseCost = 0.0;  //Record Routed Nets's traces
-    float viaCost = 0.0;   //Record Routed Nets's vias
+    //float viaCost = 0.0;   //Record Routed Nets's vias
 
     float workingCost = 0.0;  //Walked Cost
 
@@ -369,12 +369,12 @@ class BoardGrid {
     void base_cost_set(float value, const Location &l);
     void base_cost_add(float value, const Location &l);
     // via
-    float sized_via_cost_at(const Location &l, const int viaRadius) const;
+    // float sized_via_cost_at(const Location &l, const int viaRadius) const;
     bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
-    bool sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> viaRelativeSearchGrids, float &cost) const;
+    bool sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const;
     float via_cost_at(const Location &l) const;
     void add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius);
-    void add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>>);
+    void add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>> &);
     void via_cost_set(const float value, const Location &l);
     void via_cost_add(const float value, const Location &l);
     void via_cost_fill(float value);
@@ -418,7 +418,7 @@ class BoardGrid {
 
     // trace_width
     float sized_trace_cost_at(const Location &l, const int traceRadius) const;
-    float sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> traRelativeSearchGrids) const;
+    float sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> &traRelativeSearchGrids) const;
     // came from id
     void setCameFromId(const Location &l, const int id);
     int getCameFromId(const Location &l) const;
