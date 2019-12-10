@@ -51,6 +51,9 @@ int main(int argc, char *argv[]) {
     if (argc >= 5) {
         router.setEnlargeBoundary(atoi(argv[4]));
     }
+    if (argc >= 6) {
+        router.setLayerChangeCost(atof(argv[5]));
+    }
     // router.testRouterWithPinShape();
     router.testRouterWithRipUpAndReroute();
 

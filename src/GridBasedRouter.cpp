@@ -350,7 +350,7 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
     // Output the .kicad_pcb file
     std::string nameTag = fileNameTag;
     //std::string nameTag = "printKiCad";
-    //nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    //nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
     mDb.printKiCad(GlobalParam::gOutputFolder, nameTag);
 }
 
@@ -821,7 +821,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
         // this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
     }
 
-    std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
     mBg.printMatPlot(initialMapNameTag);
 
     // Add all nets to grid routes
@@ -879,7 +879,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
 
     if (GlobalParam::gOutputDebuggingKiCadFile) {
         std::string nameTag = "fristTimeRouteAll";
-        nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+        nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
         // outputResults2KiCadFile(this->gridNets, true, nameTag);
         writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
     }
@@ -888,7 +888,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n";
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < GlobalParam::numRipUpReRouteIteration; ++i) {
+    for (int i = 0; i < GlobalParam::gNumRipUpReRouteIteration; ++i) {
         for (auto &net : nets) {
             //continue;
             if (net.getPins().size() < 2)
@@ -928,7 +928,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
         }
         if (GlobalParam::gOutputDebuggingKiCadFile) {
             std::string nameTag = "i_" + std::to_string(i + 1);
-            nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+            nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
             //outputResults2KiCadFile(this->gridNets, true, nameTag);
             writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
         }
@@ -951,12 +951,12 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     // Routing has done
     // Print the final base cost
     //mBg.printGnuPlot();
-    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
     mBg.printMatPlot(mapNameTag);
 
     // Output final result to KiCad file
     std::string nameTag = "bestSolutionWithMerging";
-    nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
     // outputResults2KiCadFile(this->bestSolution, true, nameTag);
     writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
     //outputResults2KiCadFile(this->bestSolution, false, "bestSolutionWoMerging");

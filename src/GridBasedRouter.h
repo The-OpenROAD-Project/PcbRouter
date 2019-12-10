@@ -25,12 +25,14 @@ class GridBasedRouter {
     void testRouterWithRipUpAndReroute();
     void testRouterWithPinShape();
     bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "");
+    // Parameter settings
     void setInputScale(const int _iS) {
         GlobalParam::inputScale = abs(_iS);
         GlobalParam::gridFactor = 1.0 / (float)GlobalParam::inputScale;
     }
-    void setNumRipUpReRouteIteration(const int _numRRI) { GlobalParam::numRipUpReRouteIteration = abs(_numRRI); }
+    void setNumRipUpReRouteIteration(const int _numRRI) { GlobalParam::gNumRipUpReRouteIteration = abs(_numRRI); }
     void setEnlargeBoundary(const int _eB) { GlobalParam::enlargeBoundary = abs(_eB); }
+    void setLayerChangeCost(const double _lCC) { GlobalParam::gLayerChangeCost = _lCC; }
 
    private:
     bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
