@@ -230,7 +230,8 @@ class GridCell {
     float workingCost = 0.0;  //Walked Cost
 
     //For incremental cost calculation
-    float penaltyCost = -1.0;
+    float cachedTraceCost = -1.0;
+    // float cachedViaCost = -1.0;
 
     int cameFromId = -1;
     //TODO:: Use integer's bit to represent the flag;// Or Enum to represent everything
@@ -359,10 +360,14 @@ class BoardGrid {
     void working_cost_fill(float value);
     float working_cost_at(const Location &l) const;
     void working_cost_set(float value, const Location &l);
-    // penalty cost
-    void penalty_cost_fill(float value);
-    float penalty_cost_at(const Location &l) const;
-    void penalty_cost_set(float value, const Location &l);
+    // cached trace cost
+    void cached_trace_cost_fill(float value);
+    float cached_trace_cost_at(const Location &l) const;
+    void cached_trace_cost_set(float value, const Location &l);
+    // cached via cost
+    // void cached_via_cost_fill(float value);
+    // float cached_via_cost_at(const Location &l) const;
+    // void cached_via_cost_set(float value, const Location &l);
     // base cost
     void base_cost_fill(float value);
     float base_cost_at(const Location &l) const;
