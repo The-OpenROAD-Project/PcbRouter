@@ -823,8 +823,18 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     }
 
     // Make a through hole via
-    // TODO
+    float viaCost = 0.0;
+    if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
+        viaCost += GlobalParam::gLayerChangeCost;
 
+        // Put all the layers (through hole via) into the neighbors
+        for (int z = 0; z < this->l; ++z) {
+            Location viaLayer{l.m_x, l.m_y, z};
+            ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
+        }
+    }
+
+    /*
     // up
     if (l.m_z + 1 < this->l) {
         Location up{l.m_x, l.m_y, l.m_z + 1};
@@ -900,6 +910,7 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
             // this->cached_trace_cost_set(sized_trace_cost_at(down, traceRelativeSearchGrids), down);
         }
     }
+    */
 
     // lf
     if (l.m_x - 1 > -1 && l.m_y + 1 < this->h) {
@@ -1174,6 +1185,7 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius
 
 bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const {
     cost = 0.0;
+    // Check through hole via
     for (int z = 0; z < this->l; ++z) {
         for (auto gridPt : viaRelativeSearchGrids) {
             Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), z);
