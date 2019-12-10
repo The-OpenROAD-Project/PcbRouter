@@ -821,12 +821,15 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
         // this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
     }
 
+    std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    mBg.printMatPlot(initialMapNameTag);
+
     // Add all nets to grid routes
     double totalCurrentRouteCost = 0.0;
     double bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        // if (net.getId() != 18)
+        // if (net.getId() != 7)
         //     continue;
         // if (net.getId() != 18 && net.getId() != 19)
         //     continue;
@@ -948,7 +951,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     // Routing has done
     // Print the final base cost
     //mBg.printGnuPlot();
-    mBg.printMatPlot(util::getFileNameWoExtension(mDb.getFileName()));
+    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::numRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    mBg.printMatPlot(mapNameTag);
 
     // Output final result to KiCad file
     std::string nameTag = "bestSolutionWithMerging";
