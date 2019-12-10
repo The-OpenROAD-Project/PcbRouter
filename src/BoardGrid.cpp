@@ -721,7 +721,7 @@ float BoardGrid::getEstimatedCostWithLayersAndBendingCost(const Location &curren
 }
 
 void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) /*const*/ {
-    auto curGridNetclass = mGridNetclasses.at(currentGridNetclassId);
+    auto &curGridNetclass = mGridNetclasses.at(currentGridNetclassId);
     int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
     int viaSearchRadius = curGridNetclass.getHalfViaDia() + curGridNetclass.getClearance();
     auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
