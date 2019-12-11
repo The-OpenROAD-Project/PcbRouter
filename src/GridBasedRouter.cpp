@@ -960,6 +960,8 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     // outputResults2KiCadFile(this->bestSolution, true, nameTag);
     writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
     //outputResults2KiCadFile(this->bestSolution, false, "bestSolutionWoMerging");
+
+    mBg.showViaCachePerformance();
 }
 
 void GridBasedRouter::testRouterWithPinShape() {

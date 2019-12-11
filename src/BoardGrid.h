@@ -231,7 +231,7 @@ class GridCell {
 
     //For incremental cost calculation
     float cachedTraceCost = -1.0;
-    // float cachedViaCost = -1.0;
+    float cachedViaCost = -1.0;
 
     int cameFromId = -1;
     //TODO:: Use integer's bit to represent the flag;// Or Enum to represent everything
@@ -365,9 +365,9 @@ class BoardGrid {
     float cached_trace_cost_at(const Location &l) const;
     void cached_trace_cost_set(float value, const Location &l);
     // cached via cost
-    // void cached_via_cost_fill(float value);
-    // float cached_via_cost_at(const Location &l) const;
-    // void cached_via_cost_set(float value, const Location &l);
+    void cached_via_cost_fill(float value);
+    float cached_via_cost_at(const Location &l) const;
+    void cached_via_cost_set(float value, const Location &l);
     // base cost
     void base_cost_fill(float value);
     float base_cost_at(const Location &l) const;
@@ -408,9 +408,18 @@ class BoardGrid {
     void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);
     void print_features(std::vector<Location> features);
 
+    void showViaCachePerformance() {
+        std::cout << "# Cached Miss: " << this->viaCachedMissed << std::endl;
+        std::cout << "# Cached Hit: " << this->viaCachedHit << std::endl;
+        std::cout << "# Cached Hit ratio: " << (double)this->viaCachedHit / (this->viaCachedHit + this->viaCachedMissed) << std::endl;
+    }
+
    private:
     GridCell *grid = nullptr;  //Initialize to nullptr
     int size = 0;              //Total number of cells
+
+    long long viaCachedMissed = 0;
+    long long viaCachedHit = 0;
 
     int currentGridNetclassId;
     Location current_targeted_pin;
@@ -445,7 +454,7 @@ class BoardGrid {
     std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
     void came_from_to_features(const Location &end, std::vector<Location> &features) const;
 
-    void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) /*const*/;
+    void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns);
 
     std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
     std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);

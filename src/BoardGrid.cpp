@@ -236,11 +236,11 @@ void BoardGrid::cached_trace_cost_fill(float value) {
     }
 }
 
-// void BoardGrid::cached_via_cost_fill(float value) {
-//     for (int i = 0; i < this->size; ++i) {
-//         this->grid[i].cachedViaCost = value;
-//     }
-// }
+void BoardGrid::cached_via_cost_fill(float value) {
+    for (int i = 0; i < this->size; ++i) {
+        this->grid[i].cachedViaCost = value;
+    }
+}
 
 // void BoardGrid::via_cost_fill(float value) {
 //     for (int i = 0; i < this->size; ++i) {
@@ -278,12 +278,12 @@ float BoardGrid::cached_trace_cost_at(const Location &l) const {
     return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cachedTraceCost;
 }
 
-// float BoardGrid::cached_via_cost_at(const Location &l) const {
-// #ifdef BOUND_CHECKS
-//     assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
-// #endif
-//     return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cachedViaCost;
-// }
+float BoardGrid::cached_via_cost_at(const Location &l) const {
+#ifdef BOUND_CHECKS
+    assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
+#endif
+    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cachedViaCost;
+}
 
 void BoardGrid::base_cost_set(float value, const Location &l) {
 #ifdef BOUND_CHECKS
@@ -313,12 +313,12 @@ void BoardGrid::cached_trace_cost_set(float value, const Location &l) {
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cachedTraceCost = value;
 }
 
-// void BoardGrid::cached_via_cost_set(float value, const Location &l) {
-// #ifdef BOUND_CHECKS
-//     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
-// #endif
-//     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cachedViaCost = value;
-// }
+void BoardGrid::cached_via_cost_set(float value, const Location &l) {
+#ifdef BOUND_CHECKS
+    assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cachedViaCost = value;
+}
 
 void BoardGrid::setCameFromId(const Location &l, const int id) {
 #ifdef BOUND_CHECKS
@@ -720,13 +720,17 @@ float BoardGrid::getEstimatedCostWithLayersAndBendingCost(const Location &curren
     return estCost;
 }
 
-void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) /*const*/ {
+void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) {
     auto &curGridNetclass = mGridNetclasses.at(currentGridNetclassId);
-    int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
-    int viaSearchRadius = curGridNetclass.getHalfViaDia() + curGridNetclass.getClearance();
     auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
     auto &viaRelativeSearchGrids = curGridNetclass.getViaSearchingSpaceToGrids();
-    auto currentGridPenalty = this->cached_trace_cost_at(l);
+
+    // For incremental cost update
+    // auto currentGridPenalty = this->cached_trace_cost_at(l);
+
+    // Obsolete
+    // int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
+    // int viaSearchRadius = curGridNetclass.getHalfViaDia() + curGridNetclass.getClearance();
 
     // left
     if (l.m_x - 1 > -1) {
@@ -824,13 +828,56 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
     // Make a through hole via
     float viaCost = 0.0;
-    if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
-        viaCost += GlobalParam::gLayerChangeCost;
+    Location viaCachedLocation{l.m_x, l.m_y, 0};
+    // Correct Implementation
+    // if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
+    //     //std::cout << "VIA cached missed at " << viaCachedLocation << ", cost: " << viaCost << std::endl;
+    //     viaCost += GlobalParam::gLayerChangeCost;
 
-        // Put all the layers (through hole via) into the neighbors
-        for (int z = 0; z < this->l; ++z) {
-            Location viaLayer{l.m_x, l.m_y, z};
-            ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
+    //     // Put all the layers (through hole via) into the neighbors
+    //     for (int z = 0; z < this->l; ++z) {
+    //         Location viaLayer{l.m_x, l.m_y, z};
+    //         ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
+    //     }
+    // }
+
+    // //Trying to cached the via cost
+    if (this->cached_via_cost_at(viaCachedLocation) < -1.5) {
+        // ViaForbidden location, do nothing
+    } else {
+        if (this->cached_via_cost_at(viaCachedLocation) < -0.5) {
+            // No cached via cost value
+            if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
+                //std::cout << "VIA cached missed at " << viaCachedLocation << ", cost: " << viaCost << std::endl;
+                ++this->viaCachedMissed;
+
+                // Put in the cache
+                this->cached_via_cost_set(viaCost, viaCachedLocation);
+
+                viaCost += GlobalParam::gLayerChangeCost;
+
+                // Put all the layers (through hole via) into the neighbors
+                for (int z = 0; z < this->l; ++z) {
+                    Location viaLayer{l.m_x, l.m_y, z};
+                    ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
+                }
+            } else {
+                // Put in the cache the forbidden flag
+                this->cached_via_cost_set(-2.0, viaCachedLocation);
+            }
+        } else {
+            ++this->viaCachedHit;
+
+            // Got a cached via cost value
+            viaCost += this->cached_via_cost_at(viaCachedLocation);
+            //std::cout << "Got VIA cached! at " << viaCachedLocation << ", cost: " << viaCost << std::endl;
+            viaCost += GlobalParam::gLayerChangeCost;
+
+            // Put all the layers (through hole via) into the neighbors
+            for (int z = 0; z < this->l; ++z) {
+                Location viaLayer{l.m_x, l.m_y, z};
+                ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
+            }
         }
     }
 
@@ -1802,7 +1849,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
     this->clearAllCameFromId();
     this->cached_trace_cost_fill(-1);
-    // this->cached_via_cost_fill(-1);
+    this->cached_via_cost_fill(-1);
     route.currentRouteCost = 0.0;
 
     for (size_t i = 1; i < route.mGridPins.size(); ++i) {
