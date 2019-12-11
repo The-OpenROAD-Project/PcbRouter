@@ -818,6 +818,7 @@ void GridBasedRouter::testRouterWithRipUpAndReroute() {
     // this->addAllPinCostToGrid(0);
     for (auto &gridPin : this->mGridPins) {
         this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
+        // Try below to disable via forbidden
         // this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
     }
 

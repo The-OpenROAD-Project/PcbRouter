@@ -176,16 +176,19 @@ void MultipinRoute::featuresToGridPaths() {
         auto prevLocation = this->features.at(i - 1);
         auto location = this->features.at(i);
 
-        if (abs(location.m_x - prevLocation.m_x) <= 1 &&
-            abs(location.m_y - prevLocation.m_y) <= 1 &&
-            abs(location.m_z - prevLocation.m_z) <= 1) {
-            // Sanity Check
-            if (location.m_z != prevLocation.m_z &&
-                location.m_y != prevLocation.m_y &&
-                location.m_x != prevLocation.m_x) {
-                std::cerr << __FUNCTION__ << "() Invalid path between location: " << location << ", and prevLocation: " << prevLocation << std::endl;
-                continue;
-            }
+        // if (abs(location.m_x - prevLocation.m_x) <= 1 &&
+        //     abs(location.m_y - prevLocation.m_y) <= 1 &&
+        //     abs(location.m_z - prevLocation.m_z) <= 1) {
+        //     // Sanity Check
+        //     if (location.m_z != prevLocation.m_z &&
+        //         location.m_y != prevLocation.m_y &&
+        //         location.m_x != prevLocation.m_x) {
+        //         std::cerr << __FUNCTION__ << "() Invalid path between location: " << location << ", and prevLocation: " << prevLocation << std::endl;
+        //         continue;
+        //     }
+        if ((abs(location.m_x - prevLocation.m_x) <= 1 && abs(location.m_y - prevLocation.m_y) <= 1 && location.m_z == prevLocation.m_z) ||
+            (location.m_x == prevLocation.m_x && location.m_y == prevLocation.m_y && location.m_z != prevLocation.m_z)) {
+            // If (is trace or is via)
             mGridPaths.back().mSegments.emplace_back(location);
         } else {
             // New start of a path

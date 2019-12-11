@@ -396,9 +396,9 @@ class BoardGrid {
     bool isViaForbidden(const Location &l) const;
     // Helpers
     inline bool validate_location(const Location &l) const {
-        if (l.m_x >= this->w || l.m_x < 0) return false;
-        if (l.m_y >= this->h || l.m_y < 0) return false;
-        if (l.m_z >= this->l || l.m_z < 0) return false;
+        if (l.m_x >= this->w || l.m_x < 0 || l.m_y >= this->h || l.m_y < 0 || l.m_z >= this->l || l.m_z < 0) {
+            return false;
+        }
         return true;
     }
     void printGnuPlot();
@@ -409,9 +409,9 @@ class BoardGrid {
     void print_features(std::vector<Location> features);
 
     void showViaCachePerformance() {
-        std::cout << "# Cached Miss: " << this->viaCachedMissed << std::endl;
-        std::cout << "# Cached Hit: " << this->viaCachedHit << std::endl;
-        std::cout << "# Cached Hit ratio: " << (double)this->viaCachedHit / (this->viaCachedHit + this->viaCachedMissed) << std::endl;
+        std::cout << "# Via Cost Cached Miss: " << this->viaCachedMissed << std::endl;
+        std::cout << "# Via Cost Cached Hit: " << this->viaCachedHit << std::endl;
+        std::cout << "# Via Cost Cached Hit ratio: " << (double)this->viaCachedHit / (this->viaCachedHit + this->viaCachedMissed) << std::endl;
     }
 
    private:
