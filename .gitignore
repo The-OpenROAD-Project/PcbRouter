@@ -25,6 +25,9 @@ CMakeCache.txt
 CMakeFiles
 install_manifest.txt
 
+# SWIG machine code
+*_wrapper.cpp
+
 # KiCad related
 fp-info-cache
 *.pro
