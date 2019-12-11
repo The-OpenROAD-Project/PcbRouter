@@ -16,8 +16,9 @@ set(KICADPCB_HOME
 )
 
 find_package(Boost REQUIRED)
-find_package( PythonInterp 2.7 REQUIRED )
-find_package( PythonLibs 2.7 REQUIRED )
+find_package(PythonInterp 2.7 REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
+find_package(SWIG REQUIRED)
 
 find_library(SWIG_EXECUTABLE swig)
 if(NOT SWIG_EXECUTABLE)
@@ -28,7 +29,6 @@ set(SWIG_EXECUTABLE "/bin/swig")
 #set(SWIG_EXECUTABLE "/usr/local/bin/swig")
 endif()
 add_subdirectory(${KICADPCB_HOME})
-
 
 set (PCBROUTER_SRC 
   src/BoardGrid.cpp
