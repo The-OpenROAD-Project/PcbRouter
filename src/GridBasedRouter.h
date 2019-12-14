@@ -19,20 +19,26 @@ class GridBasedRouter {
     // dtor
     ~GridBasedRouter() {}
 
-    void test_router();
-    void testRouterWithPinAndKeepoutAvoidance();
-    void testRouterWithAvoidanceAndVariousPadType();
-    void testRouterWithRipUpAndReroute();
-    void testRouterWithPinShape();
-    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "");
+    void route_all_net_with_ripup_and_reroute();
+
     // Parameter settings
-    void setInputScale(const int _iS) {
+    void set_input_scale(const int _iS) {
         GlobalParam::inputScale = abs(_iS);
         GlobalParam::gridFactor = 1.0 / (float)GlobalParam::inputScale;
     }
-    void setNumRipUpReRouteIteration(const int _numRRI) { GlobalParam::gNumRipUpReRouteIteration = abs(_numRRI); }
-    void setEnlargeBoundary(const int _eB) { GlobalParam::enlargeBoundary = abs(_eB); }
-    void setLayerChangeCost(const double _lCC) { GlobalParam::gLayerChangeCost = _lCC; }
+    void set_num_ripup_reroute_iteration(const int _numRRI) { GlobalParam::gNumRipUpReRouteIteration = abs(_numRRI); }
+    void set_enlarge_boundary(const int _eB) { GlobalParam::enlargeBoundary = abs(_eB); }
+    void set_layer_change_cost(const double _lCC) { GlobalParam::gLayerChangeCost = _lCC; }
+    void set_trace_obstacle_cost(const double _toc) { GlobalParam::gTraceBasicCost = _toc; }
+    void set_via_obstacle_cost(const double _voc) { GlobalParam::gViaInsertionCost = _voc; }
+    void set_pin_obstacle_cost(const double _poc) { GlobalParam::gPinObstacleCost = _poc; }
+
+   private:
+    void test_router();
+    void testRouterWithPinShape();
+    void testRouterWithPinAndKeepoutAvoidance();
+    void testRouterWithAvoidanceAndVariousPadType();
+    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "");
 
    private:
     bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);

@@ -799,7 +799,7 @@ void GridBasedRouter::testRouterWithAvoidanceAndVariousPadType() {
     outputResults2KiCadFile(multipinNets);
 }
 
-void GridBasedRouter::testRouterWithRipUpAndReroute() {
+void GridBasedRouter::route_all_net_with_ripup_and_reroute() {
     std::cout << std::fixed << std::setprecision(5);
     std::cout << std::endl
               << "=================" << __FUNCTION__ << "==================" << std::endl;

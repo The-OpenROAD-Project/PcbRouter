@@ -14,15 +14,6 @@ using namespace std;
 #define BOUND_CHECKS
 
 // TODO
-// See router.h -> class net
-struct NetClass {
-    double ncClearance;
-    double ncTraceWidth;
-    double ncViaDiameter;
-    double ncMicroViaDiameter;
-};
-
-// TODO
 // See clearance matrix in the EAGLE/KiCad format
 class GlobalParam {
    public:
