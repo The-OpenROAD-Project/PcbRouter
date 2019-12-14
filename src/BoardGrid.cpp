@@ -1135,49 +1135,6 @@ void BoardGrid::printMatPlot(const std::string fileNameTag) {
         ofs << "plt.gca().invert_yaxis()\n";
         ofs << "plt.show()\n";
     }
-
-    for (int l = 0; l < this->l; ++l) {
-        std::string outFileName = fileNameTag + ".layer" + std::to_string(l) + "_viaCost.py";
-        outFileName =
-            util::appendDirectory(GlobalParam::gOutputFolder, outFileName);
-        std::ofstream ofs(outFileName, std::ofstream::out);
-        std::cout << "outFileName: " << outFileName << std::endl;
-
-        ofs << std::fixed << std::setprecision(5);
-        ofs << "import numpy as np\n";
-        ofs << "import matplotlib.pyplot as plt\n";
-        ofs << "plt.close()\n";
-        ofs << "viridis = plt.get_cmap('nipy_spectral', " << int(maxCost) << ")\n";
-        ofs << "data = np.array([[";
-
-        for (int r = 0; r < this->h; ++r) {
-            // for (int r = this->h - 1; r > -1; --r) {
-            for (int c = 0; c < this->w; ++c) {
-                ofs << this->via_cost_at(Location(c, r, l)) << " ";
-                if (c < this->w - 1) {
-                    ofs << ", ";
-                } else {
-                    ofs << "]";
-                }
-            }
-
-            if (r < this->h - 1) {
-                // if (r > 0) {
-                ofs << ", [";
-            }
-        }
-
-        ofs << "])\n";
-        ofs << "plt.pcolormesh(data, cmap=viridis, vmin=data.min(), "
-               "vmax=data.max())\n";
-        ofs << "plt.title('"
-            << "layer" << std::to_string(l) << " viacost"
-            << "')\n";
-        ofs << "plt.colorbar()\n";
-        ofs << "plt.axis('equal')\n";
-        ofs << "plt.gca().invert_yaxis()\n";
-        ofs << "plt.show()\n";
-    }
 }
 
 void BoardGrid::pprint() {
