@@ -633,10 +633,10 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 
                 frontier.push(next.second, new_cost + estCost);
 
-                // See if is overflowed
-                if (new_cost < 0) {
-                    std::cout << "****************new_cost < 0, estCost = " << estCost << ", current_cost = " << current_cost << ", next_cost = " << next.first << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
-                }
+                // See if is negative cost
+                // if (new_cost < 0) {
+                //     std::cout << "****************new_cost < 0, estCost = " << estCost << ", current_cost = " << current_cost << ", next_cost = " << next.first << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+                // }
 
                 // Show if the target is reached
                 if (estCost < 0.5) {
@@ -766,10 +766,12 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
         // if(golden != cached_trace_cost_at(left) ){
         //     std::cout << "Cost at "<<left<<": golden: " << golden << ", incremental: " << cached_trace_cost_at(left) << std::endl;
         // }
-        if (leftCost < 0.0) {
-            float golden = sized_trace_cost_at(left, traceRelativeSearchGrids);
-            std::cout << "Cost at " << left << ": golden: " << golden << ", incremental: " << cached_trace_cost_at(left) << std::endl;
-        }
+
+        // See if is negative cost
+        // if (leftCost < 0.0) {
+        //     float golden = sized_trace_cost_at(left, traceRelativeSearchGrids);
+        //     std::cout << "Cost at " << left << ": golden: " << golden << ", incremental: " << cached_trace_cost_at(left) << std::endl;
+        // }
         ns.push_back(std::pair<float, Location>(leftCost, left));
     }
 
@@ -1223,22 +1225,14 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
 
 float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> &traRelativeSearchGrids) const {
     float cost = 0.0;
-    float prevCost = 0.0;
     for (auto gridPt : traRelativeSearchGrids) {
         Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
         if (!validate_location(current_l)) {
             // TODO: cost to model the clearance to boundary
-            prevCost = cost;
             cost += 100000;
-            if(cost < 0){
-                std::cout << "current_loc: "<< current_l <<", cost += 100000, new_cost: "<< cost << ", prevCost:" << prevCost << std::endl;
-            }
             continue;
         }
         cost += this->base_cost_at(current_l);
-        if(cost < 0){
-            std::cout << "current_loc: "<< current_l << ", base_cost_at: "<< this->base_cost_at(current_l) <<", new_cost: "<< cost << ", prevCost:" << prevCost << std::endl;
-        }
         // cost += this->via_cost_at(current_l);
     }
     return cost;

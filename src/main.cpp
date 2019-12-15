@@ -1,5 +1,4 @@
 
-#include <limits>
 #include "GridBasedRouter.h"
 #include "kicadPcbDataBase.h"
 #include "util.h"
@@ -9,18 +8,6 @@ int main(int argc, char *argv[]) {
         std::cout << "Please provide input testcase filename." << std::endl;
         return 0;
     }
-
-    std::cout << "float\t"
-              << std::numeric_limits<float>::lowest() << '\t'
-              << std::numeric_limits<float>::min() << '\t'
-              << std::numeric_limits<float>::min() - 100000 << '\t'
-              << std::numeric_limits<float>::min() + 100000 << '\t'
-              << std::numeric_limits<float>::max() << '\t'
-              << std::numeric_limits<float>::max() - 100000 << '\t'
-              << std::numeric_limits<float>::max() + 100000 << '\t'
-              << std::numeric_limits<float>::infinity() << '\t'
-              << std::numeric_limits<float>::infinity() + 100000 << '\t'
-              << '\n';
 
     util::showSysInfoComdLine(argc, argv);
     GlobalParam::setFolders();
