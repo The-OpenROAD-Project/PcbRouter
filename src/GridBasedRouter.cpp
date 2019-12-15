@@ -830,8 +830,8 @@ void GridBasedRouter::route_all_net_with_ripup_and_reroute() {
     double bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        // if (net.getId() != 7)
-        //     continue;
+        if (net.getId() != 7)
+            continue;
         // if (net.getId() != 18 && net.getId() != 19)
         //     continue;
         // if (net.getId() > 24)
@@ -851,6 +851,9 @@ void GridBasedRouter::route_all_net_with_ripup_and_reroute() {
             // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
             this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
+
+        std::string gndMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".before_gnd" + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+        mBg.printMatPlot(gndMapNameTag);
 
         // Setup design rules in board grid
         if (!mDb.isNetclassId(net.getNetclassId())) {
