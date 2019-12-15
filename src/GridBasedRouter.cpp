@@ -830,11 +830,7 @@ void GridBasedRouter::route_all_net_with_ripup_and_reroute() {
     double bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        if (net.getId() != 7)
-            continue;
-        // if (net.getId() != 18 && net.getId() != 19)
-        //     continue;
-        // if (net.getId() > 24)
+        // if (net.getId() != 7)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
