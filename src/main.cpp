@@ -22,6 +22,12 @@ int main(int argc, char *argv[]) {
               << std::numeric_limits<float>::infinity() + 100000 << '\t'
               << '\n';
 
+    float cost =0;
+    for(int i=0; i<10000; ++i){
+        cost += 10000000000000000000000000000000000000.0;
+        std::cout << cost <<std::endl;
+    }
+
     util::showSysInfoComdLine(argc, argv);
     GlobalParam::setFolders();
     GlobalParam::setUsageStart();

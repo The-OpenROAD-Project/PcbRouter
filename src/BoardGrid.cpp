@@ -1223,14 +1223,22 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
 
 float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> &traRelativeSearchGrids) const {
     float cost = 0.0;
+    float prevCost = 0.0;
     for (auto gridPt : traRelativeSearchGrids) {
         Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
         if (!validate_location(current_l)) {
             // TODO: cost to model the clearance to boundary
+            prevCost = cost;
             cost += 100000;
+            if(cost < 0){
+                std::cout << "current_loc: "<< current_l<<"new_cost: "<< cost << ", prevCost:" << prevCost << std::endl;
+            }
             continue;
         }
         cost += this->base_cost_at(current_l);
+        if(cost < 0){
+            std::cout << "current_loc: "<< current_l<<"new_cost: "<< cost << ", prevCost:" << prevCost << std::endl;
+        }
         // cost += this->via_cost_at(current_l);
     }
     return cost;
