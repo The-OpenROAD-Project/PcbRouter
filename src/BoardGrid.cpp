@@ -616,10 +616,10 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         // }
         std::vector<std::pair<float, Location>> neighbors;
         this->getNeighbors(current, neighbors);
+        float current_cost = this->working_cost_at(current);
 
         for (std::pair<float, Location> next : neighbors) {
-            float new_cost = this->working_cost_at(current);
-            new_cost += next.first;
+            float new_cost = current_cost + next.first;  // Can be optimized!!!!
             // A*
             // float estCost = getEstimatedCost(next.second);
             // Test bending cost
@@ -632,6 +632,12 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
                 this->setCameFromId(next.second, this->locationToId(current));
 
                 frontier.push(next.second, new_cost + estCost);
+
+                // See if is overflowed
+                if (new_cost < 0) {
+                    std::cerr << "****************new_cost < 0, estCost = " << estCost << ", current_cost = " << current_cost << ", next_cost = " << next.first << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+                }
+
                 // Show if the target is reached
                 if (estCost < 0.5) {
                     std::cerr << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
