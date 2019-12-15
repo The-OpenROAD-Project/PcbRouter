@@ -635,7 +635,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 
                 // See if is overflowed
                 if (new_cost < 0) {
-                    std::cerr << "****************new_cost < 0, estCost = " << estCost << ", current_cost = " << current_cost << ", next_cost = " << next.first << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+                    std::cout << "****************new_cost < 0, estCost = " << estCost << ", current_cost = " << current_cost << ", next_cost = " << next.first << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
                 }
 
                 // Show if the target is reached
