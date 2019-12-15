@@ -766,6 +766,10 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
         // if(golden != cached_trace_cost_at(left) ){
         //     std::cout << "Cost at "<<left<<": golden: " << golden << ", incremental: " << cached_trace_cost_at(left) << std::endl;
         // }
+        if (leftCost < 0.0) {
+            float golden = sized_trace_cost_at(left, traceRelativeSearchGrids);
+            std::cout << "Cost at " << left << ": golden: " << golden << ", incremental: " << cached_trace_cost_at(left) << std::endl;
+        }
         ns.push_back(std::pair<float, Location>(leftCost, left));
     }
 
