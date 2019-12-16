@@ -461,6 +461,8 @@ class BoardGrid {
     void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
     void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
     void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost);
+    void initializeFrontiers(const std::vector<Location> &route, LocationQueue<Location, float> &frontier);
+    void initializeLocationToFrontier(const Location &start, LocationQueue<Location, float> &frontier);
     void breadth_first_search(const Location &start, const Location &end);
     std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
 

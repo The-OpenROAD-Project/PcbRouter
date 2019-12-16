@@ -578,20 +578,21 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 
     float bestCostWhenReachTarget = std::numeric_limits<float>::max();
     LocationQueue<Location, float> frontier;  // search frontier
-    for (Location start : route) {
-        // Walked cost + estimated future cost
-        // 2D cost estimation
-        float cost = 0.0 + getEstimatedCost(start);
-        // 3D cost estimation
-        //float cost = 0.0 + getEstimatedCostWithLayers(start);
+    this->initializeFrontiers(route, frontier);
+    // for (Location start : route) {
+    //     // Walked cost (= 0) + estimated future cost
+    //     // 2D cost estimation
+    //     float cost = getEstimatedCost(start);
+    //     // 3D cost estimation
+    //     //float cost = getEstimatedCostWithLayers(start);
 
-        this->working_cost_set(0.0, start);
-        frontier.push(start, cost);
-        // std::cerr << "\tPQ: cost: " << cost << ", at" << start << std::endl;
+    //     this->working_cost_set(0.0, start);
+    //     frontier.push(start, cost);
+    //     // std::cerr << "\tPQ: cost: " << cost << ", at" << start << std::endl;
 
-        // Set a ending for the backtracking
-        this->setCameFromId(start, this->locationToId(start));
-    }
+    //     // Set a ending for the backtracking
+    //     this->setCameFromId(start, this->locationToId(start));
+    // }
 
     std::cout << " frontier.size(): " << frontier.size() << ", current targeted pin:  " << std::endl;
     for (auto pt : currentTargetedPinWithLayers) {
@@ -650,6 +651,61 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
     //For Dijkstra to output
     finalCost = bestCostWhenReachTarget;
     std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
+}
+
+void BoardGrid::initializeFrontiers(const std::vector<Location> &route, LocationQueue<Location, float> &frontier) {
+    // for (Location start : route) {
+    //     initializeLocationToFrontier(start, frontier);
+    // }
+
+    if (route.empty()) {
+        return;
+    }
+    if (route.size() == 1) {
+        initializeLocationToFrontier(route.front(), frontier);
+    }
+
+    for (int i = 1; i < route.size(); ++i) {
+        auto prevLocation = route.at(i - 1);
+        auto location = route.at(i);
+
+        // TODO: Through hole pins? how to put layers of through hole pins into frontier
+        if (location.m_x == prevLocation.m_x && location.m_y == prevLocation.m_y && location.m_z != prevLocation.m_z) {
+            // A through-hole via condition
+
+            // Put all the layers (through hole via) into the frontiers
+            for (int z = 0; z < this->l; ++z) {
+                Location viaLayer{location.m_x, location.m_y, z};
+                initializeLocationToFrontier(viaLayer, frontier);
+            }
+
+            // Move the index forward or not?
+            // TODO:: Consider
+
+        } else {
+            // Normal points
+            initializeLocationToFrontier(location, frontier);
+
+            if (i == 1) {
+                initializeLocationToFrontier(prevLocation, frontier);
+            }
+        }
+    }
+}
+
+void BoardGrid::initializeLocationToFrontier(const Location &start, LocationQueue<Location, float> &frontier) {
+    // Walked cost (= 0) + estimated future cost
+    // 2D cost estimation
+    float cost = getEstimatedCost(start);
+    // 3D cost estimation
+    //float cost = getEstimatedCostWithLayers(start);
+
+    this->working_cost_set(0.0, start);
+    frontier.push(start, cost);
+    // std::cerr << "\tPQ: cost: " << cost << ", at" << start << std::endl;
+
+    // Set a ending for the backtracking
+    this->setCameFromId(start, this->locationToId(start));
 }
 
 float BoardGrid::getEstimatedCost(const Location &l) {
@@ -736,6 +792,13 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
 
     // For incremental cost update
     // auto currentGridPenalty = this->cached_trace_cost_at(l);
+
+    // For incremental Via cost update
+    // int currentId = this->locationToId(l);
+    // int nextId = this->getCameFromId(currentId);
+    // Location prevLocation;
+    // this->idToLocation(nextId, prevLocation);
+    // auto prevLocViaCost = this->cached_via_cost_at(prevLocation);
 
     // Obsolete
     // int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
@@ -861,11 +924,10 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
         // ViaForbidden location, do nothing
     } else {
         if (this->cached_via_cost_at(viaCachedLocation) < -0.5) {
+            ++this->viaCachedMissed;
+
             // No cached via cost value
             if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
-                //std::cout << "VIA cached missed at " << viaCachedLocation << ", cost: " << viaCost << std::endl;
-                ++this->viaCachedMissed;
-
                 // Put in the cache
                 this->cached_via_cost_set(viaCost, viaCachedLocation);
 
@@ -884,9 +946,7 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
             ++this->viaCachedHit;
 
             // Got a cached via cost value
-            viaCost += this->cached_via_cost_at(viaCachedLocation);
-            //std::cout << "Got VIA cached! at " << viaCachedLocation << ", cost: " << viaCost << std::endl;
-            viaCost += GlobalParam::gLayerChangeCost;
+            viaCost = this->cached_via_cost_at(viaCachedLocation) + GlobalParam::gLayerChangeCost;
 
             // Put all the layers (through hole via) into the neighbors
             for (int z = 0; z < this->l; ++z) {
