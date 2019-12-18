@@ -17,7 +17,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
     for (auto &pt : searchGridsR) {
         pt.m_x += 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsR, incrementalSearchGrids.getRightAddGrids(), incrementalSearchGrids.getRightDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsR, incrementalSearchGrids.setRightAddGrids(), incrementalSearchGrids.setRightDedGrids());
 
     // Left
     auto searchGridsL = searchGrids;
@@ -25,7 +25,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
     for (auto &pt : searchGridsL) {
         pt.m_x -= 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsL, incrementalSearchGrids.getLeftAddGrids(), incrementalSearchGrids.getLeftDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsL, incrementalSearchGrids.setLeftAddGrids(), incrementalSearchGrids.setLeftDedGrids());
     // // Debugging
     // std::cout << "Left additional relative trace searching grids points: " << std::endl;
     // for (auto &pt : addL) {
@@ -42,7 +42,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
     for (auto &pt : searchGridsF) {
         pt.m_y += 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsF, incrementalSearchGrids.getForwardAddGrids(), incrementalSearchGrids.getForwardDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsF, incrementalSearchGrids.setForwardAddGrids(), incrementalSearchGrids.setForwardDedGrids());
 
     // Backward
     auto searchGridsB = searchGrids;
@@ -50,7 +50,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
     for (auto &pt : searchGridsB) {
         pt.m_y -= 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsB, incrementalSearchGrids.getBackwardAddGrids(), incrementalSearchGrids.getBackwardDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsB, incrementalSearchGrids.setBackwardAddGrids(), incrementalSearchGrids.setBackwardDedGrids());
 
     // LB
     auto searchGridsLB = searchGrids;
@@ -59,7 +59,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
         pt.m_x -= 1;
         pt.m_y -= 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsLB, incrementalSearchGrids.getLBAddGrids(), incrementalSearchGrids.getLBDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsLB, incrementalSearchGrids.setLBAddGrids(), incrementalSearchGrids.setLBDedGrids());
 
     // LF
     auto searchGridsLF = searchGrids;
@@ -68,7 +68,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
         pt.m_x -= 1;
         pt.m_y += 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsLF, incrementalSearchGrids.getLFAddGrids(), incrementalSearchGrids.getLFDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsLF, incrementalSearchGrids.setLFAddGrids(), incrementalSearchGrids.setLFDedGrids());
 
     // RB
     auto searchGridsRB = searchGrids;
@@ -77,7 +77,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
         pt.m_x += 1;
         pt.m_y -= 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsRB, incrementalSearchGrids.getRBAddGrids(), incrementalSearchGrids.getRBDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsRB, incrementalSearchGrids.setRBAddGrids(), incrementalSearchGrids.setRBDedGrids());
 
     // RF
     auto searchGridsRF = searchGrids;
@@ -86,7 +86,7 @@ void GridNetclass::setupIncrementalSearchGrids(const std::vector<Point_2D<int>> 
         pt.m_x += 1;
         pt.m_y += 1;
     }
-    getAddDedSearchGrids(searchGrids, searchGridsRF, incrementalSearchGrids.getRFAddGrids(), incrementalSearchGrids.getRFDedGrids());
+    getAddDedSearchGrids(searchGrids, searchGridsRF, incrementalSearchGrids.setRFAddGrids(), incrementalSearchGrids.setRFDedGrids());
 }
 
 void GridNetclass::getAddDedSearchGrids(const std::vector<Point_2D<int>> &searchGrids, const std::vector<Point_2D<int>> &shiftedSearchGrids, std::vector<Point_2D<int>> &add, std::vector<Point_2D<int>> &ded) {
@@ -793,13 +793,6 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     // For incremental cost update
     // auto currentGridPenalty = this->cached_trace_cost_at(l);
 
-    // For incremental Via cost update
-    // int currentId = this->locationToId(l);
-    // int nextId = this->getCameFromId(currentId);
-    // Location prevLocation;
-    // this->idToLocation(nextId, prevLocation);
-    // auto prevLocViaCost = this->cached_via_cost_at(prevLocation);
-
     // Obsolete
     // int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
     // int viaSearchRadius = curGridNetclass.getHalfViaDia() + curGridNetclass.getClearance();
@@ -926,8 +919,18 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
         if (this->cached_via_cost_at(viaCachedLocation) < -0.5) {
             ++this->viaCachedMissed;
 
-            // No cached via cost value
-            if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
+            // For incremental Via cost update
+            int currentId = this->locationToId(l);
+            int prevId = this->getCameFromId(currentId);
+            Location prevLocation;
+            this->idToLocation(prevId, prevLocation);
+            prevLocation.m_z = 0;  // To access the cache
+            auto prevLocViaCost = this->cached_via_cost_at(prevLocation);
+
+            // No cached via cost value - correct implementation
+            // if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
+            // No cached via cost value => try incremental cost updating
+            if (sizedViaExpandableAndIncrementalCost(l, viaRelativeSearchGrids, prevLocation, prevLocViaCost, curGridNetclass.getViaIncrementalSearchGrids(), viaCost)) {
                 // Put in the cache
                 this->cached_via_cost_set(viaCost, viaCachedLocation);
 
@@ -939,9 +942,10 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
                     ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
                 }
             } else {
-                // Put in the cache the forbidden flag
+                // Put in the cache the via forbidden flag
                 this->cached_via_cost_set(-2.0, viaCachedLocation);
             }
+
         } else {
             ++this->viaCachedHit;
 
@@ -1278,6 +1282,142 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
             }
             //cost += this->via_cost_at(current_l);
             cost += this->base_cost_at(current_l);
+        }
+    }
+    return true;
+}
+
+bool BoardGrid::sizedViaExpandableAndIncrementalCost(const Location &curLoc, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, const Location &prevLoc, const float &prevCost, const IncrementalSearchGrids &searchGrids, float &cost) const {
+    if (prevCost < -0.5) {
+        // Cache missed or the previous location is via forbidded
+        // i.e. Need to calculate the cost directly
+        cost = 0.0;
+        // Check through hole via
+        for (int z = 0; z < this->l; ++z) {
+            for (auto gridPt : viaRelativeSearchGrids) {
+                Location current_l = Location(curLoc.m_x + gridPt.x(), curLoc.m_y + gridPt.y(), z);
+                if (!validate_location(current_l)) {
+                    // TODO: cost to model the clearance to boundary
+                    cost += 1000;
+                    continue;
+                }
+                if (this->isViaForbidden(current_l)) {
+                    return false;
+                }
+                //cost += this->via_cost_at(current_l);
+                cost += this->base_cost_at(current_l);
+            }
+        }
+    } else {
+        // Has previous location's via cost
+        // i.e. use incremental cost to get the current location's via cost
+        cost = prevCost;
+        float addCost = 0.0, dedCost = 0.0;
+        // Left
+        if ((curLoc.m_x - prevLoc.m_x) == -1 && curLoc.m_y == prevLoc.m_y) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getLeftAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getLeftDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! Left: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        }
+        // Right
+        else if ((curLoc.m_x - prevLoc.m_x) == 1 && curLoc.m_y == prevLoc.m_y) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getRightAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getRightDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! Right: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        }
+        // Forward
+        else if (curLoc.m_x == prevLoc.m_x && (curLoc.m_y - prevLoc.m_y) == 1) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getForwardAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getForwardDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! Forward: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        }
+        // Backward
+        else if (curLoc.m_x == prevLoc.m_x && (curLoc.m_y - prevLoc.m_y) == -1) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getBackwardAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getBackwardDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! Backward: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        }
+        // LF
+        else if ((curLoc.m_x - prevLoc.m_x) == -1 && (curLoc.m_y - prevLoc.m_y) == 1) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getLFAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getLFDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! LF: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        }
+        // LB
+        else if ((curLoc.m_x - prevLoc.m_x) == -1 && (curLoc.m_y - prevLoc.m_y) == -1) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getLBAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getLBDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! LB: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        }
+        // RF
+        else if ((curLoc.m_x - prevLoc.m_x) == 1 && (curLoc.m_y - prevLoc.m_y) == 1) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getRFAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getRFDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! RF: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        }
+        // RB
+        else if ((curLoc.m_x - prevLoc.m_x) == 1 && (curLoc.m_y - prevLoc.m_y) == -1) {
+            if (sizedViaExpandableAndCost(prevLoc, searchGrids.getRBAddGrids(), addCost)) {
+                cost += addCost;
+                if (sizedViaExpandableAndCost(prevLoc, searchGrids.getRBDedGrids(), dedCost)) {
+                    cost -= dedCost;
+                } else {
+                    std::cout << "!!!! RB: Errors, the deduction part has via forbidden flag !!!!" << std::endl;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            std::cout << __FUNCTION__ << "(): Cannot find the relationship between current and previous locaiton...." << std::endl;
         }
     }
     return true;

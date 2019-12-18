@@ -76,23 +76,41 @@ class IncrementalSearchGrids {
     IncrementalSearchGrids() {}
     ~IncrementalSearchGrids() {}
 
-    std::vector<Point_2D<int>> &getLeftAddGrids() { return mAdditionGridsL; }
-    std::vector<Point_2D<int>> &getLeftDedGrids() { return mDeductionGridsL; }
-    std::vector<Point_2D<int>> &getRightAddGrids() { return mAdditionGridsR; }
-    std::vector<Point_2D<int>> &getRightDedGrids() { return mDeductionGridsR; }
-    std::vector<Point_2D<int>> &getForwardAddGrids() { return mAdditionGridsF; }
-    std::vector<Point_2D<int>> &getForwardDedGrids() { return mDeductionGridsF; }
-    std::vector<Point_2D<int>> &getBackwardAddGrids() { return mAdditionGridsB; }
-    std::vector<Point_2D<int>> &getBackwardDedGrids() { return mDeductionGridsB; }
+    const std::vector<Point_2D<int>> &getLeftAddGrids() const { return mAdditionGridsL; }
+    const std::vector<Point_2D<int>> &getLeftDedGrids() const { return mDeductionGridsL; }
+    const std::vector<Point_2D<int>> &getRightAddGrids() const { return mAdditionGridsR; }
+    const std::vector<Point_2D<int>> &getRightDedGrids() const { return mDeductionGridsR; }
+    const std::vector<Point_2D<int>> &getForwardAddGrids() const { return mAdditionGridsF; }
+    const std::vector<Point_2D<int>> &getForwardDedGrids() const { return mDeductionGridsF; }
+    const std::vector<Point_2D<int>> &getBackwardAddGrids() const { return mAdditionGridsB; }
+    const std::vector<Point_2D<int>> &getBackwardDedGrids() const { return mDeductionGridsB; }
 
-    std::vector<Point_2D<int>> &getLBAddGrids() { return mAdditionGridsLB; }
-    std::vector<Point_2D<int>> &getLBDedGrids() { return mDeductionGridsLB; }
-    std::vector<Point_2D<int>> &getRBAddGrids() { return mAdditionGridsRB; }
-    std::vector<Point_2D<int>> &getRBDedGrids() { return mDeductionGridsRB; }
-    std::vector<Point_2D<int>> &getLFAddGrids() { return mAdditionGridsLF; }
-    std::vector<Point_2D<int>> &getLFDedGrids() { return mDeductionGridsLF; }
-    std::vector<Point_2D<int>> &getRFAddGrids() { return mAdditionGridsRF; }
-    std::vector<Point_2D<int>> &getRFDedGrids() { return mDeductionGridsRF; }
+    const std::vector<Point_2D<int>> &getLBAddGrids() const { return mAdditionGridsLB; }
+    const std::vector<Point_2D<int>> &getLBDedGrids() const { return mDeductionGridsLB; }
+    const std::vector<Point_2D<int>> &getRBAddGrids() const { return mAdditionGridsRB; }
+    const std::vector<Point_2D<int>> &getRBDedGrids() const { return mDeductionGridsRB; }
+    const std::vector<Point_2D<int>> &getLFAddGrids() const { return mAdditionGridsLF; }
+    const std::vector<Point_2D<int>> &getLFDedGrids() const { return mDeductionGridsLF; }
+    const std::vector<Point_2D<int>> &getRFAddGrids() const { return mAdditionGridsRF; }
+    const std::vector<Point_2D<int>> &getRFDedGrids() const { return mDeductionGridsRF; }
+
+    std::vector<Point_2D<int>> &setLeftAddGrids() { return mAdditionGridsL; }
+    std::vector<Point_2D<int>> &setLeftDedGrids() { return mDeductionGridsL; }
+    std::vector<Point_2D<int>> &setRightAddGrids() { return mAdditionGridsR; }
+    std::vector<Point_2D<int>> &setRightDedGrids() { return mDeductionGridsR; }
+    std::vector<Point_2D<int>> &setForwardAddGrids() { return mAdditionGridsF; }
+    std::vector<Point_2D<int>> &setForwardDedGrids() { return mDeductionGridsF; }
+    std::vector<Point_2D<int>> &setBackwardAddGrids() { return mAdditionGridsB; }
+    std::vector<Point_2D<int>> &setBackwardDedGrids() { return mDeductionGridsB; }
+
+    std::vector<Point_2D<int>> &setLBAddGrids() { return mAdditionGridsLB; }
+    std::vector<Point_2D<int>> &setLBDedGrids() { return mDeductionGridsLB; }
+    std::vector<Point_2D<int>> &setRBAddGrids() { return mAdditionGridsRB; }
+    std::vector<Point_2D<int>> &setRBDedGrids() { return mDeductionGridsRB; }
+    std::vector<Point_2D<int>> &setLFAddGrids() { return mAdditionGridsLF; }
+    std::vector<Point_2D<int>> &setLFDedGrids() { return mDeductionGridsLF; }
+    std::vector<Point_2D<int>> &setRFAddGrids() { return mAdditionGridsRF; }
+    std::vector<Point_2D<int>> &setRFDedGrids() { return mDeductionGridsRF; }
 
     friend class GridNetclass;
     friend class GridBasedRouter;
@@ -376,6 +394,7 @@ class BoardGrid {
     // via
     bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
     bool sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const;
+    bool sizedViaExpandableAndIncrementalCost(const Location &curLoc, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, const Location &prevLoc, const float &prevCost, const IncrementalSearchGrids &searchGrids, float &cost) const;
     float via_cost_at(const Location &l) const;
     void add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius);
     void add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>> &);
