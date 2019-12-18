@@ -22,11 +22,7 @@ find_package(SWIG REQUIRED)
 
 find_library(SWIG_EXECUTABLE swig)
 if(NOT SWIG_EXECUTABLE)
-
-# for Moore server
-set(SWIG_EXECUTABLE "/bin/swig")
-# for local osx machine
-#set(SWIG_EXECUTABLE "/usr/local/bin/swig")
+set(SWIG_EXECUTABLE "swig")
 endif()
 add_subdirectory(${KICADPCB_HOME})
 
