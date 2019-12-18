@@ -16,8 +16,10 @@ set(KICADPCB_HOME
 )
 
 find_package(Boost REQUIRED)
-find_package(PythonInterp 2.7 REQUIRED)
-find_package(PythonLibs 2.7 REQUIRED)
+#find_package(PythonInterp 2.7 REQUIRED)
+find_package(PythonInterp 3 REQUIRED)
+#find_package(PythonLibs 2.7 REQUIRED)
+find_package(PythonLibs 3 REQUIRED)
 find_package(SWIG REQUIRED)
 
 find_library(SWIG_EXECUTABLE swig)
@@ -73,7 +75,7 @@ set_target_properties( pcbrouterlib
 ############################################################
 
 add_custom_command( OUTPUT ${PCBROUTER_HOME}/src/PcbRouter_wrapper.cpp ${PCBROUTER_LIB_FILES}
-  COMMAND ${SWIG_EXECUTABLE} -python -c++ -o ${PCBROUTER_HOME}/src/PcbRouter_wrapper.cpp ${PCBROUTER_HOME}/src/PcbRouter.i
+  COMMAND ${SWIG_EXECUTABLE} -python -py3 -c++ -o ${PCBROUTER_HOME}/src/PcbRouter_wrapper.cpp ${PCBROUTER_HOME}/src/PcbRouter.i
   WORKING_DIRECTORY ${PCBROUTER_HOME}
   DEPENDS ${ROUTER_SWIG_FILES}
 )
