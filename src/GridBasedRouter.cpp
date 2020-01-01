@@ -1,6 +1,22 @@
 //GridBasedRouter.cpp
 #include "GridBasedRouter.h"
 
+double GridBasedRouter::get_routed_wirelength() {
+    double overallRoutedWL = 0.0;
+    for (auto &mpn : this->bestSolution) {
+        overallRoutedWL += mpn.getRoutedWirelength();
+    }
+    return overallRoutedWL;
+}
+
+int GridBasedRouter::get_routed_num_vias() {
+    int overallNumVias = 0;
+    for (auto &mpn : this->bestSolution) {
+        overallNumVias += mpn.getRoutedNumVias();
+    }
+    return overallNumVias;
+}
+
 bool GridBasedRouter::outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments, std::string fileNameStamp) {
     std::ifstream ifs;
     ifs.open(mDb.getFileName(), std::ifstream::in);

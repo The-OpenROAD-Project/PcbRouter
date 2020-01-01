@@ -143,6 +143,73 @@ void GridPath::removeRedundantPoints() {
     }
 }
 
+double GridPath::getRoutedWirelength() {
+    double totalEstWL = 0.0;
+    Location prevLocation = this->mSegments.front();
+
+    for (auto &location : this->mSegments) {
+        if (prevLocation == location) {
+            continue;
+        }
+        // Sanity Check
+        if (location.m_z != prevLocation.m_z &&
+            location.m_y != prevLocation.m_y &&
+            location.m_x != prevLocation.m_x) {
+            std::cerr << __FUNCTION__ << "() Invalid path between location: " << location << ", and prevLocation: " << prevLocation << std::endl;
+            continue;
+        }
+
+        // Print Segment/Track/Wire
+        if (location.m_x != prevLocation.m_x || location.m_y != prevLocation.m_y) {
+            totalEstWL += GlobalParam::gridFactor * Location::getDistance2D(prevLocation, location);
+        }
+        prevLocation = location;
+    }
+
+    return totalEstWL;
+}
+
+double GridPath::getRoutedNumVias() {
+    int totalNumVia = 0;
+    Location prevLocation = this->mSegments.front();
+
+    for (auto &location : this->mSegments) {
+        if (prevLocation == location) {
+            continue;
+        }
+        // Sanity Check
+        if (location.m_z != prevLocation.m_z &&
+            location.m_y != prevLocation.m_y &&
+            location.m_x != prevLocation.m_x) {
+            std::cerr << __FUNCTION__ << "() Invalid path between location: " << location << ", and prevLocation: " << prevLocation << std::endl;
+            continue;
+        }
+        // Print Through Hole Via
+        if (location.m_z != prevLocation.m_z) {
+            ++totalNumVia;
+        }
+        prevLocation = location;
+    }
+
+    return totalNumVia;
+}
+
+double MultipinRoute::getRoutedWirelength() {
+    double routedWL = 0.0;
+    for (auto &gp : this->mGridPaths) {
+        routedWL += gp.getRoutedWirelength();
+    }
+    return routedWL;
+}
+
+int MultipinRoute::getRoutedNumVias() {
+    int numRoutedVias = 0;
+    for (auto &gp : this->mGridPaths) {
+        numRoutedVias += gp.getRoutedNumVias();
+    }
+    return numRoutedVias;
+}
+
 void MultipinRoute::featuresToGridPaths() {
     if (this->features.empty() || this->features.size() == 1) {
         cerr << __FUNCTION__ << "(): No features to translate to segments. Features.size(): " << this->features.size() << std::endl;

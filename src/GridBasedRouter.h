@@ -51,6 +51,8 @@ class GridBasedRouter {
     double get_pad_obstacle_weight() { return GlobalParam::gPinObstacleCost; }
 
     double get_total_cost() { return bestTotalRouteCost; }
+    double get_routed_wirelength();
+    int get_routed_num_vias();
 
    private:
     void test_router();
