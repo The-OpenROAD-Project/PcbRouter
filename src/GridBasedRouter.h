@@ -19,19 +19,20 @@ class GridBasedRouter {
     // dtor
     ~GridBasedRouter() {}
 
-    void route_all_net_with_ripup_and_reroute();
+    void route();
 
     // Parameter settings
-    void set_input_scale(const int _iS) {
+    void set_grid_scale(const int _iS) {
         GlobalParam::inputScale = abs(_iS);
         GlobalParam::gridFactor = 1.0 / (float)GlobalParam::inputScale;
     }
-    void set_num_ripup_reroute_iteration(const int _numRRI) { GlobalParam::gNumRipUpReRouteIteration = abs(_numRRI); }
+    void set_num_iterations(const int _numRRI) { GlobalParam::gNumRipUpReRouteIteration = abs(_numRRI); }
     void set_enlarge_boundary(const int _eB) { GlobalParam::enlargeBoundary = abs(_eB); }
-    void set_layer_change_cost(const double _lCC) { GlobalParam::gLayerChangeCost = _lCC; }
-    void set_trace_obstacle_cost(const double _toc) { GlobalParam::gTraceBasicCost = _toc; }
-    void set_via_obstacle_cost(const double _voc) { GlobalParam::gViaInsertionCost = _voc; }
-    void set_pin_obstacle_cost(const double _poc) { GlobalParam::gPinObstacleCost = _poc; }
+
+    void set_layer_change_weight(const double _lCC) { GlobalParam::gLayerChangeCost = _lCC; }
+    void set_track_obstacle_weight(const double _toc) { GlobalParam::gTraceBasicCost = _toc; }
+    void set_via_obstacle_weight(const double _voc) { GlobalParam::gViaInsertionCost = _voc; }
+    void set_pad_obstacle_weight(const double _poc) { GlobalParam::gPinObstacleCost = _poc; }
 
    private:
     void test_router();
