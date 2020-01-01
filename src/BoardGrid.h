@@ -296,7 +296,7 @@ class GridPath {
     const std::list<Location> &getSegments() const { return mSegments; }
     void removeRedundantPoints();
     double getRoutedWirelength();
-    double getRoutedNumVias();
+    int getRoutedNumVias();
 
     friend class BoardGrid;
     friend class MultipinRoute;

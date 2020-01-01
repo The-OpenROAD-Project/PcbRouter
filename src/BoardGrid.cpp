@@ -169,7 +169,7 @@ double GridPath::getRoutedWirelength() {
     return totalEstWL;
 }
 
-double GridPath::getRoutedNumVias() {
+int GridPath::getRoutedNumVias() {
     int totalNumVia = 0;
     Location prevLocation = this->mSegments.front();
 
