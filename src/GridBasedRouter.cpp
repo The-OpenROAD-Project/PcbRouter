@@ -827,7 +827,7 @@ void GridBasedRouter::route() {
 
     // Add all nets to grid routes
     double totalCurrentRouteCost = 0.0;
-    double bestTotalRouteCost = 0.0;
+    bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
         // if (net.getId() != 7)

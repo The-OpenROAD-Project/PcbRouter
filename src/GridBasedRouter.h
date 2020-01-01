@@ -50,6 +50,8 @@ class GridBasedRouter {
     double get_via_obstacle_weight() { return GlobalParam::gViaInsertionCost; }
     double get_pad_obstacle_weight() { return GlobalParam::gPinObstacleCost; }
 
+    double get_total_cost() { return bestTotalRouteCost; }
+
    private:
     void test_router();
     void testRouterWithPinShape();
@@ -119,6 +121,7 @@ class GridBasedRouter {
     // TODO:: Improve the below......
     std::vector<MultipinRoute> gridNets;
     std::vector<MultipinRoute> bestSolution;
+    double bestTotalRouteCost = -1.0;
 
     // Board Boundary
     double mMinX = std::numeric_limits<double>::max();
