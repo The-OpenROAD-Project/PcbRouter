@@ -33,7 +33,9 @@ class GlobalParam {
 
     //BoardGrid
     static double gDiagonalCost;
+    static double gWirelengthCost;
     static double gLayerChangeCost;
+
     static double gViaInsertionCost;
     static double gTraceBasicCost;
     static double gPinObstacleCost;

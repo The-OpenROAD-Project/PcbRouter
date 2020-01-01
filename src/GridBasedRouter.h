@@ -29,7 +29,10 @@ class GridBasedRouter {
     void set_num_iterations(const int _numRRI) { GlobalParam::gNumRipUpReRouteIteration = abs(_numRRI); }
     void set_enlarge_boundary(const int _eB) { GlobalParam::enlargeBoundary = abs(_eB); }
 
-    void set_layer_change_weight(const double _lCC) { GlobalParam::gLayerChangeCost = _lCC; }
+    void set_wirelength_weight(const double _ww) { GlobalParam::gWirelengthCost = abs(_ww); }
+    void set_diagonal_wirelength_weight(const double _dww) { GlobalParam::gDiagonalCost = abs(_dww); }
+    void set_layer_change_weight(const double _lCC) { GlobalParam::gLayerChangeCost = abs(_lCC); }
+
     void set_track_obstacle_weight(const double _toc) { GlobalParam::gTraceBasicCost = _toc; }
     void set_via_obstacle_weight(const double _voc) { GlobalParam::gViaInsertionCost = _voc; }
     void set_pad_obstacle_weight(const double _poc) { GlobalParam::gPinObstacleCost = _poc; }
