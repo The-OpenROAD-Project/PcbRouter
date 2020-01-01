@@ -21,7 +21,7 @@ class GridBasedRouter {
 
     void route();
 
-    // Parameter settings
+    // Setter
     void set_grid_scale(const int _iS) {
         GlobalParam::inputScale = abs(_iS);
         GlobalParam::gridFactor = 1.0 / (float)GlobalParam::inputScale;
@@ -36,6 +36,19 @@ class GridBasedRouter {
     void set_track_obstacle_weight(const double _toc) { GlobalParam::gTraceBasicCost = _toc; }
     void set_via_obstacle_weight(const double _voc) { GlobalParam::gViaInsertionCost = _voc; }
     void set_pad_obstacle_weight(const double _poc) { GlobalParam::gPinObstacleCost = _poc; }
+
+    // Getter
+    unsigned int get_grid_scale() { return GlobalParam::inputScale; }
+    unsigned int get_num_iterations() { return GlobalParam::gNumRipUpReRouteIteration; }
+    unsigned int get_enlarge_boundary() { return GlobalParam::enlargeBoundary; }
+
+    double get_wirelength_weight() { return GlobalParam::gWirelengthCost; }
+    double get_diagonal_wirelength_weight() { return GlobalParam::gDiagonalCost; }
+    double get_layer_change_weight() { return GlobalParam::gLayerChangeCost; }
+
+    double get_track_obstacle_weight() { return GlobalParam::gTraceBasicCost; }
+    double get_via_obstacle_weight() { return GlobalParam::gViaInsertionCost; }
+    double get_pad_obstacle_weight() { return GlobalParam::gPinObstacleCost; }
 
    private:
     void test_router();
