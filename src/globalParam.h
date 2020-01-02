@@ -18,16 +18,6 @@ using namespace std;
 class GlobalParam {
    public:
     static int gLayerNum;
-    static double gWireWidth;
-    static double gWireSpace;
-    static double gWirePadSpace;
-
-    static double gHalfWireWidth;
-    static double gHWidthAndSpace;
-    static double gHWidthAndWPSpace;
-    static double gWire2Wire;
-    static double gDisBetweenWire;
-
     static double gEpsilon;
     static bool g90DegreeMode;
 
@@ -65,10 +55,8 @@ class GlobalParam {
     static util::TimeUsage runTime;
 
     static void setFolders();
-    static void setDesignRule();
     static void setLayerNum(int l) { gLayerNum = l; }
 
-    static void showParam();
     static void showCurrentUsage(const string comment);
     static void showFinalUsage(const string comment);
     static void setUsageStart();
