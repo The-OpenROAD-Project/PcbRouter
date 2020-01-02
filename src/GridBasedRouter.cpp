@@ -589,7 +589,7 @@ void GridBasedRouter::route() {
         // this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
     }
 
-    std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + this->getParamsNameTag();
     mBg.printMatPlot(initialMapNameTag);
 
     // Add all nets to grid routes
@@ -614,10 +614,6 @@ void GridBasedRouter::route() {
             // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
             this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
-
-        // Debug the cost map before routing each net
-        // std::string gndMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".before_gnd" + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
-        // mBg.printMatPlot(gndMapNameTag);
 
         // Setup design rules in board grid
         if (!mDb.isNetclassId(net.getNetclassId())) {
@@ -647,7 +643,7 @@ void GridBasedRouter::route() {
 
     if (GlobalParam::gOutputDebuggingKiCadFile) {
         std::string nameTag = "fristTimeRouteAll";
-        nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+        nameTag = nameTag + this->getParamsNameTag();
         writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
     }
     std::cout << "i=0, totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
@@ -695,7 +691,7 @@ void GridBasedRouter::route() {
         }
         if (GlobalParam::gOutputDebuggingKiCadFile) {
             std::string nameTag = "i_" + std::to_string(i + 1);
-            nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+            nameTag = nameTag + this->getParamsNameTag();
             writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
         }
         if (totalCurrentRouteCost < bestTotalRouteCost) {
@@ -717,12 +713,12 @@ void GridBasedRouter::route() {
     // Routing has done
     // Print the final base cost
     //mBg.printGnuPlot();
-    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + this->getParamsNameTag();
     mBg.printMatPlot(mapNameTag);
 
     // Output final result to KiCad file
     std::string nameTag = "bestSolutionWithMerging";
-    nameTag = nameTag + "_s_" + std::to_string(GlobalParam::inputScale) + "_i_" + std::to_string(GlobalParam::gNumRipUpReRouteIteration) + "_b_" + std::to_string(GlobalParam::enlargeBoundary);
+    nameTag = nameTag + this->getParamsNameTag();
     writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
 
     mBg.showViaCachePerformance();
@@ -920,6 +916,17 @@ bool GridBasedRouter::getGridLayers(const padstack &pad, const instance &inst, s
 
 int GridBasedRouter::getNextRipUpNetId() {
     return rand() % gridNets.size();
+}
+
+std::string GridBasedRouter::getParamsNameTag() {
+    std::string ret = "s_" + std::to_string(this->get_grid_scale());
+    ret += "_i_" + std::to_string(get_num_iterations());
+    ret += "_b_" + std::to_string(get_enlarge_boundary());
+    ret += "_lc_" + std::to_string(get_layer_change_weight());
+    ret += "_to_" + std::to_string(get_track_obstacle_weight());
+    ret += "_vo_" + std::to_string(get_via_obstacle_weight());
+    ret += "_po_" + std::to_string(get_pad_obstacle_weight());
+    return ret;
 }
 
 bool GridBasedRouter::dbPointToGridPoint(const point_2d &dbPt, point_2d &gridPt) {

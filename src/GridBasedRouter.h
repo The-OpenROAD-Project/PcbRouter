@@ -82,6 +82,7 @@ class GridBasedRouter {
     bool getGridLayers(const padstack &, const instance &, std::vector<int> &layers);
 
     int getNextRipUpNetId();
+    std::string getParamsNameTag();
 
     // Utilities
     int dbLengthToGridLengthCeil(const double dbLength) {
