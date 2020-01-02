@@ -39,7 +39,6 @@ set (PCBROUTER_HEADER
   src/BoardGrid.h
   src/GridBasedRouter.h
   src/globalParam.h
-  src/Raserizer.h
   src/util.h
   )
 
