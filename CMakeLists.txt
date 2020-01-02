@@ -31,6 +31,7 @@ add_subdirectory(${KICADPCB_HOME})
 set (PCBROUTER_SRC 
   src/BoardGrid.cpp
   src/GridBasedRouter.cpp
+  src/GridNetclass.cpp
   src/globalParam.cpp
   src/PcbRouter_wrapper.cpp
   )
@@ -38,6 +39,7 @@ set (PCBROUTER_SRC
 set (PCBROUTER_HEADER
   src/BoardGrid.h
   src/GridBasedRouter.h
+  src/GridNetclass.h
   src/IncrementalSearchGrids.h
   src/globalParam.h
   src/util.h
