@@ -38,6 +38,7 @@ set (PCBROUTER_SRC
 set (PCBROUTER_HEADER
   src/BoardGrid.h
   src/GridBasedRouter.h
+  src/IncrementalSearchGrids.h
   src/globalParam.h
   src/util.h
   )
