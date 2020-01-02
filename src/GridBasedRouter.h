@@ -55,13 +55,8 @@ class GridBasedRouter {
     int get_routed_num_vias();
 
    private:
-    void test_router();
     void testRouterWithPinShape();
-    void testRouterWithPinAndKeepoutAvoidance();
-    void testRouterWithAvoidanceAndVariousPadType();
-    bool outputResults2KiCadFile(std::vector<MultipinRoute> &nets, bool mergeSegments = false, std::string fileNameStamp = "");
 
-   private:
     bool writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
     bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);
     void writeSolutionBackToDbAndSaveOutput(const std::string fileNameTag, std::vector<MultipinRoute> &multipinNets);
