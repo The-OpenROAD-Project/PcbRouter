@@ -1,6 +1,7 @@
 #ifndef PCBROUTER_GRID_NETCLASS_H
 #define PCBROUTER_GRID_NETCLASS_H
 
+#include <algorithm>
 #include <vector>
 #include "IncrementalSearchGrids.h"
 #include "globalParam.h"
