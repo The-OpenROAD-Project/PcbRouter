@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         router.set_layer_change_weight(atof(argv[5]));
     }
     if (argc >= 7) {
-        router.set_track_obstacle_weight(atof(argv[5]));
+        router.set_track_obstacle_weight(atof(argv[6]));
     }
     // router.testRouterWithPinShape();
     router.route();
