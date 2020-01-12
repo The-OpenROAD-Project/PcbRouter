@@ -16,6 +16,7 @@ build/
 output/
 log/
 PCBBenchmarks/
+test*/
 *.output
 *.plt
 *.dat
