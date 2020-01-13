@@ -32,6 +32,7 @@ set (PCBROUTER_SRC
   src/BoardGrid.cpp
   src/GridBasedRouter.cpp
   src/GridNetclass.cpp
+  src/GridPath.cpp
   src/globalParam.cpp
   src/PcbRouter_wrapper.cpp
   )
@@ -42,6 +43,7 @@ set (PCBROUTER_HEADER
   src/GridNetclass.h
   src/GridCell.h
   src/GridPin.h
+  src/GridPath.h
   src/IncrementalSearchGrids.h
   src/globalParam.h
   src/util.h

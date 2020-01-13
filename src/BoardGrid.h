@@ -16,6 +16,7 @@
 #include "GridCell.h"
 #include "GridNetclass.h"
 #include "GridPin.h"
+#include "GridPath.h"
 #include "IncrementalSearchGrids.h"
 #include "globalParam.h"
 #include "point.h"
@@ -73,25 +74,6 @@ struct greater<std::pair<float, Location>> {
     }
 };
 }  // namespace std
-
-class GridPath {
-   public:
-    //ctor
-    GridPath() {}
-    //dtor
-    ~GridPath() {}
-
-    const std::list<Location> &getSegments() const { return mSegments; }
-    void removeRedundantPoints();
-    double getRoutedWirelength();
-    int getRoutedNumVias();
-
-    friend class BoardGrid;
-    friend class MultipinRoute;
-
-   private:
-    std::list<Location> mSegments;  //TODO:: contains vias for now...
-};
 
 class MultipinRoute {
    public:
