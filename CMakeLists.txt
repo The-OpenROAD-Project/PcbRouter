@@ -41,6 +41,7 @@ set (PCBROUTER_HEADER
   src/GridBasedRouter.h
   src/GridNetclass.h
   src/GridCell.h
+  src/GridPin.h
   src/IncrementalSearchGrids.h
   src/globalParam.h
   src/util.h
