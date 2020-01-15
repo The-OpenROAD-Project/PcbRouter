@@ -1044,7 +1044,6 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius
             for (int x = -radius; x <= radius; ++x) {
                 Location current_l = Location(l.m_x + x, l.m_y + y, z);
                 if (!validate_location(current_l)) {
-                    // TODO: cost to model the clearance to boundary
                     cost += GlobalParam::gViaTouchBoundaryCost;
                     continue;
                 }
@@ -1208,7 +1207,6 @@ float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_
     for (auto gridPt : traRelativeSearchGrids) {
         Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
         if (!validate_location(current_l)) {
-            // TODO: cost to model the clearance to boundary
             cost += GlobalParam::gTraceTouchBoundaryCost;
             continue;
         }
@@ -1225,7 +1223,6 @@ float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const {
         for (int x = -radius; x <= radius; ++x) {
             Location current_l = Location(l.m_x + x, l.m_y + y, l.m_z);
             if (!validate_location(current_l)) {
-                // TODO: cost to model the clearance to boundary
                 cost += GlobalParam::gTraceTouchBoundaryCost;
                 continue;
             }
