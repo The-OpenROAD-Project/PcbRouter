@@ -1084,22 +1084,8 @@ bool BoardGrid::sizedViaExpandableAndIncrementalCost(const Location &curLoc, con
     if (prevCost < -0.5) {
         // Cache missed or the previous location is via forbidded
         // i.e. Need to calculate the cost directly
-        cost = 0.0;
-        // Check through hole via
-        for (int z = 0; z < this->l; ++z) {
-            for (auto gridPt : viaRelativeSearchGrids) {
-                Location current_l = Location(curLoc.m_x + gridPt.x(), curLoc.m_y + gridPt.y(), z);
-                if (!validate_location(current_l)) {
-                    // TODO: cost to model the clearance to boundary
-                    cost += 1000;
-                    continue;
-                }
-                if (this->isViaForbidden(current_l)) {
-                    return false;
-                }
-                //cost += this->via_cost_at(current_l);
-                cost += this->base_cost_at(current_l);
-            }
+        if (!sizedViaExpandableAndCost(curLoc, viaRelativeSearchGrids, cost)) {
+            return false;
         }
     } else {
         // Has previous location's via cost
