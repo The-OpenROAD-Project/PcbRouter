@@ -7,10 +7,14 @@ bool GlobalParam::g90DegreeMode = true;
 double GlobalParam::gDiagonalCost = 1.41421356237;  //Cost for path searching
 double GlobalParam::gWirelengthCost = 1.0;          //Cost for path searching
 double GlobalParam::gLayerChangeCost = 10.0;        //Cost for path searching
-
+// Obstacle cost
 double GlobalParam::gViaInsertionCost = 100.0;  //Cost added to the via grid
 double GlobalParam::gTraceBasicCost = 10.0;     //10?     //Cost added to the base grid by traces
 double GlobalParam::gPinObstacleCost = 1000.0;  //2000?   //Cost for obstacle pins added to the via (or/and) base grid
+// Other cost
+double GlobalParam::gViaTouchBoundaryCost = 1000.0;
+double GlobalParam::gTraceTouchBoundaryCost = 100000.0;
+double GlobalParam::gViaForbiddenCost = 2000.0;
 // Grid Setup
 unsigned int GlobalParam::inputScale = 10;
 unsigned int GlobalParam::enlargeBoundary = 10;  //from 10 -> 50

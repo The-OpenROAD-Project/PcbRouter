@@ -26,9 +26,15 @@ class GlobalParam {
     static double gWirelengthCost;
     static double gLayerChangeCost;
 
+    //Obstacle cost
     static double gViaInsertionCost;
     static double gTraceBasicCost;
     static double gPinObstacleCost;
+
+    //Other costs
+    static double gViaTouchBoundaryCost;
+    static double gTraceTouchBoundaryCost;
+    static double gViaForbiddenCost;
 
     //Grid Setup
     static unsigned int inputScale;

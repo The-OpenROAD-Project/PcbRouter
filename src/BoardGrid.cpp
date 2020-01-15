@@ -1045,7 +1045,7 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius
                 Location current_l = Location(l.m_x + x, l.m_y + y, z);
                 if (!validate_location(current_l)) {
                     // TODO: cost to model the clearance to boundary
-                    cost += 1000;
+                    cost += GlobalParam::gViaTouchBoundaryCost;
                     continue;
                 }
                 if (this->isViaForbidden(current_l)) {
@@ -1066,12 +1066,13 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
         for (auto gridPt : viaRelativeSearchGrids) {
             Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), z);
             if (!validate_location(current_l)) {
-                // TODO: cost to model the clearance to boundary
-                cost += 1000;
+                cost += GlobalParam::gViaTouchBoundaryCost;
                 continue;
             }
             if (this->isViaForbidden(current_l)) {
-                return false;
+                //return false;
+                cost += GlobalParam::gViaForbiddenCost;
+                continue;
             }
             //cost += this->via_cost_at(current_l);
             cost += this->base_cost_at(current_l);
@@ -1208,7 +1209,7 @@ float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_
         Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
         if (!validate_location(current_l)) {
             // TODO: cost to model the clearance to boundary
-            cost += 100000;
+            cost += GlobalParam::gTraceTouchBoundaryCost;
             continue;
         }
         cost += this->base_cost_at(current_l);
@@ -1225,7 +1226,7 @@ float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const {
             Location current_l = Location(l.m_x + x, l.m_y + y, l.m_z);
             if (!validate_location(current_l)) {
                 // TODO: cost to model the clearance to boundary
-                cost += 100000;
+                cost += GlobalParam::gTraceTouchBoundaryCost;
                 continue;
             }
             cost += this->base_cost_at(current_l);
