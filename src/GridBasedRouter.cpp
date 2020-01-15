@@ -53,7 +53,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
         double netEstGridWL = 0.0;
         int netNumVia = 0;
 
-        for (int i = 1; i < mpNet.features.size(); ++i) {
+        for (int i = 1; i < static_cast<int>(mpNet.features.size()); ++i) {
             auto &feature = mpNet.features[i];
             //std::cout << feature << std::endl;
             if (abs(feature.m_x - prevLocation.m_x) <= 1 &&
@@ -303,8 +303,8 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
 
 void GridBasedRouter::setupBoardAndMappingStructure() {
     // Get board dimension
-    mDb.getBoardBoundaryByPinLocation(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
-    //mDb.getBoardBoundaryByEdgeCuts(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
+    //mDb.getBoardBoundaryByPinLocation(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
+    mDb.getBoardBoundaryByEdgeCuts(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
     std::cout << "Routing Outline: (" << this->mMinX << ", " << this->mMinY << "), (" << this->mMaxX << ", " << this->mMaxY << ")" << std::endl;
     std::cout << "GlobalParam::inputScale: " << GlobalParam::inputScale << ", GlobalParam::enlargeBoundary: " << GlobalParam::enlargeBoundary << ", GlobalParam::gridFactor: " << GlobalParam::gridFactor << std::endl;
 
@@ -652,7 +652,7 @@ void GridBasedRouter::route() {
     std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n";
 
     // Rip-up and Re-route all the nets one-by-one ten times
-    for (int i = 0; i < GlobalParam::gNumRipUpReRouteIteration; ++i) {
+    for (int i = 0; i < static_cast<int>(GlobalParam::gNumRipUpReRouteIteration); ++i) {
         for (auto &net : nets) {
             //continue;
             if (net.getPins().size() < 2)
@@ -704,7 +704,7 @@ void GridBasedRouter::route() {
         std::cout << "i=" << i + 1 << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
     }
     std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
-    for (int i = 0; i < iterativeCost.size(); ++i) {
+    for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
         cout << "i=" << i << ", cost: " << iterativeCost.at(i) << std::endl;
     }
 
