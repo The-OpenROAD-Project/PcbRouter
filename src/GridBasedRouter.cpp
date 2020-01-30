@@ -363,6 +363,7 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         int halfViaDia = (int)floor((double)viaDia / 2.0);
         double halfViaDiaFloating = viaDiaFloating / 2.0;
         // Expanded cases
+        // double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
         // int halfViaDia = gridNetclass.getViaExpansion();
         // double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
 
@@ -377,6 +378,8 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // Expanded cases
         // int viaSearchRadius = gridNetclass.getHalfViaDia();
         // double viaSearchRadiusFloating = halfViaDiaFloating;
+
+        // Calculate the searching grid
         getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
         gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
 
@@ -387,6 +390,8 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // Expanded cases
         // int traceSearchRadius = gridNetclass.getHalfTraceWidth();
         // double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
+        
+        // Calculate the searching grid
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
         // Debugging
