@@ -260,11 +260,21 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
                     ++totalNumVia;
                     ++netNumVia;
 
-                    Via via{net.getViaCount(), net.getId(), netclass.getViaDia()};
+                    Via via{net.getViaCount(), net.getId(), netclass.getViaDia(), ViaType::THROUGH};
                     point_2d dbPoint;
                     this->gridPointToDbPoint(point_2d{(double)location.x(), (double)location.y()}, dbPoint);
                     via.setPosition(dbPoint);
-                    via.setLayer(this->mGridLayerToName);
+
+                    if (GlobalParam::gUseMircoVia) {
+                        via.setType(ViaType::MICRO);
+                        via.setSize(netclass.getMicroViaDia());
+
+                        int startGridLayerId = std::min(location.m_z, prevLocation.m_z);
+                        int endGridLayerId = std::max(location.m_z, prevLocation.m_z);
+                        via.setLayer(std::vector<std::string>{this->mGridLayerToName.at(startGridLayerId), this->mGridLayerToName.at(endGridLayerId)});
+                    } else {
+                        via.setLayer(std::vector<std::string>{this->mGridLayerToName.front(), this->mGridLayerToName.back()});
+                    }
                     net.addVia(via);
                 }
                 // Print Segment/Track/Wire
@@ -391,7 +401,7 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // Expanded cases
         // int traceSearchRadius = gridNetclass.getHalfTraceWidth();
         // double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
-        
+
         // Calculate the searching grid
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
