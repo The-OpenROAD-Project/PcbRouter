@@ -21,6 +21,7 @@ unsigned int GlobalParam::enlargeBoundary = 10;  //from 10 -> 50
 float GlobalParam::gridFactor = 0.1;             // 1/inputScale
 // Routing Options
 bool GlobalParam::gViaUnderPad = false;
+bool GlobalParam::gUseMircoVia = true;
 unsigned int GlobalParam::gNumRipUpReRouteIteration = 5;
 // Outputfile
 int GlobalParam::gOutputPrecision = 5;

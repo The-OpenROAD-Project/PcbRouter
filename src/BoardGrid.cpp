@@ -434,7 +434,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 
                 // Show if the target is reached
                 if (estCost < 0.5) {
-                    std::cerr << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+                    std::cout << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
                 }
 
                 // std::cerr << "\tPQ: cost: " << new_cost << ", at" << next.second << std::endl;
