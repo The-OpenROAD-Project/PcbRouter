@@ -15,11 +15,11 @@
 #include <vector>
 #include "GridCell.h"
 #include "GridNetclass.h"
-#include "GridPin.h"
 #include "GridPath.h"
-#include "MultipinRoute.h"
+#include "GridPin.h"
 #include "IncrementalSearchGrids.h"
 #include "Location.h"
+#include "MultipinRoute.h"
 #include "globalParam.h"
 #include "point.h"
 
@@ -44,7 +44,6 @@ class BoardGrid {
     void addGridNetclass(const GridNetclass &);
     GridNetclass &getGridNetclass(const int gridNetclassId);
     // Routing APIs
-    // [[deprecated]] void addRoute(MultipinRoute &route);
     void addRouteWithGridPins(MultipinRoute &route);
     void ripup_route(MultipinRoute &route);
     // working cost

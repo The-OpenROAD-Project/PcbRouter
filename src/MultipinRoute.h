@@ -2,20 +2,21 @@
 #define PCBROUTER_MULTI_PIN_ROUTE_H
 
 #include <vector>
+#include "GridPath.h"
+#include "GridPin.h"
 #include "globalParam.h"
 #include "point.h"
-#include "GridPin.h"
-#include "GridPath.h"
 
 class MultipinRoute {
    public:
     int netId = -1;
     int gridNetclassId = -1;
     float currentRouteCost = 0.0;
-    std::vector<Location> features; // Make this obsolete please
+    std::vector<Location> features;  // Make this obsolete, please
     std::vector<GridPin> mGridPins;
 
     //derived from features, doesn't guarantee updated
+    // Please replace features with mGridPaths
     std::vector<GridPath> mGridPaths;
     //TODO
     // std::vector<Location> vias;
