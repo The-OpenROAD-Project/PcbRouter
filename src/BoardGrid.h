@@ -44,7 +44,7 @@ class BoardGrid {
     void addGridNetclass(const GridNetclass &);
     GridNetclass &getGridNetclass(const int gridNetclassId);
     // Routing APIs
-    [[deprecated]] void addRoute(MultipinRoute &route);
+    // [[deprecated]] void addRoute(MultipinRoute &route);
     void addRouteWithGridPins(MultipinRoute &route);
     void ripup_route(MultipinRoute &route);
     // working cost

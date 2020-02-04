@@ -1555,8 +1555,9 @@ void BoardGrid::came_from_to_features(const Location &end,
                                       std::vector<Location> &features) const {
     std::cout << "Starting came_from_to_features ID" << std::endl;
 
-    if (!this->validate_location(end))
+    if (!this->validate_location(end)) {
         std::cout << "Bad end for came_from_to_features ID" << std::endl;
+    }
 
     features.push_back(end);
     Location current = end;
@@ -1668,48 +1669,6 @@ void BoardGrid::print_features(std::vector<Location> features) {
     }
 }
 
-void BoardGrid::addRoute(MultipinRoute &route) {
-    int num_pins = route.pins.size();
-
-    // TODO
-    // clear came from in the GridCell
-    // check if traceWidth/clearance/viaDiameter persist
-
-    if (num_pins <= 1) return;
-
-    route.features.push_back(route.pins[0]);
-
-    for (size_t i = 1; i < route.pins.size(); ++i)
-    // for (size_t i = 0; i < route.pins.size(); ++i) //Original incorrect
-    // implementation
-    {
-        // For early break
-        this->setTargetedPin(route.pins[i]);
-        // For cost estimation (cares about x and y only)
-        current_targeted_pin = route.pins[i];
-
-        // this->dijkstrasWithGridCameFrom(route.features, via_size);
-        // via size is half_width
-        Location finalEnd{0, 0, 0};
-        this->aStarWithGridCameFrom(route.features, finalEnd, route.currentRouteCost);
-
-        std::vector<Location> new_features;
-        this->came_from_to_features(route.pins[i], new_features);
-
-        for (Location f : new_features) {
-            route.features.push_back(f);
-        }
-
-        // For early break
-        this->clearTargetedPin(route.pins[i]);
-        // For cost estimation
-        current_targeted_pin = Location{0, 0, 0};
-    }
-    // this->print_features(route.features);
-    // TODO
-    this->add_route_to_base_cost(route);
-}
-
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     // TODO
     // check if traceWidth/clearance/viaDiameter persist
@@ -1741,8 +1700,8 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
             std::cout << " A* Start from: " << std::endl;
             for (auto pt : route.mGridPins.front().pinWithLayers) {
                 std::cout << "  " << pt << std::endl;
-                // Initialize the pin grids' penalities
-                // For incremental update
+                // Initialize the pin grids' obstacle costs
+                // For incremental cost update of trace
                 this->cached_trace_cost_set(sized_trace_cost_at(pt, traceRelativeSearchGrids), pt);
             }
             this->aStarWithGridCameFrom(route.mGridPins.front().pinWithLayers, finalEnd, routeCost);
@@ -1766,8 +1725,6 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         // For 3D cost estimation
         currentTargetedPinWithLayers.clear();
     }
-    // this->print_features(route.features);
-
     // Convert from features to grid paths
     route.featuresToGridPaths();
     this->add_route_to_base_cost(route);

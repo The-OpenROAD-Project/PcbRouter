@@ -12,8 +12,7 @@ class MultipinRoute {
     int netId = -1;
     int gridNetclassId = -1;
     float currentRouteCost = 0.0;
-    std::vector<Location> pins;
-    std::vector<Location> features;
+    std::vector<Location> features; // Make this obsolete please
     std::vector<GridPin> mGridPins;
 
     //derived from features, doesn't guarantee updated
@@ -45,14 +44,6 @@ class MultipinRoute {
     MultipinRoute(const int netId, const int gridNetclassId) {
         this->netId = netId;
         this->gridNetclassId = gridNetclassId;
-    }
-    MultipinRoute(std::vector<Location> pins) {
-        this->pins = pins;
-        this->netId = 0;
-    }
-    MultipinRoute(std::vector<Location> pins, int netId) {
-        this->pins = pins;
-        this->netId = netId;
     }
 };
 
