@@ -372,7 +372,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
     float bestCostWhenReachTarget = std::numeric_limits<float>::max();
     LocationQueue<Location, float> frontier;  // search frontier
     this->initializeFrontiers(route, frontier);
-    
+
     std::cout << " frontier.size(): " << frontier.size() << ", current targeted pin:  " << std::endl;
     for (auto pt : currentTargetedPinWithLayers) {
         std::cout << "  " << pt << std::endl;
@@ -391,9 +391,6 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 
         frontier.pop();
 
-        // if (frontier.size() % 500 == 0) {
-        //     std::cout << "Visiting " << current << ", frontierSize: " << frontier.size() << std::endl;
-        // }
         std::vector<std::pair<float, Location>> neighbors;
         this->getNeighbors(current, neighbors);
         float current_cost = this->working_cost_at(current);
@@ -405,7 +402,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
             // Test bending cost
             float estCost = getEstimatedCostWithBendingCost(current, next.second);
             // Test bending cost + multi-layers (3D estimation cost)
-            //float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
+            // float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
 
             if (new_cost < this->working_cost_at(next.second)) {
                 this->working_cost_set(new_cost, next.second);
@@ -417,13 +414,12 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
                 // if (new_cost < 0) {
                 //     std::cout << "****************new_cost < 0, estCost = " << estCost << ", current_cost = " << current_cost << ", next_cost = " << next.first << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
                 // }
+                // std::cerr << "\tPQ: cost: " << new_cost << ", at" << next.second << std::endl;
 
                 // Show if the target is reached
                 if (estCost < 0.5) {
                     std::cout << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
                 }
-
-                // std::cerr << "\tPQ: cost: " << new_cost << ", at" << next.second << std::endl;
             }
         }
     }
@@ -561,12 +557,8 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
     auto &viaRelativeSearchGrids = curGridNetclass.getViaSearchingSpaceToGrids();
 
-    // For incremental cost update
+    // For incremental cost update of trace
     // auto currentGridPenalty = this->cached_trace_cost_at(l);
-
-    // Obsolete
-    // int traceSearchRadius = curGridNetclass.getHalfTraceWidth() + curGridNetclass.getClearance();
-    // int viaSearchRadius = curGridNetclass.getHalfViaDia() + curGridNetclass.getClearance();
 
     // left
     if (l.m_x - 1 > -1) {
@@ -683,7 +675,7 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
     //     }
     // }
 
-    // //Trying to cached the via cost
+    // Trying to cached the via cost
     if (this->cached_via_cost_at(viaCachedLocation) < -1.5) {
         // ViaForbidden location, do nothing
     } else {
@@ -1286,44 +1278,30 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 
 void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
     auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
-    // int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
-    // int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
-    // int viaExpandingRadius = curGridNetclass.getHalfViaDia();
     int traceExpandingRadius = curGridNetclass.getTraceExpansion();
     int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
     int viaExpandingRadius = curGridNetclass.getViaExpansion();
 
+    // Old API
     // add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
-
+    
     for (auto path : route.getGridPaths()) {
         addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
     }
-
-    // Test for different expansion
-    // int traceHalfWidth = this->current_half_trace_width + this->current_clearance;
-    // int viaRadius = this->current_half_via_diameter + this->current_clearance;
-    // add_route_to_base_cost(route, traceHalfWidth, -GlobalParam::gTraceBasicCost, viaRadius, -GlobalParam::gViaInsertionCost);
 }
 
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
-    // int traceExpandingRadius = curGridNetclass.getHalfTraceWidth();
-    // int traceDiagonalExpandingRadius = curGridNetclass.getHalfDiagonalTraceWidth();
-    // int viaExpandingRadius = curGridNetclass.getHalfViaDia();
     int traceExpandingRadius = curGridNetclass.getTraceExpansion();
     int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
     int viaExpandingRadius = curGridNetclass.getViaExpansion();
-
+    
+    // Old API
     // add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
 
     for (auto path : route.getGridPaths()) {
         addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
     }
-
-    // Test for different expansion
-    // int traceHalfWidth = this->current_half_trace_width + this->current_clearance;
-    // int viaRadius = this->current_half_via_diameter + this->current_clearance;
-    // add_route_to_base_cost(route, traceHalfWidth, GlobalParam::gTraceBasicCost, viaRadius, GlobalParam::gViaInsertionCost);
 }
 
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost) {
