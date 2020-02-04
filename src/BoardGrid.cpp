@@ -1712,37 +1712,6 @@ void BoardGrid::print_features(std::vector<Location> features) {
     }
 }
 
-void BoardGrid::add_route(MultipinRoute &route) {
-    //int cost = GlobalParam::gTraceBasicCost;
-    int via_size = 7;
-    int num_pins = route.pins.size();
-
-    if (num_pins <= 0) {
-        return;
-    } else if (num_pins == 1) {
-        return;
-    } else {
-        route.features.push_back(route.pins[0]);
-
-        for (Location pin : route.pins) {
-            // std::unordered_map<Location, Location> came_from;
-            this->dijkstrasWithGridCameFrom(route.features, via_size);
-
-            std::vector<Location> new_features;
-            // this->came_from_to_features(came_from, pin, new_features);
-            this->came_from_to_features(pin, new_features);
-
-            for (Location f : new_features) {
-                route.features.push_back(f);
-            }
-        }
-        // this->print_features(route.features);
-        // TODO
-        // this->add_route_to_base_cost(route, traceWidth, cost, via_size);
-        this->add_route_to_base_cost(route);
-    }
-}
-
 void BoardGrid::addRoute(MultipinRoute &route) {
     int num_pins = route.pins.size();
 

@@ -302,6 +302,7 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
 }
 
 void GridBasedRouter::setupBoardAndMappingStructure() {
+    std::cout << "\n\n######Start of " << __FUNCTION__ << "()" << std::endl;
     // Get board dimension
     //mDb.getBoardBoundaryByPinLocation(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
     mDb.getBoardBoundaryByEdgeCuts(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
@@ -395,10 +396,10 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
         // Debugging
-        std::cout << "Relative trace searching grids points: " << std::endl;
-        for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
-            std::cout << pt << std::endl;
-        }
+        // std::cout << "Relative trace searching grids points: " << std::endl;
+        // for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
+        //     std::cout << pt << std::endl;
+        // }
 
         // Setup incremental searching grids
         gridNetclass.setupTraceIncrementalSearchGrids();
@@ -425,6 +426,8 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
 
     // Initialize board grid
     mBg.initilization(w, h, l);
+
+    std::cout << "######End of " << __FUNCTION__ << "()\n\n";
 }
 
 void GridBasedRouter::getRasterizedCircle(const int radius, const double radiusFloating, std::vector<Point_2D<int>> &grids) {
