@@ -22,6 +22,7 @@ test*/
 *.dat
 *.py
 output.*
+*.log
 
 # CMake and make files
 Makefile

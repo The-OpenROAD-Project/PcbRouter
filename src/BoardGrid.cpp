@@ -372,21 +372,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
     float bestCostWhenReachTarget = std::numeric_limits<float>::max();
     LocationQueue<Location, float> frontier;  // search frontier
     this->initializeFrontiers(route, frontier);
-    // for (Location start : route) {
-    //     // Walked cost (= 0) + estimated future cost
-    //     // 2D cost estimation
-    //     float cost = getEstimatedCost(start);
-    //     // 3D cost estimation
-    //     //float cost = getEstimatedCostWithLayers(start);
-
-    //     this->working_cost_set(0.0, start);
-    //     frontier.push(start, cost);
-    //     // std::cerr << "\tPQ: cost: " << cost << ", at" << start << std::endl;
-
-    //     // Set a ending for the backtracking
-    //     this->setCameFromId(start, this->locationToId(start));
-    // }
-
+    
     std::cout << " frontier.size(): " << frontier.size() << ", current targeted pin:  " << std::endl;
     for (auto pt : currentTargetedPinWithLayers) {
         std::cout << "  " << pt << std::endl;
@@ -447,10 +433,6 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
 }
 
 void BoardGrid::initializeFrontiers(const std::vector<Location> &route, LocationQueue<Location, float> &frontier) {
-    // for (Location start : route) {
-    //     initializeLocationToFrontier(start, frontier);
-    // }
-
     if (route.empty()) {
         return;
     }
@@ -468,13 +450,9 @@ void BoardGrid::initializeFrontiers(const std::vector<Location> &route, Location
 
             // Put all the layers (through hole via) into the frontiers
             for (int z = 0; z < this->l; ++z) {
-                Location viaLayer{location.m_x, location.m_y, z};
-                initializeLocationToFrontier(viaLayer, frontier);
+                Location viaLocationOnALayer{location.m_x, location.m_y, z};
+                initializeLocationToFrontier(viaLocationOnALayer, frontier);
             }
-
-            // Move the index forward or not?
-            // TODO:: Consider
-
         } else {
             // Normal points
             initializeLocationToFrontier(location, frontier);
