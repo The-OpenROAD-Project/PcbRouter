@@ -260,22 +260,38 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
                     ++totalNumVia;
                     ++netNumVia;
 
-                    Via via{net.getViaCount(), net.getId(), netclass.getViaDia(), ViaType::THROUGH};
-                    point_2d dbPoint;
-                    this->gridPointToDbPoint(point_2d{(double)location.x(), (double)location.y()}, dbPoint);
-                    via.setPosition(dbPoint);
-
                     if (GlobalParam::gUseMircoVia) {
-                        via.setType(ViaType::MICRO);
-                        via.setSize(netclass.getMicroViaDia());
+                        if (GlobalParam::gOutputStackedMicroVias) {
+                            int startGridLayerId = std::min(location.m_z, prevLocation.m_z);
+                            int endGridLayerId = std::max(location.m_z, prevLocation.m_z);
+                            for (int layerId = startGridLayerId; layerId + 1 <= endGridLayerId; ++layerId) {
+                                Via via{net.getViaCount(), net.getId(), netclass.getMicroViaDia(), ViaType::MICRO};
+                                point_2d dbPoint;
+                                this->gridPointToDbPoint(point_2d{(double)location.x(), (double)location.y()}, dbPoint);
+                                via.setPosition(dbPoint);
 
-                        int startGridLayerId = std::min(location.m_z, prevLocation.m_z);
-                        int endGridLayerId = std::max(location.m_z, prevLocation.m_z);
-                        via.setLayer(std::vector<std::string>{this->mGridLayerToName.at(startGridLayerId), this->mGridLayerToName.at(endGridLayerId)});
+                                via.setLayer(std::vector<std::string>{this->mGridLayerToName.at(layerId), this->mGridLayerToName.at(layerId + 1)});
+                                net.addVia(via);
+                            }
+                        } else {
+                            Via via{net.getViaCount(), net.getId(), netclass.getMicroViaDia(), ViaType::MICRO};
+                            point_2d dbPoint;
+                            this->gridPointToDbPoint(point_2d{(double)location.x(), (double)location.y()}, dbPoint);
+                            via.setPosition(dbPoint);
+
+                            int startGridLayerId = std::min(location.m_z, prevLocation.m_z);
+                            int endGridLayerId = std::max(location.m_z, prevLocation.m_z);
+                            via.setLayer(std::vector<std::string>{this->mGridLayerToName.at(startGridLayerId), this->mGridLayerToName.at(endGridLayerId)});
+                            net.addVia(via);
+                        }
                     } else {
+                        Via via{net.getViaCount(), net.getId(), netclass.getViaDia(), ViaType::THROUGH};
+                        point_2d dbPoint;
+                        this->gridPointToDbPoint(point_2d{(double)location.x(), (double)location.y()}, dbPoint);
+                        via.setPosition(dbPoint);
                         via.setLayer(std::vector<std::string>{this->mGridLayerToName.front(), this->mGridLayerToName.back()});
+                        net.addVia(via);
                     }
-                    net.addVia(via);
                 }
                 // Print Segment/Track/Wire
                 if (location.m_x != prevLocation.m_x || location.m_y != prevLocation.m_y) {
