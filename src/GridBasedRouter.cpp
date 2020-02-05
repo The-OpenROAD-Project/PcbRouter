@@ -348,6 +348,7 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // Setup derived values
         gridNetclass.setHalfTraceWidth((int)floor((double)traceWidth / 2.0));
         gridNetclass.setHalfViaDia((int)floor((double)viaDia / 2.0));
+        gridNetclass.setHalfMicroViaDia((int)floor((double)microViaDia / 2.0));
 
         // Diagnoal cases
         int diagonalTraceWidth = (int)ceil(dbLengthToGridLength(netclassIte.getTraceWidth()) / sqrt(2));
@@ -358,7 +359,7 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
 
         // !!! Move below expanding functions to a new function, to handle multiple netclasses
 
-        // Setup expansion values
+        // Setup expansion values (for obstacles on the grids)
         gridNetclass.setViaExpansion(gridNetclass.getHalfViaDia());
         gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth());
         gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth());
@@ -368,6 +369,9 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // gridNetclass.setTraceExpansion(gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance());
         // gridNetclass.setDiagonalTraceExpansion(gridNetclass.getHalfDiagonalTraceWidth() + gridNetclass.getDiagonalClearance());
         // GridNetclass::setObstacleExpansion(gridNetclass.getClearance());
+        if (GlobalParam::gUseMircoVia) {
+            gridNetclass.setViaExpansion(gridNetclass.getHalfMicroViaDia());
+        }
 
         // Update Via shape grids
         double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
@@ -377,6 +381,11 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
         // int halfViaDia = gridNetclass.getViaExpansion();
         // double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        if (GlobalParam::gUseMircoVia) {
+            viaDiaFloating = dbLengthToGridLength(netclassIte.getMicroViaDia());
+            halfViaDia = (int)floor((double)microViaDia / 2.0);
+            halfViaDiaFloating = viaDiaFloating / 2.0;
+        }
 
         std::vector<Point_2D<int>> viaGrids;
         getRasterizedCircle(halfViaDia, halfViaDiaFloating, viaGrids);
@@ -389,6 +398,10 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         // Expanded cases
         // int viaSearchRadius = gridNetclass.getHalfViaDia();
         // double viaSearchRadiusFloating = halfViaDiaFloating;
+        if (GlobalParam::gUseMircoVia) {
+            viaSearchRadius = gridNetclass.getHalfMicroViaDia() + gridNetclass.getClearance();
+            viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
+        }
 
         // Calculate the searching grid
         getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);

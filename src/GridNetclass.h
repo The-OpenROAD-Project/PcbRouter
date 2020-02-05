@@ -30,6 +30,7 @@ class GridNetclass {
     int getHalfDiagonalTraceWidth() { return m_half_trace_width_diagonal; }
     int getViaDia() { return m_via_dia; }
     int getHalfViaDia() { return m_half_via_dia; }
+    int getHalfMicroViaDia() { return m_half_uvia_dia; }
     int getViaDrill() { return m_via_drill; }
     int getMicroViaDia() { return m_uvia_dia; }
     int getMicroViaDrill() { return m_uvia_drill; }
@@ -40,6 +41,7 @@ class GridNetclass {
     // Setup Derived
     void setHalfTraceWidth(const int halfTraWid) { m_half_trace_width = halfTraWid; }
     void setHalfViaDia(const int halfViaDia) { m_half_via_dia = halfViaDia; }
+    void setHalfMicroViaDia(const int halfMicroViaDia) { m_half_uvia_dia = halfMicroViaDia; }
     // Derived diagonal cases values
     void setDiagonalTraceWidth(const int diagonalTraWid) { m_trace_width_diagonal = diagonalTraWid; }
     void setHalfDiagonalTraceWidth(const int halfDiagonalTraWid) { m_half_trace_width_diagonal = halfDiagonalTraWid; }
@@ -83,6 +85,7 @@ class GridNetclass {
     int m_trace_width_diagonal = 0;
     int m_half_trace_width_diagonal = 0;
     int m_half_via_dia = 0;
+    int m_half_uvia_dia = 0;
     int m_clearance_diagonal = 0;
 
     int m_trace_expansion = 0;
