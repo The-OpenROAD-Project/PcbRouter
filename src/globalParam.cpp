@@ -27,6 +27,7 @@ unsigned int GlobalParam::gNumRipUpReRouteIteration = 5;
 int GlobalParam::gOutputPrecision = 5;
 string GlobalParam::gOutputFolder = "output";
 bool GlobalParam::gOutputDebuggingKiCadFile = true;
+bool GlobalParam::gOutputDebuggingGridValuesPyFile = true;
 bool GlobalParam::gOutputStackedMicroVias = true;
 // logfile
 string GlobalParam::gLogFolder = "log";

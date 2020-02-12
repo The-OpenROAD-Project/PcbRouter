@@ -746,13 +746,22 @@ void GridBasedRouter::route() {
             std::cout << "!!!!>!!!!> Found new bestTotalRouteCost: " << totalCurrentRouteCost << ", from: " << bestTotalRouteCost << std::endl;
             bestTotalRouteCost = totalCurrentRouteCost;
             this->bestSolution = this->gridNets;
+
+            if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
+                std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".i_" + std::to_string(i + 1) + this->getParamsNameTag();
+                mBg.printMatPlot(mapNameTag);
+            }
         }
         iterativeCost.push_back(totalCurrentRouteCost);
         std::cout << "i=" << i + 1 << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
     }
     std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
     for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
-        cout << "i=" << i << ", cost: " << iterativeCost.at(i) << std::endl;
+        if (fabs(bestTotalRouteCost - iterativeCost.at(i)) < GlobalParam::gEpsilon) {
+            cout << "i=" << i << ", cost: " << iterativeCost.at(i) << " <- best result" << std::endl;
+        } else {
+            cout << "i=" << i << ", cost: " << iterativeCost.at(i) << std::endl;
+        }
     }
 
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
@@ -769,7 +778,7 @@ void GridBasedRouter::route() {
     nameTag = nameTag + this->getParamsNameTag();
     writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
 
-    mBg.showViaCachePerformance();
+    // mBg.showViaCachePerformance();
 }
 
 void GridBasedRouter::testRouterWithPinShape() {

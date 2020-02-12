@@ -50,6 +50,7 @@ class GlobalParam {
     static int gOutputPrecision;
     static string gOutputFolder;
     static bool gOutputDebuggingKiCadFile;
+    static bool gOutputDebuggingGridValuesPyFile;
     static bool gOutputStackedMicroVias;
 
     //Log
