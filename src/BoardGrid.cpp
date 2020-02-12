@@ -958,7 +958,8 @@ void BoardGrid::printMatPlot(const std::string fileNameTag) {
         ofs << "import numpy as np\n";
         ofs << "import matplotlib.pyplot as plt\n";
         ofs << "plt.close()\n";
-        ofs << "viridis = plt.get_cmap('nipy_spectral', " << int(maxCost) << ")\n";
+        //ofs << "viridis = plt.get_cmap('nipy_spectral', " << int(maxCost) << ")\n";
+        ofs << "viridis = plt.get_cmap('nipy_spectral', " << 500 << ")\n";
         ofs << "data = np.array([[";
 
         for (int r = 0; r < this->h; ++r) {
@@ -979,8 +980,8 @@ void BoardGrid::printMatPlot(const std::string fileNameTag) {
         }
 
         ofs << "])\n";
-        ofs << "plt.pcolormesh(data, cmap=viridis, vmin=data.min(), "
-               "vmax=data.max())\n";
+        //ofs << "plt.pcolormesh(data, cmap=viridis, vmin=data.min(), vmax=data.max())\n";
+        ofs << "plt.pcolormesh(data, cmap=viridis, vmin=data.min(), vmax=500)\n";
         ofs << "plt.title('"
             << "layer" << std::to_string(l) << " basecost"
             << "')\n";
