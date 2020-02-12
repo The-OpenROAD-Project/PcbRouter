@@ -1,10 +1,10 @@
 #ifndef PCBROUTER_LOCATION_H
 #define PCBROUTER_LOCATION_H
 
-#include <unordered_set>
-#include <vector>
 #include <algorithm>
 #include <queue>
+#include <unordered_set>
+#include <vector>
 
 // custom Location priority queue class for search
 template <typename T, typename priority_t>
@@ -52,9 +52,7 @@ struct hash<Location> {
 namespace std {
 template <>
 struct greater<std::pair<float, Location>> {
-    bool operator()(std::pair<float, Location> const &x, std::pair<float, Location>
-
-                    const &y) const {
+    bool operator()(std::pair<float, Location> const &x, std::pair<float, Location> const &y) const {
         return x.first > y.first;
     }
 };

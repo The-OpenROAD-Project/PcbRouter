@@ -3,6 +3,15 @@
 
 #include "globalParam.h"
 
+enum GridCellType {
+    VACANT,
+    PAD,
+    TRACE,
+    VIA,
+    VIA_FORBIDDEN,
+    TARGET_PIN
+};
+
 class GridCell {
    public:
     //ctor
@@ -23,9 +32,9 @@ class GridCell {
     float cachedViaCost = -1.0;
 
     int cameFromId = -1;
-    //TODO:: Use integer's bit to represent the flag;// Or Enum to represent everything
-    bool targetedPin = false;
-    bool viaForbidden = false;
+    GridCellType cellType = VACANT;
+    //bool targetedPin = false;
+    //bool viaForbidden = false;
 };
 
 #endif

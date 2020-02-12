@@ -182,21 +182,24 @@ void BoardGrid::setTargetedPin(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin = true;
+    //this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin = true;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cellType = GridCellType::TARGET_PIN;
 }
 
 void BoardGrid::clearTargetedPin(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin = false;
+    //this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin = false;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cellType = GridCellType::VACANT;
 }
 
 bool BoardGrid::isTargetedPin(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin;
+    //return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].targetedPin;
+    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cellType == GridCellType::TARGET_PIN;
 }
 
 void BoardGrid::setTargetedPins(const std::vector<Location> &pins) {
@@ -214,21 +217,24 @@ void BoardGrid::setViaForbidden(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden = true;
+    // this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden = true;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cellType = GridCellType::VIA_FORBIDDEN;
 }
 
 void BoardGrid::clearViaForbidden(const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden = false;
+    // this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden = false;
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cellType = GridCellType::VACANT;
 }
 
 bool BoardGrid::isViaForbidden(const Location &l) const {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
-    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden;
+    // return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].viaForbidden;
+    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].cellType == GridCellType::VIA_FORBIDDEN;
 }
 
 void BoardGrid::setViaForbiddenArea(const std::vector<Location> &locations) {
