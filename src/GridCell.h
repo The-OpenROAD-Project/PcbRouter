@@ -1,6 +1,7 @@
 #ifndef PCBROUTER_GRID_CELL_H
 #define PCBROUTER_GRID_CELL_H
 
+#include <unordered_set>
 #include "globalParam.h"
 
 class GridCell {
@@ -15,7 +16,6 @@ class GridCell {
    private:
     float baseCost = 0.0;  //Record Routed Nets's traces
     //float viaCost = 0.0;   //Record Routed Nets's vias
-
     float workingCost = 0.0;  //Walked Cost
 
     //For incremental cost calculation
@@ -26,6 +26,8 @@ class GridCell {
     //TODO:: Use integer's bit to represent the flag;// Or Enum to represent everything
     bool targetedPin = false;
     bool viaForbidden = false;
+
+    std::unordered_set<int> netIds;
 };
 
 #endif

@@ -23,6 +23,7 @@ class MultipinRoute {
 
     void featuresToGridPaths();
     int getGridNetclassId() const { return gridNetclassId; }
+    int getNetId() const { return netId; }
     const std::vector<GridPath> &getGridPaths() const { return mGridPaths; }
 
     GridPath &getNewGridPath() {

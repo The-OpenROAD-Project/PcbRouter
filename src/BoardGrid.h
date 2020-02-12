@@ -138,7 +138,8 @@ class BoardGrid {
 
     void add_route_to_base_cost(const MultipinRoute &route);
     void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
-    void addGridPathToBaseCost(const GridPath &route, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost);
+    void addGridPathToBaseCost(const GridPath &route, const int netId, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost);
+    void addOrRemoveNetIdAtGrid(const Location &l, const int netId, const bool remove);
     void remove_route_from_base_cost(const MultipinRoute &route);
 
     void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;

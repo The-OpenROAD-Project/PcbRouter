@@ -1295,7 +1295,7 @@ void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
     // add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
 
     for (auto path : route.getGridPaths()) {
-        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
+        addGridPathToBaseCost(path, route.getNetId(), route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
     }
 }
 
@@ -1309,7 +1309,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     // add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
 
     for (auto path : route.getGridPaths()) {
-        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
+        addGridPathToBaseCost(path, route.getNetId(), route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
     }
 }
 
@@ -1356,12 +1356,24 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
     }
 }
 
-void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost) {
+void BoardGrid::addOrRemoveNetIdAtGrid(const Location &l, const int netId, const bool remove) {
+#ifdef BOUND_CHECKS
+    assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+    if (!remove) {
+        this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].netIds.insert(netId);
+    } else {
+        this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].netIds.erase(netId);
+    }
+}
+
+void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int netId, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost) {
     auto &segs = path.getSegments();
     if (segs.empty())
         return;
 
     //cout << __FUNCTION__ << "(): traceCost: " << traceCost << ", viaCost: " << viaCost << std::endl;
+    bool addOrRemoveNetId = (traceCost >= 0) ? true : false;
 
     // Add costs for traces
     auto pointIte = segs.begin();
@@ -1377,7 +1389,9 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             auto endY = max(pointIte->y(), nextPointIte->y());
             // Central Line
             for (auto curY = startY; curY <= endY; ++curY) {
-                this->base_cost_add(traceCost, Location(curX, curY, curZ));
+                auto loc = Location(curX, curY, curZ);
+                this->base_cost_add(traceCost, loc);
+                this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
             }
             // Extended Line
             for (int curRadius = 1; curRadius <= traceRadius; ++curRadius) {
@@ -1385,10 +1399,12 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                     auto loc = Location(curX + curRadius, curY, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                     loc = Location(curX - curRadius, curY, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                 }
             }
@@ -1401,7 +1417,9 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             auto endX = max(pointIte->x(), nextPointIte->x());
             // Central Line
             for (auto curX = startX; curX <= endX; ++curX) {
-                this->base_cost_add(traceCost, Location(curX, curY, curZ));
+                auto loc = Location(curX, curY, curZ);
+                this->base_cost_add(traceCost, loc);
+                this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
             }
             // Extended Line
             for (int curRadius = 1; curRadius <= traceRadius; ++curRadius) {
@@ -1409,10 +1427,12 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                     auto loc = Location(curX, curY + curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                     loc = Location(curX, curY - curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                 }
             }
@@ -1427,7 +1447,9 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             auto endY = max(pointIte->y(), nextPointIte->y());
             // Central Line
             for (int curX = startX, curY = startY; curX <= endX && curY <= endY; ++curX, ++curY) {
-                this->base_cost_add(traceCost, Location(curX, curY, curZ));
+                auto loc = Location(curX, curY, curZ);
+                this->base_cost_add(traceCost, loc);
+                this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
             }
             // Extended Line
             for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
@@ -1435,19 +1457,23 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                     auto loc = Location(curX + curRadius, curY - curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                     loc = Location(curX - curRadius, curY + curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                     if (curX < endX && curY < endY) {
                         loc = Location(curX + curRadius, curY - curRadius + 1, curZ);
                         if (this->validate_location(loc)) {
                             this->base_cost_add(traceCost, loc);
+                            this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                         }
                         loc = Location(curX - curRadius + 1, curY + curRadius, curZ);
                         if (this->validate_location(loc)) {
                             this->base_cost_add(traceCost, loc);
+                            this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                         }
                     }
                 }
@@ -1463,7 +1489,9 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             auto endY = max(pointIte->y(), nextPointIte->y());
             // Central Line
             for (int curX = startX, curY = endY; curX <= endX && curY >= startY; ++curX, --curY) {
-                this->base_cost_add(traceCost, Location(curX, curY, curZ));
+                auto loc = Location(curX, curY, curZ);
+                this->base_cost_add(traceCost, loc);
+                this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
             }
             // Extended Line
             for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
@@ -1471,19 +1499,23 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                     auto loc = Location(curX + curRadius, curY + curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                     loc = Location(curX - curRadius, curY - curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
+                        this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                     }
                     if (curX < endX && curY > startY) {
                         loc = Location(curX + curRadius, curY + curRadius - 1, curZ);
                         if (this->validate_location(loc)) {
                             this->base_cost_add(traceCost, loc);
+                            this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                         }
                         loc = Location(curX - curRadius + 1, curY - curRadius, curZ);
                         if (this->validate_location(loc)) {
                             this->base_cost_add(traceCost, loc);
+                            this->addOrRemoveNetIdAtGrid(loc, netId, addOrRemoveNetId);
                         }
                     }
                 }
@@ -1499,6 +1531,7 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
     for (pointIte = segs.begin(); pointIte != segs.end(); ++pointIte) {
         auto &gridNc = this->getGridNetclass(gridNetclassId);
         this->base_cost_add(traceCost, *pointIte, gridNc.getTraceEndShapeToGrids());
+        this->addOrRemoveNetIdAtGrid(*pointIte, netId, addOrRemoveNetId);
     }
 
     if (segs.size() < 2)
