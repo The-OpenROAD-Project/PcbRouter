@@ -95,6 +95,15 @@ void BoardGrid::base_cost_add(float value, const Location &l) {
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].baseCost += value;
 }
 
+void BoardGrid::base_cost_add(float value, const Location &l, const std::vector<Point_2D<int>> &shapeToGrids) {
+    for (auto &relativePt : shapeToGrids) {
+#ifdef BOUND_CHECKS
+        assert(((l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (l.m_z) * this->w * this->h) < this->size);
+#endif
+        this->grid[(l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (l.m_z) * this->w * this->h].baseCost += value;
+    }
+}
+
 void BoardGrid::working_cost_set(float value, const Location &l) {
 #ifdef BOUND_CHECKS
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
@@ -1282,9 +1291,9 @@ void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
     int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
     int viaExpandingRadius = curGridNetclass.getViaExpansion();
 
-    // Old API
+    // Old API below
     // add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
-    
+
     for (auto path : route.getGridPaths()) {
         addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
     }
@@ -1295,8 +1304,8 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     int traceExpandingRadius = curGridNetclass.getTraceExpansion();
     int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
     int viaExpandingRadius = curGridNetclass.getViaExpansion();
-    
-    // Old API
+
+    // Old API below
     // add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
 
     for (auto path : route.getGridPaths()) {
@@ -1484,6 +1493,12 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
         // Move to the next segment
         ++pointIte;
         ++nextPointIte;
+    }
+
+    // Handle trace end
+    for (pointIte = segs.begin(); pointIte != segs.end(); ++pointIte) {
+        auto &gridNc = this->getGridNetclass(gridNetclassId);
+        this->base_cost_add(traceCost, *pointIte, gridNc.getTraceEndShapeToGrids());
     }
 
     if (segs.size() < 2)

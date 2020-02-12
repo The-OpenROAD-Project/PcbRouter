@@ -428,6 +428,20 @@ void GridBasedRouter::setupGridNetclass() {
         //     std::cout << pt << std::endl;
         // }
 
+        // Update Trace-end shape grids
+        double traceWidthFloating = dbLengthToGridLength(netclassIte.getTraceWidth());
+        int halfTraceWidth = gridNetclass.getHalfTraceWidth();
+        double halfTraceWidthFloating = traceWidthFloating / 2.0;
+        // WARNING!! Expanded cases // Not updated yet!!
+        // double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
+        // int halfViaDia = gridNetclass.getViaExpansion();
+        // double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+
+        // Calculate the trace-end shape grids
+        std::vector<Point_2D<int>> traceEndGrids;
+        getRasterizedCircle(halfTraceWidth, halfTraceWidthFloating, traceEndGrids);
+        gridNetclass.setTraceEndShapeGrids(traceEndGrids);
+
         // Setup incremental searching grids
         gridNetclass.setupTraceIncrementalSearchGrids();
         gridNetclass.setupViaIncrementalSearchGrids();

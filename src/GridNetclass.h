@@ -54,6 +54,9 @@ class GridNetclass {
     void addViaShapeGridPoint(const Point_2D<int> &pt) { mViaShapeToGrids.push_back(pt); }
     void setViaShapeGrids(const std::vector<Point_2D<int>> &grids) { mViaShapeToGrids = grids; }
     const std::vector<Point_2D<int>> &getViaShapeToGrids() const { return mViaShapeToGrids; }
+    // Trace-end shape
+    void setTraceEndShapeGrids(const std::vector<Point_2D<int>> &grids) { mTraceEndShapeToGrids = grids; }
+    const std::vector<Point_2D<int>> &getTraceEndShapeToGrids() const { return mTraceEndShapeToGrids; }
     // Trace searching space
     void setTraceSearchingSpaceToGrids(const std::vector<Point_2D<int>> &grids) { mTraceSearchingSpaceToGrids = grids; }
     const std::vector<Point_2D<int>> &getTraceSearchingSpaceToGrids() const { return mTraceSearchingSpaceToGrids; }
@@ -97,6 +100,8 @@ class GridNetclass {
 
     // Via shape, relative to the via center grid
     std::vector<Point_2D<int>> mViaShapeToGrids;
+    // Trace-end shape, relative to the trace center grid
+    std::vector<Point_2D<int>> mTraceEndShapeToGrids;
     // Trace searching space when caluclating grid cost, relative to trace center grid
     std::vector<Point_2D<int>> mTraceSearchingSpaceToGrids;
     // Via searching space when caluclating grid cost, relative to via center grid

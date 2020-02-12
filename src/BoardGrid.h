@@ -63,6 +63,7 @@ class BoardGrid {
     float base_cost_at(const Location &l) const;
     void base_cost_set(float value, const Location &l);
     void base_cost_add(float value, const Location &l);
+    void base_cost_add(float value, const Location &l, const std::vector<Point_2D<int>> &);
     // via
     [[deprecated]] bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
     bool sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const;
@@ -135,7 +136,6 @@ class BoardGrid {
     float getEstimatedCostWithLayers(const Location &current);
     float getEstimatedCostWithLayersAndBendingCost(const Location &current, const Location &next);
 
-    //TODO: refactor on the trace/via size and their cost......
     void add_route_to_base_cost(const MultipinRoute &route);
     void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
     void addGridPathToBaseCost(const GridPath &route, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost);
