@@ -62,7 +62,9 @@ class GridBasedRouter {
     void writeSolutionBackToDbAndSaveOutput(const std::string fileNameTag, std::vector<MultipinRoute> &multipinNets);
 
     // Helpers
-    void setupBoardAndMappingStructure();
+    void setupBoardGrid();
+    void setupLayerMapping();
+    void setupGridNetclass();
     void setupGridNetsAndGridPins();
     void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
     void getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);

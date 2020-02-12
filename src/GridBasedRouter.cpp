@@ -327,20 +327,7 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
     mDb.printKiCad(GlobalParam::gOutputFolder, nameTag);
 }
 
-void GridBasedRouter::setupBoardAndMappingStructure() {
-    std::cout << "\n\n######Start of " << __FUNCTION__ << "()" << std::endl;
-    // Get board dimension
-    //mDb.getBoardBoundaryByPinLocation(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
-    mDb.getBoardBoundaryByEdgeCuts(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
-    std::cout << "Routing Outline: (" << this->mMinX << ", " << this->mMinY << "), (" << this->mMaxX << ", " << this->mMaxY << ")" << std::endl;
-    std::cout << "GlobalParam::inputScale: " << GlobalParam::inputScale << ", GlobalParam::enlargeBoundary: " << GlobalParam::enlargeBoundary << ", GlobalParam::gridFactor: " << GlobalParam::gridFactor << std::endl;
-
-    // Get grid dimension
-    const unsigned int h = int(std::abs(mMaxY * GlobalParam::inputScale - mMinY * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
-    const unsigned int w = int(std::abs(mMaxX * GlobalParam::inputScale - mMinX * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
-    const unsigned int l = mDb.getNumCopperLayers();
-    std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
-
+void GridBasedRouter::setupLayerMapping() {
     // Setup layer mappings
     for (auto &layerIte : mDb.getCopperLayers()) {
         std::cout << "Grid layer: " << mGridLayerToName.size() << ", mapped to DB: " << layerIte.second << std::endl;
@@ -348,8 +335,9 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         mDbLayerIdToGridLayer[layerIte.first] = mGridLayerToName.size();
         mGridLayerToName.push_back(layerIte.second);
     }
+}
 
-    // Setup netclass mapping
+void GridBasedRouter::setupGridNetclass() {
     for (auto &netclassIte : mDb.getNetclasses()) {
         int id = netclassIte.getId();
         int clearance = dbLengthToGridLengthCeil(netclassIte.getClearance());
@@ -462,6 +450,21 @@ void GridBasedRouter::setupBoardAndMappingStructure() {
         std::cout << "DiagonalTraceExpansion: " << gridNetclass.getDiagonalTraceExpansion() << std::endl;
         std::cout << "(static)obstacleExpansion: " << GridNetclass::getObstacleExpansion() << std::endl;
     }
+}
+
+void GridBasedRouter::setupBoardGrid() {
+    std::cout << "\n\n######Start of " << __FUNCTION__ << "()" << std::endl;
+    // Get board dimension
+    //mDb.getBoardBoundaryByPinLocation(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
+    mDb.getBoardBoundaryByEdgeCuts(this->mMinX, this->mMaxX, this->mMinY, this->mMaxY);
+    std::cout << "Routing Outline: (" << this->mMinX << ", " << this->mMinY << "), (" << this->mMaxX << ", " << this->mMaxY << ")" << std::endl;
+    std::cout << "GlobalParam::inputScale: " << GlobalParam::inputScale << ", GlobalParam::enlargeBoundary: " << GlobalParam::enlargeBoundary << ", GlobalParam::gridFactor: " << GlobalParam::gridFactor << std::endl;
+
+    // Get grid dimension
+    const unsigned int h = int(std::abs(mMaxY * GlobalParam::inputScale - mMinY * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
+    const unsigned int w = int(std::abs(mMaxX * GlobalParam::inputScale - mMinX * GlobalParam::inputScale)) + GlobalParam::enlargeBoundary;
+    const unsigned int l = mDb.getNumCopperLayers();
+    std::cout << "BoardGrid Size: w:" << w << ", h:" << h << ", l:" << l << std::endl;
 
     // Initialize board grid
     mBg.initilization(w, h, l);
@@ -626,7 +629,9 @@ void GridBasedRouter::route() {
     // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
 
     // Initilization
-    this->setupBoardAndMappingStructure();
+    this->setupLayerMapping();
+    this->setupGridNetclass();
+    this->setupBoardGrid();
     this->setupGridNetsAndGridPins();
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
@@ -787,7 +792,9 @@ void GridBasedRouter::testRouterWithPinShape() {
               << "=================" << __FUNCTION__ << "==================" << std::endl;
 
     // Initilization
-    this->setupBoardAndMappingStructure();
+    this->setupLayerMapping();
+    this->setupGridNetclass();
+    this->setupBoardGrid();
     this->setupGridNetsAndGridPins();
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
