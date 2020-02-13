@@ -269,6 +269,7 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
                                 point_2d dbPoint;
                                 this->gridPointToDbPoint(point_2d{(double)location.x(), (double)location.y()}, dbPoint);
                                 via.setPosition(dbPoint);
+                                via.setDrillSize(netclass.getMicroViaDrill());
                                 via.setLayer(std::vector<std::string>{this->mGridLayerToName.at(layerId), this->mGridLayerToName.at(layerId + 1)});
 
                                 if (layerId == 0 || layerId + 1 == mDb.getNumCopperLayers() - 1) {
