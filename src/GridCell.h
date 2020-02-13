@@ -8,8 +8,9 @@ enum GridCellType {
     PAD,
     TRACE,
     VIA,
+    KEEP_OUT,
     VIA_FORBIDDEN,
-    TARGET_PIN
+    TARGET_PIN  //Temporary flag, Should be a bool in GridCell? change to PAD_TARGET_PIN?
 };
 
 class GridCell {
@@ -33,6 +34,7 @@ class GridCell {
 
     int cameFromId = -1;
     GridCellType cellType = VACANT;
+    int numTraces = 0;
     //bool targetedPin = false;
     //bool viaForbidden = false;
 };
