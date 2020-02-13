@@ -423,10 +423,10 @@ void GridBasedRouter::setupGridNetclass() {
         getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
         gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
         // Debugging
-        // std::cout << "Relative trace searching grids points: " << std::endl;
-        // for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
-        //     std::cout << pt << std::endl;
-        // }
+        std::cout << "Relative trace searching grids points: " << std::endl;
+        for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
+            std::cout << pt << std::endl;
+        }
 
         // Update Trace-end shape grids
         double traceWidthFloating = dbLengthToGridLength(netclassIte.getTraceWidth());
@@ -761,15 +761,14 @@ void GridBasedRouter::route() {
             nameTag = nameTag + this->getParamsNameTag();
             writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
         }
+        if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
+            std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".i_" + std::to_string(i + 1) + this->getParamsNameTag();
+            mBg.printMatPlot(mapNameTag);
+        }
         if (totalCurrentRouteCost < bestTotalRouteCost) {
             std::cout << "!!!!>!!!!> Found new bestTotalRouteCost: " << totalCurrentRouteCost << ", from: " << bestTotalRouteCost << std::endl;
             bestTotalRouteCost = totalCurrentRouteCost;
             this->bestSolution = this->gridNets;
-
-            if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
-                std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".i_" + std::to_string(i + 1) + this->getParamsNameTag();
-                mBg.printMatPlot(mapNameTag);
-            }
         }
         iterativeCost.push_back(totalCurrentRouteCost);
         std::cout << "i=" << i + 1 << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
