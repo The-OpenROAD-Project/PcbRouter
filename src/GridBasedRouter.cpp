@@ -9,9 +9,25 @@ double GridBasedRouter::get_routed_wirelength() {
     return overallRoutedWL;
 }
 
+double GridBasedRouter::get_routed_wirelength(std::vector<MultipinRoute> &mpr) {
+    double overallRoutedWL = 0.0;
+    for (auto &mpn : mpr) {
+        overallRoutedWL += mpn.getRoutedWirelength();
+    }
+    return overallRoutedWL;
+}
+
 int GridBasedRouter::get_routed_num_vias() {
     int overallNumVias = 0;
     for (auto &mpn : this->bestSolution) {
+        overallNumVias += mpn.getRoutedNumVias();
+    }
+    return overallNumVias;
+}
+
+int GridBasedRouter::get_routed_num_vias(std::vector<MultipinRoute> &mpr) {
+    int overallNumVias = 0;
+    for (auto &mpn : mpr) {
         overallNumVias += mpn.getRoutedNumVias();
     }
     return overallNumVias;
@@ -715,6 +731,7 @@ void GridBasedRouter::route() {
     iterativeCost.push_back(totalCurrentRouteCost);
     bestTotalRouteCost = totalCurrentRouteCost;
     this->bestSolution = this->gridNets;
+    routingSolutions.push_back(this->gridNets);
 
     if (GlobalParam::gOutputDebuggingKiCadFile) {
         std::string nameTag = "fristTimeRouteAll";
@@ -737,7 +754,7 @@ void GridBasedRouter::route() {
             if (net.getId() != gridRoute.netId)
                 std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
-            std::cout << "\n\ni=" << i << ", Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+            std::cout << "\n\ni=" << i + 1 << ", Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
 
             // Temporary reomve the pin cost on the cost grid
             for (auto &gridPin : gridRoute.mGridPins) {
@@ -778,15 +795,20 @@ void GridBasedRouter::route() {
             bestTotalRouteCost = totalCurrentRouteCost;
             this->bestSolution = this->gridNets;
         }
+        routingSolutions.push_back(this->gridNets);
         iterativeCost.push_back(totalCurrentRouteCost);
         std::cout << "i=" << i + 1 << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
     }
     std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
     for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
+        cout << "i=" << i << ", cost: " << iterativeCost.at(i)
+        << ", WL: " << this->get_routed_wirelength(routingSolutions.at(i))
+        << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i));
+
         if (fabs(bestTotalRouteCost - iterativeCost.at(i)) < GlobalParam::gEpsilon) {
-            cout << "i=" << i << ", cost: " << iterativeCost.at(i) << " <- best result" << std::endl;
+            cout << " <- best result" << std::endl;
         } else {
-            cout << "i=" << i << ", cost: " << iterativeCost.at(i) << std::endl;
+            cout << std::endl;
         }
     }
 
