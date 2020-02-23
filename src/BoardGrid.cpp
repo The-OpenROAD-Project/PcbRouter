@@ -457,12 +457,19 @@ void BoardGrid::initializeFrontiers(const std::vector<Location> &route, Location
 
         // TODO: Through hole pins? how to put layers of through hole pins into frontier
         if (location.m_x == prevLocation.m_x && location.m_y == prevLocation.m_y && location.m_z != prevLocation.m_z) {
-            // A through-hole via condition
-
-            // Put all the layers (through hole via) into the frontiers
-            for (int z = 0; z < this->l; ++z) {
-                Location viaLocationOnALayer{location.m_x, location.m_y, z};
-                initializeLocationToFrontier(viaLocationOnALayer, frontier);
+            // A via
+            if (GlobalParam::gUseMircoVia) {
+                // Micro vias / Blind/buried vias
+                for (int z = std::min(location.m_z, prevLocation.m_z); z <= std::max(location.m_z, prevLocation.m_z); ++z) {
+                    Location viaLocationOnALayer{location.m_x, location.m_y, z};
+                    initializeLocationToFrontier(viaLocationOnALayer, frontier);
+                }
+            } else {
+                // Put all the layers (through hole via) into the frontiers
+                for (int z = 0; z < this->l; ++z) {
+                    Location viaLocationOnALayer{location.m_x, location.m_y, z};
+                    initializeLocationToFrontier(viaLocationOnALayer, frontier);
+                }
             }
         } else {
             // Normal points
@@ -1518,11 +1525,20 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
     for (; nextPointIte != segs.end();) {
         if (pointIte->x() == nextPointIte->x() && pointIte->y() == nextPointIte->y() &&
             pointIte->z() != nextPointIte->z()) {
-            // Handle Through Hole Via only
-            for (int z = 0; z < this->l; ++z) {
-                // Via shape to grids
-                auto &gridNc = this->getGridNetclass(gridNetclassId);
-                this->add_via_cost(*pointIte, z, viaCost, gridNc.getViaShapeToGrids());
+            if (GlobalParam::gUseMircoVia) {
+                // Handle Micro/Blind/Buried vias
+                for (int z = std::min(pointIte->z(), nextPointIte->z()); z <= std::max(pointIte->z(), nextPointIte->z()); ++z) {
+                    // Via shape to grids
+                    auto &gridNc = this->getGridNetclass(gridNetclassId);
+                    this->add_via_cost(*pointIte, z, viaCost, gridNc.getViaShapeToGrids());
+                }
+            } else {
+                // Handle Through Hole Via
+                for (int z = 0; z < this->l; ++z) {
+                    // Via shape to grids
+                    auto &gridNc = this->getGridNetclass(gridNetclassId);
+                    this->add_via_cost(*pointIte, z, viaCost, gridNc.getViaShapeToGrids());
+                }
             }
         }
 
