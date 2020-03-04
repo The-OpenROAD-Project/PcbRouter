@@ -79,7 +79,7 @@ class GridBasedRouter {
     void addPinShapeAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
 
     // Rasterize circle
-    void getRasterizedCircle(const int radius, const double radiusFloating, std::vector<Point_2D<int>> &grids);
+    void getRasterizedCircle(const int radius, const double radiusFloating, std::vector<Point_2D<int> > &grids);
 
     // Pin Layers on Grid
     bool getGridLayers(const Pin &, std::vector<int> &layers);
@@ -123,7 +123,7 @@ class GridBasedRouter {
     // TODO:: Improve the below......
     std::vector<MultipinRoute> gridNets;
     std::vector<MultipinRoute> bestSolution;
-    std::vector<std::vector<MultipinRoute>> routingSolutions;
+    std::vector<std::vector<MultipinRoute> > routingSolutions;
     double bestTotalRouteCost = -1.0;
 
     // Board Boundary
