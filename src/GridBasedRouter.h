@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 #include "BoardGrid.h"
 #include "globalParam.h"
 #include "kicadPcbDataBase.h"

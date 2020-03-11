@@ -735,7 +735,7 @@ void GridBasedRouter::route() {
 
     if (GlobalParam::gOutputDebuggingKiCadFile) {
         std::string nameTag = "fristTimeRouteAll";
-        nameTag = nameTag + this->getParamsNameTag();
+        nameTag = nameTag + "." + this->getParamsNameTag();
         writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
     }
     std::cout << "i=0, totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
@@ -783,7 +783,7 @@ void GridBasedRouter::route() {
         }
         if (GlobalParam::gOutputDebuggingKiCadFile) {
             std::string nameTag = "i_" + std::to_string(i + 1);
-            nameTag = nameTag + this->getParamsNameTag();
+            nameTag = nameTag + "." + this->getParamsNameTag();
             writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
         }
         if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
@@ -823,7 +823,7 @@ void GridBasedRouter::route() {
 
     // Output final result to KiCad file
     std::string nameTag = "bestSolutionWithMerging";
-    nameTag = nameTag + this->getParamsNameTag();
+    nameTag = nameTag + "." + this->getParamsNameTag();
     writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
 
     // mBg.showViaCachePerformance();
@@ -1026,13 +1026,16 @@ int GridBasedRouter::getNextRipUpNetId() {
 }
 
 std::string GridBasedRouter::getParamsNameTag() {
+    // std::ostringstream out;
+    // out.precision();
+
     std::string ret = "s_" + std::to_string(this->get_grid_scale());
     ret += "_i_" + std::to_string(get_num_iterations());
     ret += "_b_" + std::to_string(get_enlarge_boundary());
-    ret += "_lc_" + std::to_string(get_layer_change_weight());
-    ret += "_to_" + std::to_string(get_track_obstacle_weight());
-    ret += "_vo_" + std::to_string(get_via_obstacle_weight());
-    ret += "_po_" + std::to_string(get_pad_obstacle_weight());
+    ret += "_lc_" + std::to_string((int)get_layer_change_weight());
+    ret += "_to_" + std::to_string((int)get_track_obstacle_weight());
+    ret += "_vo_" + std::to_string((int)get_via_obstacle_weight());
+    ret += "_po_" + std::to_string((int)get_pad_obstacle_weight());
     return ret;
 }
 
