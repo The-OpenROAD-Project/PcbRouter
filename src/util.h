@@ -153,7 +153,7 @@ class TimeUsage {
 };
 // memory
 inline double getPeakMemoryUsage() {
-#if defined(linux)
+#ifdef __linux__
     char buf[1000];
     ifstream ifs("/proc/self/stat");
     for (int i = 0; i != 23; ++i)
