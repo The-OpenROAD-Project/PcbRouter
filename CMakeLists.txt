@@ -35,6 +35,8 @@ set (PCBROUTER_SRC
   src/GridPath.cpp
   src/MultipinRoute.cpp
   src/globalParam.cpp
+  src/frTime.cpp
+  src/frTime_helper.cpp
   src/PcbRouter_wrapper.cpp
   )
 
@@ -49,6 +51,7 @@ set (PCBROUTER_HEADER
   src/IncrementalSearchGrids.h
   src/Location.h
   src/globalParam.h
+  src/frTime.h
   src/util.h
   )
 
