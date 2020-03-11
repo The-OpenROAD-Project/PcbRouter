@@ -58,6 +58,7 @@ void frTime::print() {
   std::cout <<std::setw(2) <<std::setfill('0') <<sec;
   std::cout <<", memory = " <<std::fixed <<std::setprecision(2) <<getCurrentRSS() * 1.0 / 1024 / 1024 <<" (MB)";
   std::cout <<", peak = "   <<std::fixed <<std::setprecision(2) <<getPeakRSS()    * 1.0 / 1024 / 1024 <<" (MB)";
+  std::cout <<std::endl;
   guard.restore();
 }
 

@@ -2,6 +2,7 @@
 #include "GridBasedRouter.h"
 #include "kicadPcbDataBase.h"
 #include "util.h"
+#include "frTime.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -12,6 +13,7 @@ int main(int argc, char *argv[]) {
     util::showSysInfoComdLine(argc, argv);
     GlobalParam::setFolders();
     GlobalParam::setUsageStart();
+    fr::frTime timeObj;
 
     std::string designName = argv[1];
     std::cout << "Parsing design: " << designName << std::endl;
@@ -63,6 +65,8 @@ int main(int argc, char *argv[]) {
 
     GlobalParam::showCurrentUsage("GridBasedRouter");
     GlobalParam::showFinalUsage("End of Program");
+
+    timeObj.print();
 
     return 0;
 }
