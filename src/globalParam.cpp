@@ -17,7 +17,7 @@ double GlobalParam::gTraceTouchBoundaryCost = 100000.0;
 double GlobalParam::gViaForbiddenCost = 2000.0;
 // Grid Setup
 unsigned int GlobalParam::inputScale = 10;
-unsigned int GlobalParam::enlargeBoundary = 10;  //from 10 -> 50
+unsigned int GlobalParam::enlargeBoundary = 0;  //from 10 -> 50
 float GlobalParam::gridFactor = 0.1;             // 1/inputScale
 // Routing Options
 bool GlobalParam::gViaUnderPad = false;
