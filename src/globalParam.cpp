@@ -12,8 +12,8 @@ double GlobalParam::gViaInsertionCost = 100.0;  //Cost added to the via grid
 double GlobalParam::gTraceBasicCost = 50.0;     //10?     //Cost added to the base grid by traces
 double GlobalParam::gPinObstacleCost = 1000.0;  //2000?   //Cost for obstacle pins added to the via (or/and) base grid
 // Increment of obstacle cost
-double GlobalParam::gStepViaObsCost = 10.0;  //Cost added to the via grid
-double GlobalParam::gStepTraObsCost = 2.5;
+double GlobalParam::gStepViaObsCost = 0.0;  //10.0;  //Cost added to the via grid
+double GlobalParam::gStepTraObsCost = 0.0;  //2.5;
 // Other cost
 double GlobalParam::gViaTouchBoundaryCost = 1000.0;
 double GlobalParam::gTraceTouchBoundaryCost = 100000.0;
