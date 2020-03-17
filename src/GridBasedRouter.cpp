@@ -439,6 +439,7 @@ void GridBasedRouter::setupGridNetclass() {
         std::vector<Point_2D<int>> traceSearchingGrids;
         int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
         double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        std::cout << "traceSearchRadius: " << traceSearchRadius << ", traceSearchRadiusFloating: " << traceSearchRadiusFloating << std::endl;
         // Expanded cases
         // int traceSearchRadius = gridNetclass.getHalfTraceWidth();
         // double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
@@ -526,12 +527,20 @@ void GridBasedRouter::getRasterizedCircle(const int radius, const double radiusF
             Point_2D<double> LR{(double)x + 0.5, (double)y - 0.5};
             Point_2D<double> UL{(double)x - 0.5, (double)y + 0.5};
             Point_2D<double> UR{(double)x + 0.5, (double)y + 0.5};
+            Point_2D<double> L{(double)x - 0.5, (double)y};
+            Point_2D<double> R{(double)x + 0.5, (double)y};
+            Point_2D<double> T{(double)x, (double)y + 0.5};
+            Point_2D<double> B{(double)x, (double)y - 0.5};
             Point_2D<double> center{0.0, 0.0};
 
             if (Point_2D<double>::getDistance(LL, center) < radiusFloating ||
                 Point_2D<double>::getDistance(LR, center) < radiusFloating ||
                 Point_2D<double>::getDistance(UL, center) < radiusFloating ||
-                Point_2D<double>::getDistance(UR, center) < radiusFloating) {
+                Point_2D<double>::getDistance(UR, center) < radiusFloating ||
+                Point_2D<double>::getDistance(L, center) < radiusFloating ||
+                Point_2D<double>::getDistance(R, center) < radiusFloating ||
+                Point_2D<double>::getDistance(T, center) < radiusFloating ||
+                Point_2D<double>::getDistance(B, center) < radiusFloating) {
                 grids.push_back(Point_2D<int>{x, y});
             }
         }
@@ -688,7 +697,7 @@ void GridBasedRouter::route() {
     bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        // if (net.getId() != 7)
+        // if (net.getId() != 31)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
@@ -705,6 +714,11 @@ void GridBasedRouter::route() {
             // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
             this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
         }
+
+        // if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
+        //     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".removeSTPad." + this->getParamsNameTag();
+        //     mBg.printMatPlot(mapNameTag);
+        // }
 
         // Setup design rules in board grid
         if (!mDb.isNetclassId(net.getNetclassId())) {
