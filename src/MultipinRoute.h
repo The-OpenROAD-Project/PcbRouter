@@ -9,17 +9,15 @@
 
 class MultipinRoute {
    public:
-    int netId = -1;
-    int gridNetclassId = -1;
-    float currentRouteCost = 0.0;
-    std::vector<Location> features;  // Make this obsolete, please
-    std::vector<GridPin> mGridPins;
-
-    //derived from features, doesn't guarantee updated
-    // Please replace features with mGridPaths
-    std::vector<GridPath> mGridPaths;
-    //TODO
-    // std::vector<Location> vias;
+    MultipinRoute() {
+    }
+    MultipinRoute(const int netId) {
+        this->netId = netId;
+    }
+    MultipinRoute(const int netId, const int gridNetclassId) {
+        this->netId = netId;
+        this->gridNetclassId = gridNetclassId;
+    }
 
     void featuresToGridPaths();
     int getGridNetclassId() const { return gridNetclassId; }
@@ -36,16 +34,31 @@ class MultipinRoute {
 
     double getRoutedWirelength();
     int getRoutedNumVias();
+    double getCurTrackObstacleCost() { return curTrackObstacleCost; }
+    double getCurViaObstacleCost() { return curViaObstacleCost; }
 
-    MultipinRoute() {
-    }
-    MultipinRoute(const int netId) {
-        this->netId = netId;
-    }
-    MultipinRoute(const int netId, const int gridNetclassId) {
-        this->netId = netId;
-        this->gridNetclassId = gridNetclassId;
-    }
+    void setCurTrackObstacleCost(const double &toc) { curTrackObstacleCost = toc; }
+    void setCurViaObstacleCost(const double &voc) { curViaObstacleCost = voc; }
+
+    friend class BoardGrid;
+    friend class MultipinRoute;
+    friend class GridBasedRouter;
+
+   private:
+    int netId = -1;
+    int gridNetclassId = -1;
+    float currentRouteCost = 0.0;
+    std::vector<Location> features;  // Make this obsolete, please
+    std::vector<GridPin> mGridPins;
+
+    double curTrackObstacleCost = 0.0;
+    double curViaObstacleCost = 0.0;
+
+    //derived from features, doesn't guarantee updated
+    // Please replace features with mGridPaths
+    std::vector<GridPath> mGridPaths;
+    //TODO
+    // std::vector<Location> vias;
 };
 
 #endif
