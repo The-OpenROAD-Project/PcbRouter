@@ -1309,7 +1309,8 @@ void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
     // add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
 
     for (auto path : route.getGridPaths()) {
-        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
+        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius,
+                              route.getCurNegTrackObstacleCost(), viaExpandingRadius, route.getCurNegViaObstacleCost());
     }
 }
 
@@ -1323,7 +1324,8 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     // add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
 
     for (auto path : route.getGridPaths()) {
-        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
+        addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius,
+                              route.getCurTrackObstacleCost(), viaExpandingRadius, route.getCurViaObstacleCost());
     }
 }
 

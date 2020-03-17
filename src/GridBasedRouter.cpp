@@ -695,8 +695,8 @@ void GridBasedRouter::route() {
         if (net.getPins().size() < 2)
             continue;
 
-        gridNets.push_back(MultipinRoute{net.getId()});
-        auto &gridRoute = gridNets.at(net.getId());
+        //this->gridNets.push_back(MultipinRoute{net.getId()});
+        auto &gridRoute = this->gridNets.at(net.getId());
         if (net.getId() != gridRoute.netId)
             std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
@@ -712,6 +712,8 @@ void GridBasedRouter::route() {
             continue;
         }
         mBg.setCurrentGridNetclassId(net.getNetclassId());
+        gridRoute.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+        gridRoute.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
         //mBg.set_current_rules(net.getNetclassId());
 
         // Route the net
@@ -772,6 +774,9 @@ void GridBasedRouter::route() {
             // Rip-up and re-route
             mBg.ripup_route(gridRoute);
             totalCurrentRouteCost -= gridRoute.currentRouteCost;
+
+            gridRoute.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+            gridRoute.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
             mBg.addRouteWithGridPins(gridRoute);
             totalCurrentRouteCost += gridRoute.currentRouteCost;
 
@@ -802,8 +807,8 @@ void GridBasedRouter::route() {
     std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
     for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
         cout << "i=" << i << ", cost: " << iterativeCost.at(i)
-        << ", WL: " << this->get_routed_wirelength(routingSolutions.at(i))
-        << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i));
+             << ", WL: " << this->get_routed_wirelength(routingSolutions.at(i))
+             << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i));
 
         if (fabs(bestTotalRouteCost - iterativeCost.at(i)) < GlobalParam::gEpsilon) {
             cout << " <- best result" << std::endl;
