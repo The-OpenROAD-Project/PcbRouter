@@ -11,6 +11,9 @@ double GlobalParam::gLayerChangeCost = 10.0;        //Cost for path searching
 double GlobalParam::gViaInsertionCost = 100.0;  //Cost added to the via grid
 double GlobalParam::gTraceBasicCost = 50.0;     //10?     //Cost added to the base grid by traces
 double GlobalParam::gPinObstacleCost = 1000.0;  //2000?   //Cost for obstacle pins added to the via (or/and) base grid
+// Increment of obstacle cost
+double GlobalParam::gStepViaObsCost = 10.0;  //Cost added to the via grid
+double GlobalParam::gStepTraObsCost = 2.5;
 // Other cost
 double GlobalParam::gViaTouchBoundaryCost = 1000.0;
 double GlobalParam::gTraceTouchBoundaryCost = 100000.0;
@@ -18,7 +21,7 @@ double GlobalParam::gViaForbiddenCost = 2000.0;
 // Grid Setup
 unsigned int GlobalParam::inputScale = 10;
 unsigned int GlobalParam::enlargeBoundary = 0;  //from 10 -> 50
-float GlobalParam::gridFactor = 0.1;             // 1/inputScale
+float GlobalParam::gridFactor = 0.1;            // 1/inputScale
 // Routing Options
 bool GlobalParam::gViaUnderPad = false;
 bool GlobalParam::gUseMircoVia = true;

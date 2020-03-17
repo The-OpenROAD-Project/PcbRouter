@@ -775,8 +775,8 @@ void GridBasedRouter::route() {
             mBg.ripup_route(gridRoute);
             totalCurrentRouteCost -= gridRoute.currentRouteCost;
 
-            gridRoute.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
-            gridRoute.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+            gridRoute.addCurTrackObstacleCost(GlobalParam::gStepTraObsCost);
+            gridRoute.addCurViaObstacleCost(GlobalParam::gStepViaObsCost);
             mBg.addRouteWithGridPins(gridRoute);
             totalCurrentRouteCost += gridRoute.currentRouteCost;
 

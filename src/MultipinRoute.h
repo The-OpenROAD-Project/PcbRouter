@@ -41,6 +41,8 @@ class MultipinRoute {
 
     void setCurTrackObstacleCost(const double &toc) { curTrackObstacleCost = toc; }
     void setCurViaObstacleCost(const double &voc) { curViaObstacleCost = voc; }
+    void addCurTrackObstacleCost(const double &stoc) { curTrackObstacleCost += stoc; }
+    void addCurViaObstacleCost(const double &svoc) { curViaObstacleCost += svoc; }
 
     friend class BoardGrid;
     friend class MultipinRoute;

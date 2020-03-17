@@ -31,6 +31,10 @@ class GlobalParam {
     static double gTraceBasicCost;
     static double gPinObstacleCost;
 
+    //Step size of obstacle cost
+    static double gStepViaObsCost;
+    static double gStepTraObsCost;
+
     //Other costs
     static double gViaTouchBoundaryCost;
     static double gTraceTouchBoundaryCost;
