@@ -16,6 +16,14 @@ int MultipinRoute::getRoutedNumVias() {
     return numRoutedVias;
 }
 
+int MultipinRoute::getRoutedNumBends() {
+    int numRoutedBends = 0;
+    for (auto &gp : this->mGridPaths) {
+        numRoutedBends += gp.getRoutedNumBends();
+    }
+    return numRoutedBends;
+}
+
 void MultipinRoute::featuresToGridPaths() {
     if (this->features.empty() || this->features.size() == 1) {
         cerr << __FUNCTION__ << "(): No features to translate to segments. Features.size(): " << this->features.size() << std::endl;

@@ -1,8 +1,8 @@
 
 #include "GridBasedRouter.h"
+#include "frTime.h"
 #include "kicadPcbDataBase.h"
 #include "util.h"
-#include "frTime.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -61,7 +61,9 @@ int main(int argc, char *argv[]) {
 
     // db.printRoutedSegmentsWLAndNumVias();
 
-    std::cout << "routed WL: " << router.get_routed_wirelength() << ", routed # vias: " << router.get_routed_num_vias() << std::endl;
+    std::cout << "routed WL: " << router.get_routed_wirelength()
+              << ", routed # vias: " << router.get_routed_num_vias()
+              << ", routed # bends: " << router.get_routed_num_bends() << std::endl;
 
     GlobalParam::showCurrentUsage("GridBasedRouter");
     GlobalParam::showFinalUsage("End of Program");

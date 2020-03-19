@@ -2,8 +2,8 @@
 #define PCBROUTER_GRID_PATH_H
 
 #include <algorithm>
-#include <vector>
 #include <list>
+#include <vector>
 #include "globalParam.h"
 #include "point.h"
 
@@ -18,6 +18,7 @@ class GridPath {
     void removeRedundantPoints();
     double getRoutedWirelength();
     int getRoutedNumVias();
+    int getRoutedNumBends();
 
     friend class BoardGrid;
     friend class MultipinRoute;

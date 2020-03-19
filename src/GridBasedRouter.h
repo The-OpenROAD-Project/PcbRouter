@@ -5,9 +5,9 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
 #include "BoardGrid.h"
 #include "globalParam.h"
 #include "kicadPcbDataBase.h"
@@ -56,6 +56,8 @@ class GridBasedRouter {
     double get_routed_wirelength(std::vector<MultipinRoute> &mpr);
     int get_routed_num_vias();
     int get_routed_num_vias(std::vector<MultipinRoute> &mpr);
+    int get_routed_num_bends();
+    int get_routed_num_bends(std::vector<MultipinRoute> &mpr);
 
    private:
     void testRouterWithPinShape();

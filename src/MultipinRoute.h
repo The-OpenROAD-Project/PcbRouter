@@ -34,6 +34,7 @@ class MultipinRoute {
 
     double getRoutedWirelength();
     int getRoutedNumVias();
+    int getRoutedNumBends();
     double getCurTrackObstacleCost() const { return curTrackObstacleCost; }
     double getCurViaObstacleCost() const { return curViaObstacleCost; }
     double getCurNegTrackObstacleCost() const { return -curTrackObstacleCost; }

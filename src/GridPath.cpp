@@ -87,3 +87,37 @@ int GridPath::getRoutedNumVias() {
 
     return totalNumVia;
 }
+
+int GridPath::getRoutedNumBends() {
+    int totalNumBends = 0;
+    Location prevLocation = this->mSegments.front();
+
+    // Check though all the points in segments
+    auto pointIte = ++this->mSegments.begin();
+    auto prevPointIte = this->mSegments.begin();
+    auto nextPointIte = pointIte;
+    ++nextPointIte;
+
+    for (; nextPointIte != this->mSegments.end();) {
+        // Sanity Check
+        if (pointIte->m_z != prevPointIte->m_z &&
+            pointIte->m_x != prevPointIte->m_x &&
+            pointIte->m_y != prevPointIte->m_y) {
+            std::cerr << __FUNCTION__ << "() Invalid path between location: " << *pointIte << ", and prevLocation: " << *prevPointIte << std::endl;
+            continue;
+        }
+
+        // Don't count via as a bend
+        // All three points on a same layer => A bend
+        if (pointIte->m_z == prevPointIte->m_z && pointIte->m_z == nextPointIte->m_z &&
+            (pointIte->m_x - prevPointIte->m_x != nextPointIte->m_x - pointIte->m_x ||
+             pointIte->m_y - prevPointIte->m_y != nextPointIte->m_y - pointIte->m_y)) {
+            ++totalNumBends;
+        }
+        ++pointIte;
+        ++nextPointIte;
+        ++prevPointIte;
+    }
+
+    return totalNumBends;
+}

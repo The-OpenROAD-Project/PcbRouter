@@ -2,11 +2,7 @@
 #include "GridBasedRouter.h"
 
 double GridBasedRouter::get_routed_wirelength() {
-    double overallRoutedWL = 0.0;
-    for (auto &mpn : this->bestSolution) {
-        overallRoutedWL += mpn.getRoutedWirelength();
-    }
-    return overallRoutedWL;
+    return this->get_routed_wirelength(this->bestSolution);
 }
 
 double GridBasedRouter::get_routed_wirelength(std::vector<MultipinRoute> &mpr) {
@@ -18,11 +14,7 @@ double GridBasedRouter::get_routed_wirelength(std::vector<MultipinRoute> &mpr) {
 }
 
 int GridBasedRouter::get_routed_num_vias() {
-    int overallNumVias = 0;
-    for (auto &mpn : this->bestSolution) {
-        overallNumVias += mpn.getRoutedNumVias();
-    }
-    return overallNumVias;
+    return this->get_routed_num_vias(this->bestSolution);
 }
 
 int GridBasedRouter::get_routed_num_vias(std::vector<MultipinRoute> &mpr) {
@@ -31,6 +23,18 @@ int GridBasedRouter::get_routed_num_vias(std::vector<MultipinRoute> &mpr) {
         overallNumVias += mpn.getRoutedNumVias();
     }
     return overallNumVias;
+}
+
+int GridBasedRouter::get_routed_num_bends() {
+    return this->get_routed_num_bends(this->bestSolution);
+}
+
+int GridBasedRouter::get_routed_num_bends(std::vector<MultipinRoute> &mpr) {
+    int overallNumBends = 0;
+    for (auto &mpn : mpr) {
+        overallNumBends += mpn.getRoutedNumBends();
+    }
+    return overallNumBends;
 }
 
 bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs) {
@@ -697,7 +701,7 @@ void GridBasedRouter::route() {
     bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        // if (net.getId() != 31)
+        // if (net.getId() != 31 && net.getId() != 18)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
@@ -822,7 +826,8 @@ void GridBasedRouter::route() {
     for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
         cout << "i=" << i << ", cost: " << iterativeCost.at(i)
              << ", WL: " << this->get_routed_wirelength(routingSolutions.at(i))
-             << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i));
+             << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i))
+             << ", #Bends: " << this->get_routed_num_bends(routingSolutions.at(i));
 
         if (fabs(bestTotalRouteCost - iterativeCost.at(i)) < GlobalParam::gEpsilon) {
             cout << " <- best result" << std::endl;
