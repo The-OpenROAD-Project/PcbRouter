@@ -89,6 +89,10 @@ int GridPath::getRoutedNumVias() {
 }
 
 int GridPath::getRoutedNumBends() {
+    if (this->mSegments.size() <= 2) {
+        return;
+    }
+
     int totalNumBends = 0;
     Location prevLocation = this->mSegments.front();
 
