@@ -90,7 +90,7 @@ int GridPath::getRoutedNumVias() {
 
 int GridPath::getRoutedNumBends() {
     if (this->mSegments.size() <= 2) {
-        return;
+        return 0;
     }
 
     int totalNumBends = 0;
