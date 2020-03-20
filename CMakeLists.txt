@@ -10,6 +10,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+if(NOT CMAKE_BUILD_TYPE)
+    # default to Release build for GCC builds
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+        "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release."
+        FORCE)
+endif()
+
 set(PCBROUTER_HOME ${PROJECT_SOURCE_DIR} )
 set(KICADPCB_HOME
   ${PROJECT_SOURCE_DIR}/module/kicadPcb
