@@ -94,7 +94,6 @@ int GridPath::getRoutedNumBends() {
     }
 
     int totalNumBends = 0;
-    Location prevLocation = this->mSegments.front();
 
     // Check though all the points in segments
     auto pointIte = ++this->mSegments.begin();

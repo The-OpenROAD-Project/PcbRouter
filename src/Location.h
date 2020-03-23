@@ -10,9 +10,7 @@
 template <typename T, typename priority_t>
 struct LocationQueue {
     typedef std::pair<priority_t, T> PQElement;
-    std::priority_queue<PQElement, std::vector<PQElement>,
-                        std::greater<PQElement>>
-        elements;
+    std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> elements;
 
     inline bool empty() const {
         return elements.empty();
