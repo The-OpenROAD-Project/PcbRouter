@@ -26,6 +26,12 @@ void BoardGrid::working_cost_fill(float value) {
     }
 }
 
+void BoardGrid::bending_cost_fill(float value) {
+    for (int i = 0; i < this->size; ++i) {
+        this->grid[i].bendingCost = value;
+    }
+}
+
 void BoardGrid::cached_trace_cost_fill(float value) {
     for (int i = 0; i < this->size; ++i) {
         this->grid[i].cachedTraceCost = value;
@@ -65,6 +71,13 @@ float BoardGrid::working_cost_at(const Location &l) const {
     assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
 #endif
     return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].workingCost;
+}
+
+float BoardGrid::bending_cost_at(const Location &l) const {
+#ifdef BOUND_CHECKS
+    assert((l.m_x + l.m_y * this->w + l.m_z * this->w * this->h) < this->size);
+#endif
+    return this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].bendingCost;
 }
 
 float BoardGrid::cached_trace_cost_at(const Location &l) const {
@@ -109,6 +122,13 @@ void BoardGrid::working_cost_set(float value, const Location &l) {
     assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
 #endif
     this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].workingCost = value;
+}
+
+void BoardGrid::bending_cost_set(float value, const Location &l) {
+#ifdef BOUND_CHECKS
+    assert(l.m_x + l.m_y * this->w + l.m_z * this->w * this->h < this->size);
+#endif
+    this->grid[l.m_x + l.m_y * this->w + l.m_z * this->w * this->h].bendingCost = value;
 }
 
 void BoardGrid::cached_trace_cost_set(float value, const Location &l) {
@@ -383,6 +403,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
     // For path to multiple points
     // Searches from the multiple points to every other point
     this->working_cost_fill(std::numeric_limits<float>::infinity());
+    this->bending_cost_fill(0);
 
     float bestCostWhenReachTarget = std::numeric_limits<float>::max();
     LocationQueue<Location, float> frontier;  // search frontier
@@ -393,8 +414,18 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         std::cout << "  " << pt << std::endl;
     }
 
+    // int numPopLocation = 0;
+
     while (!frontier.empty()) {
         Location current = frontier.front();
+
+        // // Debugging
+        // numPopLocation++;
+        // int prevId = this->getCameFromId(current);
+        // Location prev;
+        // this->idToLocation(prevId, prev);
+        // std::cout << "==>Current pop " << numPopLocation << " at Loc: " << current << ", expanded from Loc: " << prev << ", with Key in queue: " << frontier.frontKey() << std::endl;
+
         // A* termination
         if (isTargetedPin(current)) {
             bestCostWhenReachTarget = frontier.frontKey();
@@ -410,26 +441,27 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         this->getNeighbors(current, neighbors);
         float current_cost = this->working_cost_at(current);
 
-        for (std::pair<float, Location> next : neighbors) {
+        for (std::pair<float, Location> &next : neighbors) {
             float new_cost = current_cost + next.first;  // Can be optimized!!!!
-            // A*
-            // float estCost = getEstimatedCost(next.second);
+
+            //float estCost = getEstimatedCost(next.second);
             // Test bending cost
             float estCost = getEstimatedCostWithBendingCost(current, next.second);
+            int bendCost = getBendingCostOfNext(current, next.second);
+
             // Test bending cost + multi-layers (3D estimation cost)
             // float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
 
-            if (new_cost < this->working_cost_at(next.second)) {
+            if (new_cost + bendCost < this->working_cost_at(next.second) + this->bending_cost_at(next.second)) {
+                //if () {
                 this->working_cost_set(new_cost, next.second);
+                this->bending_cost_set(bendCost, next.second);
                 this->setCameFromId(next.second, this->locationToId(current));
 
-                frontier.push(next.second, new_cost + estCost);
+                frontier.push(next.second, new_cost + estCost + bendCost);
 
-                // See if is negative cost
-                // if (new_cost < 0) {
-                //     std::cout << "****************new_cost < 0, estCost = " << estCost << ", current_cost = " << current_cost << ", next_cost = " << next.first << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
-                // }
-                // std::cerr << "\tPQ: cost: " << new_cost << ", at" << next.second << std::endl;
+                // float keyValue = new_cost + estCost + bendCost;
+                // std::cout << "Better Cost at Location " << next.second << ", with Cost: " << new_cost << ", est Cost: " << estCost << ", bend Cost: " << bendCost << ", key value: " << keyValue << std::endl;
 
                 // Show if the target is reached
                 if (estCost < 0.5) {
@@ -499,7 +531,7 @@ void BoardGrid::initializeLocationToFrontier(const Location &start, LocationQueu
 
 float BoardGrid::getEstimatedCost(const Location &l) {
     // return max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
-    // return abs(l.m_x - this->current_targeted_pin.m_x) + abs(l.m_y - this->current_targeted_pin.m_y);
+
     int absDiffX = abs(l.m_x - this->current_targeted_pin.m_x);
     int absDiffY = abs(l.m_y - this->current_targeted_pin.m_y);
     int minDiff = min(absDiffX, absDiffY);
@@ -519,15 +551,49 @@ float BoardGrid::getEstimatedCostWithBendingCost(const Location &current, const 
             current.z() == next.z() &&
             prev.x() - current.x() == current.x() - next.x() &&
             prev.y() - current.y() == current.y() - next.y()) {
-            bendingCost = 0.5;
+            bendingCost += 0.5;
         }
+    } else {
+        // Count the starting point as zero bending
+        bendingCost += 0.5;
     }
+    if (next.m_x == this->current_targeted_pin.m_x ||
+        next.m_y == this->current_targeted_pin.m_y ||
+        abs(next.m_x - this->current_targeted_pin.m_x) == abs(next.m_y - this->current_targeted_pin.m_y)) {
+        bendingCost += 0.5;
+    }
+
+    // return max(abs(current.m_x - this->current_targeted_pin.m_x), abs(current.m_y - this->current_targeted_pin.m_y)) - bendingCost;
 
     int absDiffX = abs(next.m_x - this->current_targeted_pin.m_x);
     int absDiffY = abs(next.m_y - this->current_targeted_pin.m_y);
     int minDiff = min(absDiffX, absDiffY);
     int maxDiff = max(absDiffX, absDiffY);
     return (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff - bendingCost;
+}
+
+int BoardGrid::getBendingCostOfNext(const Location &current, const Location &next) const {
+    int currentBendingCost = this->bending_cost_at(current);
+    int currentId = this->locationToId(current);
+    int prevId = this->getCameFromId(current);
+    int nextBendingCost = currentBendingCost;
+
+    if (prevId != currentId) {
+        Location prev;
+        this->idToLocation(prevId, prev);
+
+        if (prev.z() == current.z() &&
+            current.z() == next.z() &&
+            prev.x() - current.x() == current.x() - next.x() &&
+            prev.y() - current.y() == current.y() - next.y()) {
+        } else {
+            nextBendingCost += 1;
+        }
+    } else {
+        // Count the starting point as zero bending
+    }
+
+    return nextBendingCost;
 }
 
 float BoardGrid::getEstimatedCostWithLayers(const Location &l) {
@@ -1754,8 +1820,10 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         // TODO Fix this, when THROUGH PAD as a start?
         this->came_from_to_features(finalEnd, new_features);
 
+        // std::cout << "New Features:" << std::endl;
         for (Location f : new_features) {
             route.features.push_back(f);
+            // std::cout << f << std::endl;
         }
 
         // For early break

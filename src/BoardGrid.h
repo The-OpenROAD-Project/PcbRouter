@@ -50,6 +50,10 @@ class BoardGrid {
     void working_cost_fill(float value);
     float working_cost_at(const Location &l) const;
     void working_cost_set(float value, const Location &l);
+    // bending cost
+    void bending_cost_fill(float value);
+    float bending_cost_at(const Location &l) const;
+    void bending_cost_set(float value, const Location &l);
     // cached trace cost
     void cached_trace_cost_fill(float value);
     float cached_trace_cost_at(const Location &l) const;
@@ -120,6 +124,12 @@ class BoardGrid {
 
     // Netclass mapping from DB netclasses, indices are aligned
     std::vector<GridNetclass> mGridNetclasses;
+
+    // Frontiers
+    //bool isABetterFrontierOfNext();
+
+    // bending cost
+    int getBendingCostOfNext(const Location &current, const Location &next) const;
 
     // trace_width
     float sized_trace_cost_at(const Location &l, const int traceRadius) const;
