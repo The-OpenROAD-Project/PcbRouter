@@ -56,6 +56,12 @@ int main(int argc, char *argv[]) {
     if (argc >= 7) {
         router.set_track_obstacle_weight(atof(argv[6]));
     }
+    if (argc >= 8) {
+        router.set_track_obstacle_step_size(atof(argv[7]));
+    }
+    if (argc >= 9) {
+        router.set_via_obstacle_step_size(atof(argv[8]));
+    }
     // router.testRouterWithPinShape();
     router.route();
 

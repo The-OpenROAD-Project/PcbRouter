@@ -38,6 +38,9 @@ class GridBasedRouter {
     void set_via_obstacle_weight(const double _voc) { GlobalParam::gViaInsertionCost = _voc; }
     void set_pad_obstacle_weight(const double _poc) { GlobalParam::gPinObstacleCost = _poc; }
 
+    void set_track_obstacle_step_size(const double _tocss) { GlobalParam::gStepTraObsCost = _tocss; }
+    void set_via_obstacle_step_size(const double _vocss) { GlobalParam::gStepViaObsCost = _vocss; }
+
     // Getter
     unsigned int get_grid_scale() { return GlobalParam::inputScale; }
     unsigned int get_num_iterations() { return GlobalParam::gNumRipUpReRouteIteration; }
