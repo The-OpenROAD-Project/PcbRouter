@@ -405,6 +405,38 @@ void GridBasedRouter::setupGridNetclass() {
             gridNetclass.setViaExpansion(gridNetclass.getHalfMicroViaDia());
         }
 
+        // Update Trace-end shape grids
+        double traceWidthFloating = dbLengthToGridLength(netclassIte.getTraceWidth());
+        int halfTraceWidth = gridNetclass.getHalfTraceWidth();
+        double halfTraceWidthFloating = traceWidthFloating / 2.0;
+        // WARNING!! Expanded cases // Not updated yet!!
+        // double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
+        // int halfViaDia = gridNetclass.getViaExpansion();
+        // double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+
+        // Calculate the trace-end shape grids
+        std::vector<Point_2D<int>> traceEndGrids;
+        getRasterizedCircle(halfTraceWidth, halfTraceWidthFloating, traceEndGrids);
+        gridNetclass.setTraceEndShapeGrids(traceEndGrids);
+
+        // Update trace searching grids
+        std::vector<Point_2D<int>> traceSearchingGrids;
+        int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
+        double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
+        std::cout << "traceSearchRadius: " << traceSearchRadius << ", traceSearchRadiusFloating: " << traceSearchRadiusFloating << std::endl;
+        // Expanded cases
+        // int traceSearchRadius = gridNetclass.getHalfTraceWidth();
+        // double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
+
+        // Calculate the trace searching grid
+        getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
+        gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
+        // Debugging
+        std::cout << "Relative trace searching grids points: " << std::endl;
+        for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
+            std::cout << pt << std::endl;
+        }
+
         // Update Via shape grids
         double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
         int halfViaDia = (int)floor((double)viaDia / 2.0);
@@ -424,6 +456,7 @@ void GridBasedRouter::setupGridNetclass() {
         gridNetclass.setViaShapeGrids(viaGrids);
 
         // Update via searching grids
+
         std::vector<Point_2D<int>> viaSearchingGrids;
         int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
         double viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
@@ -435,41 +468,15 @@ void GridBasedRouter::setupGridNetclass() {
             viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
         }
 
-        // Calculate the searching grid
-        getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
-        gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
-
-        // Update trace searching grids
-        std::vector<Point_2D<int>> traceSearchingGrids;
-        int traceSearchRadius = gridNetclass.getHalfTraceWidth() + gridNetclass.getClearance();
-        double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
-        std::cout << "traceSearchRadius: " << traceSearchRadius << ", traceSearchRadiusFloating: " << traceSearchRadiusFloating << std::endl;
-        // Expanded cases
-        // int traceSearchRadius = gridNetclass.getHalfTraceWidth();
-        // double traceSearchRadiusFloating = dbLengthToGridLength(netclassIte.getTraceWidth()) / 2.0;
-
-        // Calculate the searching grid
-        getRasterizedCircle(traceSearchRadius, traceSearchRadiusFloating, traceSearchingGrids);
-        gridNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
-        // Debugging
-        std::cout << "Relative trace searching grids points: " << std::endl;
-        for (auto &pt : gridNetclass.getTraceSearchingSpaceToGrids()) {
-            std::cout << pt << std::endl;
+        // Watch out the case of via size < trace size
+        if (viaSearchRadius <= traceSearchRadius || viaSearchRadiusFloating < traceSearchRadiusFloating) {
+            // Use trace searching grids instead
+            gridNetclass.setViaSearchingSpaceToGrids(traceSearchingGrids);
+        } else {
+            // Calculate the via searching grid
+            getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
+            gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
         }
-
-        // Update Trace-end shape grids
-        double traceWidthFloating = dbLengthToGridLength(netclassIte.getTraceWidth());
-        int halfTraceWidth = gridNetclass.getHalfTraceWidth();
-        double halfTraceWidthFloating = traceWidthFloating / 2.0;
-        // WARNING!! Expanded cases // Not updated yet!!
-        // double viaDiaFloating = dbLengthToGridLength(netclassIte.getViaDia());
-        // int halfViaDia = gridNetclass.getViaExpansion();
-        // double halfViaDiaFloating = viaDiaFloating / 2.0 + dbLengthToGridLength(netclassIte.getClearance());
-
-        // Calculate the trace-end shape grids
-        std::vector<Point_2D<int>> traceEndGrids;
-        getRasterizedCircle(halfTraceWidth, halfTraceWidthFloating, traceEndGrids);
-        gridNetclass.setTraceEndShapeGrids(traceEndGrids);
 
         // Setup incremental searching grids
         gridNetclass.setupTraceIncrementalSearchGrids();
@@ -703,6 +710,10 @@ void GridBasedRouter::route() {
     for (auto &net : nets) {
         // if (net.getId() != 31 && net.getId() != 18)
         //     continue;
+        // if (net.getId() != 26 /*&& net.getId() != 10*/)
+        //     continue;
+        // if (net.getId() != 19 && net.getId() != 7)
+        //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
@@ -720,7 +731,7 @@ void GridBasedRouter::route() {
         }
 
         // if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
-        //     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".removeSTPad." + this->getParamsNameTag();
+        //     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".Net_" + std::to_string(net.getId()) + ".removeSTPad." + this->getParamsNameTag();
         //     mBg.printMatPlot(mapNameTag);
         // }
 
@@ -733,6 +744,7 @@ void GridBasedRouter::route() {
         gridRoute.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
         gridRoute.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
         //mBg.set_current_rules(net.getNetclassId());
+        mBg.setCurrentNetId(net.getId());
 
         // Route the net
         mBg.addRouteWithGridPins(gridRoute);
