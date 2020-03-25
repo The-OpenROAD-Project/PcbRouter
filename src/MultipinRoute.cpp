@@ -51,6 +51,8 @@ void MultipinRoute::featuresToGridPaths() {
     // for (auto &feature : this->features) {
     //     std::cout << feature << std::endl;
     // }
+    // Debugging
+    // double estGridWL = 0.0;
 
     // 1. Separate the features into paths
     for (int i = 1; i < this->features.size(); ++i) {
@@ -71,6 +73,13 @@ void MultipinRoute::featuresToGridPaths() {
             (location.m_x == prevLocation.m_x && location.m_y == prevLocation.m_y && location.m_z != prevLocation.m_z)) {
             // If (is trace or is via)
             mGridPaths.back().mSegments.emplace_back(location);
+
+            // // Debugging
+            // if (abs(location.m_x - prevLocation.m_x) == 1 && abs(location.m_y - prevLocation.m_y) == 1) {
+            //     estGridWL += GlobalParam::gDiagonalCost;
+            // } else if (abs(location.m_x - prevLocation.m_x) == 1 || abs(location.m_y - prevLocation.m_y) == 1) {
+            //     estGridWL += 1.0;
+            // }
         } else {
             // New start of a path
             this->mGridPaths.push_back(GridPath{});
@@ -78,7 +87,7 @@ void MultipinRoute::featuresToGridPaths() {
         }
     }
 
-    // std::cout << __FUNCTION__ << "(): # paths: " << this->mGridPaths.size() << std::endl;
+    // std::cout << __FUNCTION__ << "(): # paths: " << this->mGridPaths.size() << ", estimated Grid WL: " << estGridWL << std::endl;
 
     // 2. Remove Redundant points in paths
     for (auto &path : this->mGridPaths) {
