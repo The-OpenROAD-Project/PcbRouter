@@ -469,7 +469,9 @@ void GridBasedRouter::setupGridNetclass() {
         }
 
         // Watch out the case of via size < trace size
-        if (viaSearchRadius <= traceSearchRadius || viaSearchRadiusFloating < traceSearchRadiusFloating) {
+        // std::cout << "viaSearchRadius: " << viaSearchRadius << ", viaSearchRadiusFloating: " << viaSearchRadiusFloating << std::endl;
+        // std::cout << "traceSearchRadius: " << traceSearchRadius << ", traceSearchRadiusFloating: " << traceSearchRadiusFloating << std::endl;
+        if (viaSearchRadiusFloating < traceSearchRadiusFloating) {
             // Use trace searching grids instead
             gridNetclass.setViaSearchingSpaceToGrids(traceSearchingGrids);
         } else {
