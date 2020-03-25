@@ -41,6 +41,7 @@ class BoardGrid {
 
     // constraints
     void setCurrentGridNetclassId(const int id) { currentGridNetclassId = id; }
+    void setCurrentNetId(const int id) { currentNetId = id; }
     void addGridNetclass(const GridNetclass &);
     GridNetclass &getGridNetclass(const int gridNetclassId);
     // Routing APIs
@@ -118,6 +119,7 @@ class BoardGrid {
     long long viaCachedHit = 0;
 
     int currentGridNetclassId;
+    int currentNetId;
     Location current_targeted_pin;
     //TODO:: Experiment on this...
     std::vector<Location> currentTargetedPinWithLayers;

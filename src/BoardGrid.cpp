@@ -464,8 +464,9 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
                 // std::cout << "Better Cost at Location " << next.second << ", with Cost: " << new_cost << ", est Cost: " << estCost << ", bend Cost: " << bendCost << ", key value: " << keyValue << std::endl;
 
                 // Show if the target is reached
-                if (estCost < 0.5) {
-                    std::cout << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+                if (isTargetedPin(next.second)) {
+                    std::cout << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", bend Cost: " << bendCost
+                              << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
                 }
             }
         }
@@ -1121,7 +1122,7 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
     cost = 0.0;
     // Check through hole via
     for (int z = 0; z < this->l; ++z) {
-        for (auto gridPt : viaRelativeSearchGrids) {
+        for (auto &gridPt : viaRelativeSearchGrids) {
             Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), z);
             if (!validate_location(current_l)) {
                 cost += GlobalParam::gViaTouchBoundaryCost;
@@ -1263,7 +1264,7 @@ bool BoardGrid::sizedViaExpandableAndIncrementalCost(const Location &curLoc, con
 
 float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> &traRelativeSearchGrids) const {
     float cost = 0.0;
-    for (auto gridPt : traRelativeSearchGrids) {
+    for (auto &gridPt : traRelativeSearchGrids) {
         Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
         if (!validate_location(current_l)) {
             cost += GlobalParam::gTraceTouchBoundaryCost;
@@ -1823,7 +1824,9 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         // std::cout << "New Features:" << std::endl;
         for (Location f : new_features) {
             route.features.push_back(f);
-            // std::cout << f << std::endl;
+            // if (currentNetId == 19) {
+            //     std::cout << f << std::endl;
+            // }
         }
 
         // For early break
