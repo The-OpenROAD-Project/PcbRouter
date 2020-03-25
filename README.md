@@ -34,7 +34,7 @@ mkdir output
 
 Output
 ```
-Routing results are in output/ folder
+Routing results are in the output/ folder
 ```
 
 ## License
