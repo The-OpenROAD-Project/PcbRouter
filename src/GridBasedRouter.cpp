@@ -1072,6 +1072,8 @@ std::string GridBasedRouter::getParamsNameTag() {
     ret += "_to_" + std::to_string((int)get_track_obstacle_weight());
     ret += "_vo_" + std::to_string((int)get_via_obstacle_weight());
     ret += "_po_" + std::to_string((int)get_pad_obstacle_weight());
+    ret += "_tss_" + std::to_string((int)get_track_obstacle_step_size());
+    ret += "_vss_" + std::to_string((int)get_via_obstacle_step_size());
     return ret;
 }
 

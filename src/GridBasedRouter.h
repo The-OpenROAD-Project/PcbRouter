@@ -53,6 +53,8 @@ class GridBasedRouter {
     double get_track_obstacle_weight() { return GlobalParam::gTraceBasicCost; }
     double get_via_obstacle_weight() { return GlobalParam::gViaInsertionCost; }
     double get_pad_obstacle_weight() { return GlobalParam::gPinObstacleCost; }
+    double get_track_obstacle_step_size() { return GlobalParam::gStepTraObsCost; }
+    double get_via_obstacle_step_size() { return GlobalParam::gStepViaObsCost; }
 
     double get_total_cost() { return bestTotalRouteCost; }
     double get_routed_wirelength();
