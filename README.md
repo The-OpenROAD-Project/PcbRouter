@@ -1,23 +1,41 @@
+# PcbRouter
+
+Printed Circuit Board (PCB) router
+
 ### Prerequisites
 
 - GCC >=4.8
 - G++ >= 4.8
-```
-export CXX=g++
-```
 - SWIG >= 2.0
-```
-sudo apt-get update
-sudo apt-get install swig
-```
 - Boost >= 1.6
-```
-sudo apt-get update
-sudo apt-get install libboost-all-dev
-```
 - CMake >= 3.1
+- Current support for .kicad_pcb format derived from KiCad v5.1.2
+
+### Installing
+
+Clone
 ```
-sudo apt-get update
-sudo apt-get install cmake
+git clone --recurse-submodules https://github.com/The-OpenROAD-Project/PcbRouter.git
 ```
-- Current support for kicad_pcb format derived from KiCad v5.1.2
+
+Build
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+
+Run
+```
+mkdir output
+./bin/pcbrouter [input_filename].kicad_pcb 
+```
+
+Output
+```
+Routing results are in output/ folder
+```
+
+## License
+  * BSD-3-clause License [[Link]](LICENSE)
