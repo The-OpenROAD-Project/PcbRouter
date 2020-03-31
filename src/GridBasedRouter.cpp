@@ -358,8 +358,8 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
 void GridBasedRouter::setupLayerMapping() {
     // Setup layer mappings
     for (auto &layerIte : mDb.getCopperLayers()) {
-        std::cout << "Grid layer: " << mGridLayerToName.size() << ", mapped to DB: " << layerIte.second << std::endl;
-        mLayerNameToGrid[layerIte.second] = mGridLayerToName.size();
+        std::cout << "Grid layer Id: " << mGridLayerToName.size() << ", mapped to DB: " << layerIte.second << std::endl;
+        mLayerNameToGridLayer[layerIte.second] = mGridLayerToName.size();
         mDbLayerIdToGridLayer[layerIte.first] = mGridLayerToName.size();
         mGridLayerToName.push_back(layerIte.second);
     }

@@ -122,7 +122,7 @@ class GridBasedRouter {
 
     // Layer mapping
     std::vector<std::string> mGridLayerToName;
-    std::unordered_map<std::string, int> mLayerNameToGrid;
+    std::unordered_map<std::string, int> mLayerNameToGridLayer;
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
 
     // Put below in the BoardGrid?

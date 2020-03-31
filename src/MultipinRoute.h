@@ -56,6 +56,7 @@ class MultipinRoute {
     std::vector<Location> features;  // Make this obsolete, please
     std::vector<GridPin> mGridPins;
 
+    // Cost along with this net
     double curTrackObstacleCost = 0.0;
     double curViaObstacleCost = 0.0;
 
