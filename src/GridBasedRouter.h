@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "BoardGrid.h"
 #include "globalParam.h"
 #include "kicadPcbDataBase.h"
@@ -120,15 +121,15 @@ class GridBasedRouter {
     BoardGrid mBg;
     kicadPcbDataBase &mDb;
 
-    // Layer mapping
+    // Layer mapping between DB and BoardGrid
     std::vector<std::string> mGridLayerToName;
     std::unordered_map<std::string, int> mLayerNameToGridLayer;
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
 
-    // Put below in the BoardGrid?
     // Global GridPins including the pins aren't connected by nets
     std::vector<GridPin> mGridPins;
-    // TODO:: Improve the below......
+
+    // Routing results from iterations
     std::vector<MultipinRoute> gridNets;
     std::vector<MultipinRoute> bestSolution;
     std::vector<std::vector<MultipinRoute> > routingSolutions;

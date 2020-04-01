@@ -37,6 +37,7 @@ int GridBasedRouter::get_routed_num_bends(std::vector<MultipinRoute> &mpr) {
     return overallNumBends;
 }
 
+// deprecated
 bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs) {
     if (!ofs)
         return false;
@@ -695,11 +696,8 @@ void GridBasedRouter::route() {
     this->setupGridNetsAndGridPins();
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
-    // this->addAllPinCostToGrid(0);
     for (auto &gridPin : this->mGridPins) {
         this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
-        // Try below to disable via forbidden
-        // this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
     }
 
     std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + this->getParamsNameTag();
@@ -710,10 +708,6 @@ void GridBasedRouter::route() {
     bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        // if (net.getId() != 31 && net.getId() != 18)
-        //     continue;
-        // if (net.getId() != 26 /*&& net.getId() != 10*/)
-        //     continue;
         // if (net.getId() != 19 && net.getId() != 7)
         //     continue;
 
@@ -721,7 +715,6 @@ void GridBasedRouter::route() {
         if (net.getPins().size() < 2)
             continue;
 
-        //this->gridNets.push_back(MultipinRoute{net.getId()});
         auto &gridRoute = this->gridNets.at(net.getId());
         if (net.getId() != gridRoute.netId)
             std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
@@ -745,7 +738,6 @@ void GridBasedRouter::route() {
         mBg.setCurrentGridNetclassId(net.getNetclassId());
         gridRoute.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
         gridRoute.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
-        //mBg.set_current_rules(net.getNetclassId());
         mBg.setCurrentNetId(net.getId());
 
         // Route the net
@@ -783,7 +775,6 @@ void GridBasedRouter::route() {
             if (net.getPins().size() < 2)
                 continue;
 
-            //auto &gridRoute = gridNets.at(rippedUpGridNetId);
             auto &gridRoute = gridNets.at(net.getId());
             if (net.getId() != gridRoute.netId)
                 std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
@@ -792,7 +783,6 @@ void GridBasedRouter::route() {
 
             // Temporary reomve the pin cost on the cost grid
             for (auto &gridPin : gridRoute.mGridPins) {
-                // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
                 this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
             }
 
@@ -801,7 +791,6 @@ void GridBasedRouter::route() {
                 continue;
             }
             mBg.setCurrentGridNetclassId(net.getNetclassId());
-            //mBg.set_current_rules(net.getNetclassId());
 
             // Rip-up and re-route
             mBg.ripup_route(gridRoute);
@@ -814,7 +803,6 @@ void GridBasedRouter::route() {
 
             // Put back the pin cost on base cost grid
             for (auto &gridPin : gridRoute.mGridPins) {
-                // addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
                 this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
             }
         }
@@ -853,9 +841,7 @@ void GridBasedRouter::route() {
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
               << std::endl;
 
-    // Routing has done
-    // Print the final base cost
-    //mBg.printGnuPlot();
+    // Routing has done. Print the final base cost
     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + this->getParamsNameTag();
     mBg.printMatPlot(mapNameTag);
 
@@ -886,7 +872,7 @@ void GridBasedRouter::testRouterWithPinShape() {
 
     // Routing has done
     // Print the final base cost
-    mBg.printGnuPlot();
+    // mBg.printGnuPlot();
     mBg.printMatPlot();
 
     // Output final result to KiCad file
