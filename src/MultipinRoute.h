@@ -58,10 +58,12 @@ class MultipinRoute {
     int netId = -1;
     int gridNetclassId = -1;
     float currentRouteCost = 0.0;
-    // std::vector<Location> features;  // Make this obsolete, please
     std::vector<GridPin> mGridPins;
     std::vector<GridPath> mGridPaths;
     // std::vector<Location> vias; //TODO
+
+    // deprecated, will clean up later
+    std::vector<Location> features;  // Make this obsolete, please
 
     // Cost along with this net
     double curTrackObstacleCost = 0.0;
