@@ -172,9 +172,6 @@ class BoardGrid {
     void initializeFrontiers(const MultipinRoute &route, LocationQueue<Location, float> &frontier);
     void initializeLocationToFrontier(const Location &start, LocationQueue<Location, float> &frontier);
 
-    void breadth_first_search(const Location &start, const Location &end);
-    std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
-
     int locationToId(const Location &l) const;
     void idToLocation(const int id, Location &l) const;
 };
