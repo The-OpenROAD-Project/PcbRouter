@@ -129,6 +129,7 @@ bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::o
     return true;
 }
 
+// deprecated
 bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs) {
     if (!ofs)
         return false;
@@ -160,7 +161,7 @@ bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipi
         }
 
         // Convert from features to grid paths
-        mpNet.featuresToGridPaths();
+        // mpNet.featuresToGridPaths();
 
         auto &netclass = mDb.getNetclass(net.getNetclassId());
         double netEstWL = 0.0;
@@ -245,12 +246,11 @@ void GridBasedRouter::writeSolutionBackToDbAndSaveOutput(const std::string fileN
             continue;
         }
 
-        if (mpNet.features.empty()) {
-            continue;
-        }
-
         // Convert from features to grid paths
-        mpNet.featuresToGridPaths();
+        // if (mpNet.features.empty()) {
+        //     continue;
+        // }
+        // mpNet.featuresToGridPaths();
 
         // Clear current net's segments and vias
         net.clearSegments();

@@ -24,6 +24,18 @@ int MultipinRoute::getRoutedNumBends() {
     return numRoutedBends;
 }
 
+void MultipinRoute::gridPathLocationsToSegments() {
+    // 1. Copy GridPath's Locations into Segments
+    for (auto &gp : this->mGridPaths) {
+        gp.copyLocationsToSegments();
+    }
+
+    // 2. Remove Redundant points in paths
+    for (auto &gp : this->mGridPaths) {
+        gp.removeRedundantPoints();
+    }
+}
+
 void MultipinRoute::featuresToGridPaths() {
     if (this->features.empty() || this->features.size() == 1) {
         cerr << __FUNCTION__ << "(): No features to translate to segments. Features.size(): " << this->features.size() << std::endl;

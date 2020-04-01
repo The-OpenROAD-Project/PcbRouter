@@ -476,6 +476,128 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
     std::cout << "=> Find the target with cost at " << bestCostWhenReachTarget << std::endl;
 }
 
+void BoardGrid::aStarSearching(MultipinRoute &route, Location &finalEnd, float &finalCost) {
+    std::cout << __FUNCTION__ << "() nets: route.mGridPaths.size() = " << route.mGridPaths.size() << std::endl;
+
+    this->working_cost_fill(std::numeric_limits<float>::infinity());
+    this->bending_cost_fill(0);
+
+    float bestCostWhenReachTarget = std::numeric_limits<float>::max();
+    LocationQueue<Location, float> frontier;  // search frontier
+
+    // For path to multiple points
+    // Searches from the multiple points to every other point
+    // this->initializeFrontiers(route, frontier);
+    this->initializeFrontiers(route, frontier);
+
+    std::cout << " frontier.size(): " << frontier.size() << ", current targeted pin:  " << std::endl;
+    for (auto pt : currentTargetedPinWithLayers) {
+        std::cout << "  " << pt << std::endl;
+    }
+
+    // int numPopLocation = 0;
+
+    while (!frontier.empty()) {
+        Location current = frontier.front();
+
+        // A* termination
+        if (isTargetedPin(current)) {
+            bestCostWhenReachTarget = frontier.frontKey();
+            finalEnd = current;
+            finalCost = bestCostWhenReachTarget;
+            std::cout << "=> Find the target: " << current << " with cost at " << bestCostWhenReachTarget << std::endl;
+            return;
+        }
+
+        frontier.pop();
+
+        std::vector<std::pair<float, Location>> neighbors;
+        this->getNeighbors(current, neighbors);
+        float current_cost = this->working_cost_at(current);
+
+        for (std::pair<float, Location> &next : neighbors) {
+            float new_cost = current_cost + next.first;  // Can be optimized!!!!
+
+            //float estCost = getEstimatedCost(next.second);
+            // Test bending cost
+            float estCost = getEstimatedCostWithBendingCost(current, next.second);
+            int bendCost = getBendingCostOfNext(current, next.second);
+
+            // Test bending cost + multi-layers (3D estimation cost)
+            // float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
+
+            if (new_cost + bendCost < this->working_cost_at(next.second) + this->bending_cost_at(next.second)) {
+                //if () {
+                this->working_cost_set(new_cost, next.second);
+                this->bending_cost_set(bendCost, next.second);
+                this->setCameFromId(next.second, this->locationToId(current));
+
+                frontier.push(next.second, new_cost + estCost + bendCost);
+
+                // float keyValue = new_cost + estCost + bendCost;
+                // std::cout << "Better Cost at Location " << next.second << ", with Cost: " << new_cost << ", est Cost: " << estCost << ", bend Cost: " << bendCost << ", key value: " << keyValue << std::endl;
+
+                // Show if the target is reached
+                if (isTargetedPin(next.second)) {
+                    std::cout << "Find target with estCost = " << estCost << ", walkedCost = " << new_cost << ", bend Cost: " << bendCost
+                              << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+                }
+            }
+        }
+    }
+}
+
+void BoardGrid::initializeFrontiers(const MultipinRoute &route, LocationQueue<Location, float> &frontier) {
+    if (route.getGridPaths().empty()) {
+        // First pair of routing
+        for (const auto &pt : route.mGridPins.front().pinWithLayers) {
+            initializeLocationToFrontier(pt, frontier);
+        }
+        return;
+    }
+
+    for (const auto &gp : route.getGridPaths()) {
+        const auto &locations = gp.getLocations();
+        if (locations.size() == 1) {
+            initializeLocationToFrontier(locations.front(), frontier);
+            continue;
+        }
+
+        auto pointIte = ++locations.begin();
+        auto prevPointIte = locations.begin();
+
+        for (; pointIte != locations.end();) {
+            // TODO: Through hole pins? how to put layers of through hole pins into frontier
+            if (pointIte->m_x == prevPointIte->m_x && pointIte->m_y == prevPointIte->m_y && pointIte->m_z != prevPointIte->m_z) {
+                // A via
+                if (GlobalParam::gUseMircoVia) {
+                    // Micro vias / Blind/buried vias
+                    for (int z = std::min(pointIte->m_z, prevPointIte->m_z); z <= std::max(pointIte->m_z, prevPointIte->m_z); ++z) {
+                        Location viaLocationOnALayer{pointIte->m_x, pointIte->m_y, z};
+                        initializeLocationToFrontier(viaLocationOnALayer, frontier);
+                    }
+                } else {
+                    // Put all the layers (through hole via) into the frontiers
+                    for (int z = 0; z < this->l; ++z) {
+                        Location viaLocationOnALayer{pointIte->m_x, pointIte->m_y, z};
+                        initializeLocationToFrontier(viaLocationOnALayer, frontier);
+                    }
+                }
+            } else {
+                // Normal points
+                initializeLocationToFrontier(*pointIte, frontier);
+
+                if (prevPointIte == locations.begin()) {
+                    initializeLocationToFrontier(*prevPointIte, frontier);
+                }
+            }
+
+            ++pointIte;
+            ++prevPointIte;
+        }
+    }
+}
+
 void BoardGrid::initializeFrontiers(const std::vector<Location> &route, LocationQueue<Location, float> &frontier) {
     if (route.empty()) {
         return;
@@ -1687,6 +1809,38 @@ void BoardGrid::came_from_to_features(const Location &end,
     std::cout << "Finished came_from_to_features ID" << std::endl;
 }
 
+void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route) const {
+    std::cout << __FUNCTION__ << ": Starting backtracking and create new GridPath" << std::endl;
+
+    if (!this->validate_location(end)) {
+        std::cout << __FUNCTION__ << "Bad final end" << std::endl;
+    }
+
+    GridPath &gp = route.getNewGridPath();
+
+    gp.addLocation(end);
+    // features.push_back(end);
+    Location current = end;
+    int currentId = this->locationToId(current);
+    int nextId = this->getCameFromId(currentId);
+
+    while (nextId != -1) {
+        if (nextId == currentId) {
+            break;
+        }
+
+        Location next;
+        this->idToLocation(nextId, next);
+
+        // features.push_back(next);
+        gp.addLocation(next);
+        currentId = nextId;
+        nextId = this->getCameFromId(currentId);
+    }
+
+    std::cout << __FUNCTION__ << ": End of backtracking and create new GridPath" << std::endl;
+}
+
 std::vector<Location> BoardGrid::came_from_to_features(
     const std::unordered_map<Location, Location> &came_from,
     const Location &end) const {
@@ -1803,31 +1957,39 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         // via size is half_width
         Location finalEnd{0, 0, 0};
         float routeCost = 0.0;
-        if (route.features.empty()) {
-            std::cout << " A* Start from: " << std::endl;
-            for (auto pt : route.mGridPins.front().pinWithLayers) {
-                std::cout << "  " << pt << std::endl;
-                // Initialize the pin grids' obstacle costs
-                // For incremental cost update of trace
-                this->cached_trace_cost_set(sized_trace_cost_at(pt, traceRelativeSearchGrids), pt);
-            }
-            this->aStarWithGridCameFrom(route.mGridPins.front().pinWithLayers, finalEnd, routeCost);
-        } else {
-            this->aStarWithGridCameFrom(route.features, finalEnd, routeCost);
-        }
+        // if (route.features.empty()) {
+        //     std::cout << " A* Start from: " << std::endl;
+        //     for (auto pt : route.mGridPins.front().pinWithLayers) {
+        //         std::cout << "  " << pt << std::endl;
+        //         // Initialize the pin grids' obstacle costs
+        //         // For incremental cost update of trace
+        //         this->cached_trace_cost_set(sized_trace_cost_at(pt, traceRelativeSearchGrids), pt);
+        //     }
+        //     this->aStarWithGridCameFrom(route.mGridPins.front().pinWithLayers, finalEnd, routeCost);
+        // } else {
+        //     this->aStarWithGridCameFrom(route.features, finalEnd, routeCost);
+        // }
+        this->aStarSearching(route, finalEnd, routeCost);
+
         route.currentRouteCost += routeCost;
 
         std::vector<Location> new_features;
         // TODO Fix this, when THROUGH PAD as a start?
-        this->came_from_to_features(finalEnd, new_features);
+        // this->came_from_to_features(finalEnd, new_features);
+        this->backtrackingToGridPath(finalEnd, route);
 
         // std::cout << "New Features:" << std::endl;
-        for (Location f : new_features) {
-            route.features.push_back(f);
-            // if (currentNetId == 19) {
-            //     std::cout << f << std::endl;
-            // }
-        }
+        // auto gpPointIte = route.getGridPaths().back().getLocations().begin();
+        // for (Location f : new_features) {
+        //     route.features.push_back(f);
+        //     if (currentNetId == 19 || true) {
+        //         std::cout << f << ", GridPath: " << *gpPointIte << std::endl;
+        //         if (f != *gpPointIte) {
+        //             std::cerr << "!!!!@#%$$!%#%^&!%#@*^&!@#" << std::endl;
+        //         }
+        //     }
+        //     ++gpPointIte;
+        // }
 
         // For early break
         this->clearTargetedPins(route.mGridPins.at(i).pinWithLayers);
@@ -1837,21 +1999,23 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         currentTargetedPinWithLayers.clear();
     }
     // Convert from features to grid paths
-    route.featuresToGridPaths();
+    // route.featuresToGridPaths();
+    route.gridPathLocationsToSegments();
     this->add_route_to_base_cost(route);
 }
 
 void BoardGrid::ripup_route(MultipinRoute &route) {
     std::cout << "Doing ripup" << std::endl;
     // Basic checking on the routed features
-    for (Location l : route.features) {
-        if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l) {
-            std::cout << "Bad route to ripup: " << l << std::endl;
-            return;
-        }
-    }
+    // for (Location l : route.features) {
+    //     if (l.m_x > this->w || l.m_y > this->h || l.m_z > this->l) {
+    //         std::cout << "Bad route to ripup: " << l << std::endl;
+    //         return;
+    //     }
+    // }
     this->remove_route_from_base_cost(route);
-    route.features.clear();
+    // route.features.clear();
+    route.clearGridPaths();
     std::cout << "Finished ripup" << std::endl;
 }
 

@@ -2,6 +2,7 @@
 #define PCBROUTER_MULTI_PIN_ROUTE_H
 
 #include <vector>
+
 #include "GridPath.h"
 #include "GridPin.h"
 #include "globalParam.h"
@@ -20,8 +21,12 @@ class MultipinRoute {
     }
 
     void featuresToGridPaths();
+    void gridPathLocationsToSegments();
+
     int getGridNetclassId() const { return gridNetclassId; }
+
     const std::vector<GridPath> &getGridPaths() const { return mGridPaths; }
+    void clearGridPaths() { mGridPaths.clear(); }
 
     GridPath &getNewGridPath() {
         mGridPaths.push_back(GridPath{});

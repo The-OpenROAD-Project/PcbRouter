@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 #include "GridCell.h"
 #include "GridNetclass.h"
 #include "GridPath.h"
@@ -156,6 +157,7 @@ class BoardGrid {
     void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
     std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
     void came_from_to_features(const Location &end, std::vector<Location> &features) const;
+    void backtrackingToGridPath(const Location &end, MultipinRoute &route) const;
 
     void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns);
 
@@ -164,8 +166,12 @@ class BoardGrid {
     void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
     void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
     void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost);
+    void aStarSearching(MultipinRoute &route, Location &finalEnd, float &finalCost);
+
     void initializeFrontiers(const std::vector<Location> &route, LocationQueue<Location, float> &frontier);
+    void initializeFrontiers(const MultipinRoute &route, LocationQueue<Location, float> &frontier);
     void initializeLocationToFrontier(const Location &start, LocationQueue<Location, float> &frontier);
+
     void breadth_first_search(const Location &start, const Location &end);
     std::unordered_map<Location, Location> breadth_first_search_with_came_from(const Location &start, const Location &end);
 
