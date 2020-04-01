@@ -101,10 +101,11 @@ class BoardGrid {
     }
     void printGnuPlot();
     void printMatPlot(const std::string fileNameTag = "");
-    void pprint();
-    void print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end);
-    void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);
-    void print_features(std::vector<Location> features);
+
+    // void pprint();
+    // void print_came_from(const std::unordered_map<Location, Location> &came_from, const Location &end);
+    // void print_route(const std::unordered_map<Location, Location> &came_from, const Location &end);
+    // void print_features(std::vector<Location> features);
 
     void showViaCachePerformance() {
         std::cout << "# Via Cost Cached Miss: " << this->viaCachedMissed << std::endl;
@@ -151,20 +152,20 @@ class BoardGrid {
 
     void add_route_to_base_cost(const MultipinRoute &route);
     void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
-    void addGridPathToBaseCost(const GridPath &route, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost);
     void remove_route_from_base_cost(const MultipinRoute &route);
+    void addGridPathToBaseCost(const GridPath &route, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost);
 
-    void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
-    std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
-    void came_from_to_features(const Location &end, std::vector<Location> &features) const;
+    // void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
+    // std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
+    // void came_from_to_features(const Location &end, std::vector<Location> &features) const;
     void backtrackingToGridPath(const Location &end, MultipinRoute &route) const;
 
     void getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns);
 
-    std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
-    std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
-    void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
-    void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
+    // std::unordered_map<Location, Location> dijkstras_with_came_from(const Location &start, int via_size);
+    // std::unordered_map<Location, Location> dijkstras_with_came_from(const std::vector<Location> &route, int via_size);
+    // void dijkstras_with_came_from(const std::vector<Location> &route, int via_size, std::unordered_map<Location, Location> &came_from);
+    // void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
     void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost);
     void aStarSearching(MultipinRoute &route, Location &finalEnd, float &finalCost);
 

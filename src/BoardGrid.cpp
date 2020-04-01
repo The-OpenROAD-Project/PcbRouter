@@ -268,134 +268,134 @@ void BoardGrid::clearViaForbiddenArea(const std::vector<Location> &locations) {
     }
 }
 
-std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
-    const std::vector<Location> &route, int via_size) {
-    std::unordered_map<Location, Location> came_from;
-    this->dijkstras_with_came_from(route, via_size, came_from);
-    return came_from;
-}
+// std::unordered_map<Location, Location> BoardGrid::dijkstras_with_came_from(
+//     const std::vector<Location> &route, int via_size) {
+//     std::unordered_map<Location, Location> came_from;
+//     this->dijkstras_with_came_from(route, via_size, came_from);
+//     return came_from;
+// }
 
-void BoardGrid::dijkstras_with_came_from(
-    const std::vector<Location> &route, int via_size,
-    std::unordered_map<Location, Location> &came_from) {
-    std::cout << __FUNCTION__
-              << "() nets: route.features.size() = " << route.size()
-              << std::endl;
+// void BoardGrid::dijkstras_with_came_from(
+//     const std::vector<Location> &route, int via_size,
+//     std::unordered_map<Location, Location> &came_from) {
+//     std::cout << __FUNCTION__
+//               << "() nets: route.features.size() = " << route.size()
+//               << std::endl;
 
-    // For path to multiple points
-    // Searches from the multiple points to every other point
-    this->working_cost_fill(std::numeric_limits<float>::infinity());
+//     // For path to multiple points
+//     // Searches from the multiple points to every other point
+//     this->working_cost_fill(std::numeric_limits<float>::infinity());
 
-    LocationQueue<Location, float> frontier;  // search frontier
-    // std::unordered_map<Location, Location> came_from; // cheapest neighbor
-    for (Location start : route) {
-        this->working_cost_set(0.0, start);
-        frontier.push(start, 0.0);
-        // came_from[start] = start;
-        this->setCameFromId(start, this->locationToId(start));
-    }
+//     LocationQueue<Location, float> frontier;  // search frontier
+//     // std::unordered_map<Location, Location> came_from; // cheapest neighbor
+//     for (Location start : route) {
+//         this->working_cost_set(0.0, start);
+//         frontier.push(start, 0.0);
+//         // came_from[start] = start;
+//         this->setCameFromId(start, this->locationToId(start));
+//     }
 
-    std::cout << "came_from.size() = " << came_from.size()
-              << ", frontier.size(): " << frontier.size() << std::endl;
+//     std::cout << "came_from.size() = " << came_from.size()
+//               << ", frontier.size(): " << frontier.size() << std::endl;
 
-    while (!frontier.empty()) {
-        Location current = frontier.front();
-        frontier.pop();
+//     while (!frontier.empty()) {
+//         Location current = frontier.front();
+//         frontier.pop();
 
-        // std::cout << "Visiting " << current << ", frontierSize: "<<
-        // frontier.size() << std::endl;
-        std::vector<std::pair<float, Location>> neighbors;
-        this->getNeighbors(current, neighbors);
+//         // std::cout << "Visiting " << current << ", frontierSize: "<<
+//         // frontier.size() << std::endl;
+//         std::vector<std::pair<float, Location>> neighbors;
+//         this->getNeighbors(current, neighbors);
 
-        for (std::pair<float, Location> next : neighbors) {
-            if ((next.second.m_x < 0) || (next.second.m_x >= this->w) ||
-                (next.second.m_y < 0) || (next.second.m_y >= this->h) ||
-                (next.second.m_z < 0) || (next.second.m_z >= this->l)) {
-                continue;  // continue if out of bounds
-            }
-            // std::cerr << "next.second.m_x: " << next.second.m_x << std::endl;
-            // std::cerr << "next.second.m_y: " << next.second.m_y << std::endl;
-            // std::cerr << "next.second.m_z: " << next.second.m_z << std::endl;
+//         for (std::pair<float, Location> next : neighbors) {
+//             if ((next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+//                 (next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+//                 (next.second.m_z < 0) || (next.second.m_z >= this->l)) {
+//                 continue;  // continue if out of bounds
+//             }
+//             // std::cerr << "next.second.m_x: " << next.second.m_x << std::endl;
+//             // std::cerr << "next.second.m_y: " << next.second.m_y << std::endl;
+//             // std::cerr << "next.second.m_z: " << next.second.m_z << std::endl;
 
-            // std::cerr << "geting new cost" << std::endl;
+//             // std::cerr << "geting new cost" << std::endl;
 
-            // this->via_cost_at(next.second) ??????????
-            float new_cost = this->working_cost_at(current) +
-                             this->base_cost_at(next.second) +
-                             this->via_cost_at(next.second) + next.first;
+//             // this->via_cost_at(next.second) ??????????
+//             float new_cost = this->working_cost_at(current) +
+//                              this->base_cost_at(next.second) +
+//                              this->via_cost_at(next.second) + next.first;
 
-            // std::cerr << "Done" << std::endl;
+//             // std::cerr << "Done" << std::endl;
 
-            if (new_cost < this->working_cost_at(next.second)) {
-                // std::cerr << "setting working cost" << std::endl;
-                this->working_cost_set(new_cost, next.second);
-                // came_from[next.second] = current;
-                this->setCameFromId(next.second, this->locationToId(current));
+//             if (new_cost < this->working_cost_at(next.second)) {
+//                 // std::cerr << "setting working cost" << std::endl;
+//                 this->working_cost_set(new_cost, next.second);
+//                 // came_from[next.second] = current;
+//                 this->setCameFromId(next.second, this->locationToId(current));
 
-                frontier.push(next.second, new_cost);
-                // std::cerr << "Done" << std::endl;
-            }
+//                 frontier.push(next.second, new_cost);
+//                 // std::cerr << "Done" << std::endl;
+//             }
 
-            // std::cerr << std::endl;
-        }
-    }
-    // std::cerr << "finished dijkstras_with_came_from" << std::endl;
-}
+//             // std::cerr << std::endl;
+//         }
+//     }
+//     // std::cerr << "finished dijkstras_with_came_from" << std::endl;
+// }
 
-void BoardGrid::dijkstrasWithGridCameFrom(const std::vector<Location> &route,
-                                          int via_size) {
-    std::cout << __FUNCTION__
-              << "() nets: route.features.size() = " << route.size()
-              << std::endl;
+// void BoardGrid::dijkstrasWithGridCameFrom(const std::vector<Location> &route,
+//                                           int via_size) {
+//     std::cout << __FUNCTION__
+//               << "() nets: route.features.size() = " << route.size()
+//               << std::endl;
 
-    // For path to multiple points
-    // Searches from the multiple points to every other point
-    this->working_cost_fill(std::numeric_limits<float>::infinity());
+//     // For path to multiple points
+//     // Searches from the multiple points to every other point
+//     this->working_cost_fill(std::numeric_limits<float>::infinity());
 
-    LocationQueue<Location, float> frontier;  // search frontier
-    for (Location start : route) {
-        this->working_cost_set(0.0, start);
-        frontier.push(start, 0.0);
-        // Set a ending for the backtracking
-        this->setCameFromId(start, this->locationToId(start));
-    }
+//     LocationQueue<Location, float> frontier;  // search frontier
+//     for (Location start : route) {
+//         this->working_cost_set(0.0, start);
+//         frontier.push(start, 0.0);
+//         // Set a ending for the backtracking
+//         this->setCameFromId(start, this->locationToId(start));
+//     }
 
-    std::cout << " frontier.size(): " << frontier.size() << std::endl;
+//     std::cout << " frontier.size(): " << frontier.size() << std::endl;
 
-    while (!frontier.empty()) {
-        Location current = frontier.front();
-        frontier.pop();
+//     while (!frontier.empty()) {
+//         Location current = frontier.front();
+//         frontier.pop();
 
-        // std::cout << "Visiting " << current << ", frontierSize: "<<
-        // frontier.size() << std::endl;
-        std::vector<std::pair<float, Location>> neighbors;
-        this->getNeighbors(current, neighbors);
+//         // std::cout << "Visiting " << current << ", frontierSize: "<<
+//         // frontier.size() << std::endl;
+//         std::vector<std::pair<float, Location>> neighbors;
+//         this->getNeighbors(current, neighbors);
 
-        for (std::pair<float, Location> next : neighbors) {
-            if ((next.second.m_x < 0) || (next.second.m_x >= this->w) ||
-                (next.second.m_y < 0) || (next.second.m_y >= this->h) ||
-                (next.second.m_z < 0) || (next.second.m_z >= this->l)) {
-                continue;  // continue if out of bounds
-            }
-            // std::cerr << "next.second.m_x: " << next.second.m_x << std::endl;
-            // std::cerr << "next.second.m_y: " << next.second.m_y << std::endl;
-            // std::cerr << "next.second.m_z: " << next.second.m_z << std::endl;
+//         for (std::pair<float, Location> next : neighbors) {
+//             if ((next.second.m_x < 0) || (next.second.m_x >= this->w) ||
+//                 (next.second.m_y < 0) || (next.second.m_y >= this->h) ||
+//                 (next.second.m_z < 0) || (next.second.m_z >= this->l)) {
+//                 continue;  // continue if out of bounds
+//             }
+//             // std::cerr << "next.second.m_x: " << next.second.m_x << std::endl;
+//             // std::cerr << "next.second.m_y: " << next.second.m_y << std::endl;
+//             // std::cerr << "next.second.m_z: " << next.second.m_z << std::endl;
 
-            // this->via_cost_at(next.second) ??????????
-            float new_cost = this->working_cost_at(current) +
-                             this->base_cost_at(next.second) +
-                             this->via_cost_at(next.second) + next.first;
+//             // this->via_cost_at(next.second) ??????????
+//             float new_cost = this->working_cost_at(current) +
+//                              this->base_cost_at(next.second) +
+//                              this->via_cost_at(next.second) + next.first;
 
-            if (new_cost < this->working_cost_at(next.second)) {
-                // std::cerr << "setting working cost" << std::endl;
-                this->working_cost_set(new_cost, next.second);
-                this->setCameFromId(next.second, this->locationToId(current));
+//             if (new_cost < this->working_cost_at(next.second)) {
+//                 // std::cerr << "setting working cost" << std::endl;
+//                 this->working_cost_set(new_cost, next.second);
+//                 this->setCameFromId(next.second, this->locationToId(current));
 
-                frontier.push(next.second, new_cost);
-            }
-        }
-    }
-}
+//                 frontier.push(next.second, new_cost);
+//             }
+//         }
+//     }
+// }
 
 void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost) {
     std::cout << __FUNCTION__ << "() nets: route.features.size() = " << route.size() << std::endl;
@@ -1187,35 +1187,35 @@ void BoardGrid::printMatPlot(const std::string fileNameTag) {
     }
 }
 
-void BoardGrid::pprint() {
-    char colors[11] = " .,:=+*#%@";
-    // long
-    // colors[36]    = {' ','.',':','░','#','▒','▓','█'};
-    int num_colors = 10;
+// void BoardGrid::pprint() {
+//     char colors[11] = " .,:=+*#%@";
+//     // long
+//     // colors[36]    = {' ','.',':','░','#','▒','▓','█'};
+//     int num_colors = 10;
 
-    float max_val = 0.0;
-    for (int i = 0; i < this->size; i += 1) {
-        if (this->grid[i].baseCost > max_val) max_val = this->grid[i].baseCost;
-    }
+//     float max_val = 0.0;
+//     for (int i = 0; i < this->size; i += 1) {
+//         if (this->grid[i].baseCost > max_val) max_val = this->grid[i].baseCost;
+//     }
 
-    for (int l = 0; l < this->l; l += 1) {
-        std::cout << std::endl
-                  << "Layer: " << l << std::endl;
+//     for (int l = 0; l < this->l; l += 1) {
+//         std::cout << std::endl
+//                   << "Layer: " << l << std::endl;
 
-        for (int r = 0; r < this->h; r += 1) {
-            for (int c = 0; c < this->w; c += 1) {
-                int current_color = this->base_cost_at(Location(c, r, l)) /
-                                    max_val * num_colors;
-                std::cout << colors[current_color] << " ";
-                // std::cout << current_color << " ";
+//         for (int r = 0; r < this->h; r += 1) {
+//             for (int c = 0; c < this->w; c += 1) {
+//                 int current_color = this->base_cost_at(Location(c, r, l)) /
+//                                     max_val * num_colors;
+//                 std::cout << colors[current_color] << " ";
+//                 // std::cout << current_color << " ";
 
-                // std::cout << std::setw(6) << std::setprecision(2) <<
-                // std::right << this->at(c, r, l);
-            }
-            std::cout << std::endl;
-        }
-    }
-}
+//                 // std::cout << std::setw(6) << std::setprecision(2) <<
+//                 // std::right << this->at(c, r, l);
+//             }
+//             std::cout << std::endl;
+//         }
+//     }
+// }
 
 bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const {
     int radius = viaRadius;
@@ -1414,55 +1414,55 @@ float BoardGrid::sized_trace_cost_at(const Location &l, int traceRadius) const {
     return cost;
 }
 
-void BoardGrid::print_came_from(
-    const std::unordered_map<Location, Location> &came_from,
-    const Location &end) {
-    // Location end(ex, ey, ez);
+// void BoardGrid::print_came_from(
+//     const std::unordered_map<Location, Location> &came_from,
+//     const Location &end) {
+//     // Location end(ex, ey, ez);
 
-    std::cout << "Came froms: " << std::endl;
-    std::cout << "\tsize: " << came_from.size() << std::endl;
+//     std::cout << "Came froms: " << std::endl;
+//     std::cout << "\tsize: " << came_from.size() << std::endl;
 
-    for (int l = 0; l < this->l; l += 1) {
-        std::cout << std::endl
-                  << "Layer: " << l << std::endl;
+//     for (int l = 0; l < this->l; l += 1) {
+//         std::cout << std::endl
+//                   << "Layer: " << l << std::endl;
 
-        for (int r = 0; r < this->h; r += 1) {
-            for (int c = 0; c < this->w; c += 1) {
-                Location current(c, r, l);
+//         for (int r = 0; r < this->h; r += 1) {
+//             for (int c = 0; c < this->w; c += 1) {
+//                 Location current(c, r, l);
 
-                if (current == end) {
-                    std::cout << "# ";
-                    continue;  // goal
-                }
+//                 if (current == end) {
+//                     std::cout << "# ";
+//                     continue;  // goal
+//                 }
 
-                if (came_from.find(current) == came_from.end()) {
-                    std::cout << ". ";  // not found
-                    continue;           // unexplored
-                }
+//                 if (came_from.find(current) == came_from.end()) {
+//                     std::cout << ". ";  // not found
+//                     continue;           // unexplored
+//                 }
 
-                Location cf = came_from.find(current)->second;
+//                 Location cf = came_from.find(current)->second;
 
-                if (current.m_x > cf.m_x) {
-                    std::cout << "> ";
-                } else if (current.m_x < cf.m_x) {
-                    std::cout << "< ";
-                } else if (current.m_y > cf.m_y) {
-                    std::cout << "V ";
-                } else if (current.m_y < cf.m_y) {
-                    std::cout << "^ ";
-                } else if (current.m_z > cf.m_z) {
-                    std::cout << "X ";
-                } else if (current.m_z < cf.m_z) {
-                    std::cout << "O ";
-                } else if ((current.m_x == cf.m_x) && (current.m_y == cf.m_y) &&
-                           (current.m_z == cf.m_z)) {
-                    std::cout << "* ";  // start
-                }
-            }
-            std::cout << std::endl;
-        }
-    }
-}
+//                 if (current.m_x > cf.m_x) {
+//                     std::cout << "> ";
+//                 } else if (current.m_x < cf.m_x) {
+//                     std::cout << "< ";
+//                 } else if (current.m_y > cf.m_y) {
+//                     std::cout << "V ";
+//                 } else if (current.m_y < cf.m_y) {
+//                     std::cout << "^ ";
+//                 } else if (current.m_z > cf.m_z) {
+//                     std::cout << "X ";
+//                 } else if (current.m_z < cf.m_z) {
+//                     std::cout << "O ";
+//                 } else if ((current.m_x == cf.m_x) && (current.m_y == cf.m_y) &&
+//                            (current.m_z == cf.m_z)) {
+//                     std::cout << "* ";  // start
+//                 }
+//             }
+//             std::cout << std::endl;
+//         }
+//     }
+// }
 
 void BoardGrid::add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius) {
     int radius = viaRadius;
@@ -1738,75 +1738,75 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
     }
 }
 
-void BoardGrid::came_from_to_features(
-    const std::unordered_map<Location, Location> &came_from,
-    const Location &end, std::vector<Location> &features) const {
-    // std::vector<Location> features;
-    // features.insert(end);
-    std::cout << "Starting came_from_to_features " << std::endl;
+// void BoardGrid::came_from_to_features(
+//     const std::unordered_map<Location, Location> &came_from,
+//     const Location &end, std::vector<Location> &features) const {
+//     // std::vector<Location> features;
+//     // features.insert(end);
+//     std::cout << "Starting came_from_to_features " << std::endl;
 
-    if (!this->validate_location(end))
-        std::cout << "Bad end for came_from_to_features" << std::endl;
+//     if (!this->validate_location(end))
+//         std::cout << "Bad end for came_from_to_features" << std::endl;
 
-    features.push_back(end);
-    Location current = end;
+//     features.push_back(end);
+//     Location current = end;
 
-    while (came_from.find(current) != came_from.end()) {  // while not the start
-        Location next = came_from.find(current)->second;
-        // if (features.find(next) != features.end()) { // next already in
-        // features, loops or start break;
-        // }
-        if (next == current) {
-            break;
-        }
-        // features.insert(next);
-        features.push_back(next);
-        current = next;
-    }
+//     while (came_from.find(current) != came_from.end()) {  // while not the start
+//         Location next = came_from.find(current)->second;
+//         // if (features.find(next) != features.end()) { // next already in
+//         // features, loops or start break;
+//         // }
+//         if (next == current) {
+//             break;
+//         }
+//         // features.insert(next);
+//         features.push_back(next);
+//         current = next;
+//     }
 
-    // ?????????
-    // for (Location l : features)
-    // {
-    // 	//std::cout << "\t" << l << std::endl;
-    // 	if (l.m_z > 2)
-    // 	{
-    // 		exit(-1);
-    // 	}
-    // }
+//     // ?????????
+//     // for (Location l : features)
+//     // {
+//     // 	//std::cout << "\t" << l << std::endl;
+//     // 	if (l.m_z > 2)
+//     // 	{
+//     // 		exit(-1);
+//     // 	}
+//     // }
 
-    std::cout << "Finished came_from_to_features " << std::endl;
+//     std::cout << "Finished came_from_to_features " << std::endl;
 
-    // return features;
-}
+//     // return features;
+// }
 
-void BoardGrid::came_from_to_features(const Location &end,
-                                      std::vector<Location> &features) const {
-    std::cout << "Starting came_from_to_features ID" << std::endl;
+// void BoardGrid::came_from_to_features(const Location &end,
+//                                       std::vector<Location> &features) const {
+//     std::cout << "Starting came_from_to_features ID" << std::endl;
 
-    if (!this->validate_location(end)) {
-        std::cout << "Bad end for came_from_to_features ID" << std::endl;
-    }
+//     if (!this->validate_location(end)) {
+//         std::cout << "Bad end for came_from_to_features ID" << std::endl;
+//     }
 
-    features.push_back(end);
-    Location current = end;
-    int currentId = this->locationToId(current);
-    int nextId = this->getCameFromId(currentId);
+//     features.push_back(end);
+//     Location current = end;
+//     int currentId = this->locationToId(current);
+//     int nextId = this->getCameFromId(currentId);
 
-    while (nextId != -1) {
-        if (nextId == currentId) {
-            break;
-        }
+//     while (nextId != -1) {
+//         if (nextId == currentId) {
+//             break;
+//         }
 
-        Location next;
-        this->idToLocation(nextId, next);
+//         Location next;
+//         this->idToLocation(nextId, next);
 
-        features.push_back(next);
-        currentId = nextId;
-        nextId = this->getCameFromId(currentId);
-    }
+//         features.push_back(next);
+//         currentId = nextId;
+//         nextId = this->getCameFromId(currentId);
+//     }
 
-    std::cout << "Finished came_from_to_features ID" << std::endl;
-}
+//     std::cout << "Finished came_from_to_features ID" << std::endl;
+// }
 
 void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route) const {
     std::cout << __FUNCTION__ << ": Starting backtracking and create new GridPath" << std::endl;
@@ -1840,94 +1840,94 @@ void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route
     std::cout << __FUNCTION__ << ": End of backtracking and create new GridPath" << std::endl;
 }
 
-std::vector<Location> BoardGrid::came_from_to_features(
-    const std::unordered_map<Location, Location> &came_from,
-    const Location &end) const {
-    std::vector<Location> features;
-    // features.insert(end);
-    this->came_from_to_features(came_from, end, features);
-    return features;
-}
+// std::vector<Location> BoardGrid::came_from_to_features(
+//     const std::unordered_map<Location, Location> &came_from,
+//     const Location &end) const {
+//     std::vector<Location> features;
+//     // features.insert(end);
+//     this->came_from_to_features(came_from, end, features);
+//     return features;
+// }
 
-void BoardGrid::print_route(
-    const std::unordered_map<Location, Location> &came_from,
-    const Location &end) {
-    // Location end(ex, ey, ez);
+// void BoardGrid::print_route(
+//     const std::unordered_map<Location, Location> &came_from,
+//     const Location &end) {
+//     // Location end(ex, ey, ez);
 
-    // std::cout << "end: " << end << std::endl;
+//     // std::cout << "end: " << end << std::endl;
 
-    // std::cout << "came_from: " << std::endl;
-    // for (std::pair<Location, Location> l : came_from) {
-    // 	std::cout << l.first << ", " << l.second << std::endl;
-    // }
+//     // std::cout << "came_from: " << std::endl;
+//     // for (std::pair<Location, Location> l : came_from) {
+//     // 	std::cout << l.first << ", " << l.second << std::endl;
+//     // }
 
-    std::vector<Location> features;
-    features = this->came_from_to_features(came_from, end);
-    // features.insert(end);
-    // Location current = end;
+//     std::vector<Location> features;
+//     features = this->came_from_to_features(came_from, end);
+//     // features.insert(end);
+//     // Location current = end;
 
-    // std::cout << "current: " << current << std::endl;
+//     // std::cout << "current: " << current << std::endl;
 
-    // std::cout << "Finding features" << std::endl;
-    // while (came_from.find(current) != came_from.end()) { // while not the
-    // start
+//     // std::cout << "Finding features" << std::endl;
+//     // while (came_from.find(current) != came_from.end()) { // while not the
+//     // start
 
-    // 	Location next = came_from.find(current)->second;
-    // 	// std::cout << "next: " << next << std::endl;
+//     // 	Location next = came_from.find(current)->second;
+//     // 	// std::cout << "next: " << next << std::endl;
 
-    // 	if (features.find(next) != features.end()) { // next already in
-    // features, loops or start 		break;
-    // 	}
-    // 	features.insert(next);
-    // 	// std::cout << "Got next features: " << next <<
-    // 	 std::endl;
-    // 	current = next;
-    // }
+//     // 	if (features.find(next) != features.end()) { // next already in
+//     // features, loops or start 		break;
+//     // 	}
+//     // 	features.insert(next);
+//     // 	// std::cout << "Got next features: " << next <<
+//     // 	 std::endl;
+//     // 	current = next;
+//     // }
 
-    std::cout << "Printing features" << std::endl;
-    for (int l = 0; l < this->l; l += 1) {
-        std::cout << std::endl
-                  << "Layer: " << l << std::endl;
+//     std::cout << "Printing features" << std::endl;
+//     for (int l = 0; l < this->l; l += 1) {
+//         std::cout << std::endl
+//                   << "Layer: " << l << std::endl;
 
-        for (int r = 0; r < this->h; r += 1) {
-            for (int c = 0; c < this->w; c += 1) {
-                Location current(c, r, l);
+//         for (int r = 0; r < this->h; r += 1) {
+//             for (int c = 0; c < this->w; c += 1) {
+//                 Location current(c, r, l);
 
-                if (std::find(features.begin(), features.end(), current) !=
-                    features.end()) {
-                    // if (features.find(current) != features.end()) {
-                    std::cout << "# ";  // contains feature
-                } else {
-                    std::cout << ". ";
-                }
-            }
-            std::cout << std::endl;
-        }
-    }
-}
+//                 if (std::find(features.begin(), features.end(), current) !=
+//                     features.end()) {
+//                     // if (features.find(current) != features.end()) {
+//                     std::cout << "# ";  // contains feature
+//                 } else {
+//                     std::cout << ". ";
+//                 }
+//             }
+//             std::cout << std::endl;
+//         }
+//     }
+// }
 
-void BoardGrid::print_features(std::vector<Location> features) {
-    std::cout << "Printing features" << std::endl;
-    for (int l = 0; l < this->l; l += 1) {
-        std::cout << std::endl
-                  << "Layer: " << l << std::endl;
+// void BoardGrid::print_features(std::vector<Location> features) {
+//     std::cout << "Printing features" << std::endl;
+//     for (int l = 0; l < this->l; l += 1) {
+//         std::cout << std::endl
+//                   << "Layer: " << l << std::endl;
 
-        for (int r = 0; r < this->h; r += 1) {
-            for (int c = 0; c < this->w; c += 1) {
-                Location current(c, r, l);
+//         for (int r = 0; r < this->h; r += 1) {
+//             for (int c = 0; c < this->w; c += 1) {
+//                 Location current(c, r, l);
 
-                if (std::find(features.begin(), features.end(), current) !=
-                    features.end()) {
-                    // if (features.find(current) != features.end()) {
-                    std::cout << "# ";  // contains feature
-                } else {
-                    std::cout << ". ";
-                }
-            }
-            std::cout << std::endl;
-        }
-    }
-}
+//                 if (std::find(features.begin(), features.end(), current) !=
+//                     features.end()) {
+//                     // if (features.find(current) != features.end()) {
+//                     std::cout << "# ";  // contains feature
+//                 } else {
+//                     std::cout << ". ";
+//                 }
+//             }
+//             std::cout << std::endl;
+//         }
+//     }
+// }
 
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.mGridPins.size() << std::endl;
