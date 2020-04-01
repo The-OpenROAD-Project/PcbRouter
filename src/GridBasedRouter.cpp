@@ -38,99 +38,6 @@ int GridBasedRouter::get_routed_num_bends(std::vector<MultipinRoute> &mpr) {
 }
 
 // deprecated
-bool GridBasedRouter::writeNets(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs) {
-    if (!ofs)
-        return false;
-
-    // Set output precision
-    ofs << std::fixed << std::setprecision(GlobalParam::gOutputPrecision);
-    // Estimated total routed wirelength
-    double totalEstWL = 0.0;
-    double totalEstGridWL = 0.0;
-    int totalNumVia = 0;
-
-    std::cout << "================= Start of " << __FUNCTION__ << "() =================" << std::endl;
-
-    // Multipin net
-    for (auto &mpNet : multipinNets) {
-        if (!mDb.isNetId(mpNet.netId)) {
-            std::cerr << __FUNCTION__ << "() Invalid net id: " << mpNet.netId << std::endl;
-            continue;
-        }
-
-        auto &net = mDb.getNet(mpNet.netId);
-        if (!mDb.isNetclassId(net.getNetclassId())) {
-            std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
-            continue;
-        }
-
-        if (mpNet.features.empty()) {
-            continue;
-        }
-
-        auto &netclass = mDb.getNetclass(net.getNetclassId());
-        Location prevLocation = mpNet.features.front();
-        double netEstWL = 0.0;
-        double netEstGridWL = 0.0;
-        int netNumVia = 0;
-
-        for (int i = 1; i < static_cast<int>(mpNet.features.size()); ++i) {
-            auto &feature = mpNet.features[i];
-            //std::cout << feature << std::endl;
-            if (abs(feature.m_x - prevLocation.m_x) <= 1 &&
-                abs(feature.m_y - prevLocation.m_y) <= 1 &&
-                abs(feature.m_z - prevLocation.m_z) <= 1) {
-                // Sanity Check
-                if (feature.m_z != prevLocation.m_z &&
-                    feature.m_y != prevLocation.m_y &&
-                    feature.m_x != prevLocation.m_x) {
-                    std::cerr << __FUNCTION__ << "() Invalid path between feature: " << feature << ", and lasLocation: " << prevLocation << std::endl;
-                    continue;
-                }
-                // Print Through Hole Via
-                if (feature.m_z != prevLocation.m_z) {
-                    ++totalNumVia;
-                    ++netNumVia;
-
-                    ofs << "(via";
-                    ofs << " (at " << GlobalParam::gridFactor * (prevLocation.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << " " << GlobalParam::gridFactor * (prevLocation.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2) << ")";
-                    ofs << " (size " << netclass.getViaDia() << ")";
-                    ofs << " (drill " << netclass.getViaDrill() << ")";
-                    ofs << " (layers Top Bottom)";
-                    ofs << " (net " << mpNet.netId << ")";
-                    ofs << ")" << std::endl;
-                }
-
-                // Print Segment/Track/Wire
-                if (feature.m_x != prevLocation.m_x || feature.m_y != prevLocation.m_y) {
-                    point_2d start{GlobalParam::gridFactor * (prevLocation.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2), GlobalParam::gridFactor * (prevLocation.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2)};
-                    point_2d end{GlobalParam::gridFactor * (feature.m_x + mMinX * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2), GlobalParam::gridFactor * (feature.m_y + mMinY * GlobalParam::inputScale - GlobalParam::enlargeBoundary / 2)};
-                    totalEstWL += point_2d::getDistance(start, end);
-                    totalEstGridWL += Location::getDistance2D(prevLocation, feature);
-                    netEstWL += point_2d::getDistance(start, end);
-                    netEstGridWL += Location::getDistance2D(prevLocation, feature);
-
-                    ofs << "(segment";
-                    ofs << " (start " << start.m_x << " " << start.m_y << ")";
-                    ofs << " (end " << end.m_x << " " << end.m_y << ")";
-                    ofs << " (width " << netclass.getTraceWidth() << ")";
-                    ofs << " (layer " << mGridLayerToName.at(feature.m_z) << ")";
-                    ofs << " (net " << mpNet.netId << ")";
-                    ofs << ")" << std::endl;
-                }
-            }
-            prevLocation = feature;
-        }
-        std::cout << "\tNet " << net.getName() << "(" << net.getId() << "), netDegree: " << net.getPins().size()
-                  << ", Total WL: " << netEstWL << ", Total Grid WL: " << netEstGridWL << ", #Vias: " << netNumVia << std::endl;
-    }
-
-    std::cout << "\tEstimated Total WL: " << totalEstWL << ", Total Grid WL: " << totalEstGridWL << ", Total # Vias: " << totalNumVia << std::endl;
-    std::cout << "================= End of " << __FUNCTION__ << "() =================" << std::endl;
-    return true;
-}
-
-// deprecated
 bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs) {
     if (!ofs)
         return false;
@@ -157,11 +64,10 @@ bool GridBasedRouter::writeNetsFromGridPaths(std::vector<MultipinRoute> &multipi
             continue;
         }
 
-        if (mpNet.features.empty()) {
-            continue;
-        }
-
         // Convert from features to grid paths
+        // if (mpNet.features.empty()) {
+        //     continue;
+        // }
         // mpNet.featuresToGridPaths();
 
         auto &netclass = mDb.getNetclass(net.getNetclassId());

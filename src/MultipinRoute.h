@@ -58,18 +58,14 @@ class MultipinRoute {
     int netId = -1;
     int gridNetclassId = -1;
     float currentRouteCost = 0.0;
-    std::vector<Location> features;  // Make this obsolete, please
+    // std::vector<Location> features;  // Make this obsolete, please
     std::vector<GridPin> mGridPins;
+    std::vector<GridPath> mGridPaths;
+    // std::vector<Location> vias; //TODO
 
     // Cost along with this net
     double curTrackObstacleCost = 0.0;
     double curViaObstacleCost = 0.0;
-
-    //derived from features, doesn't guarantee updated
-    // Please replace features with mGridPaths
-    std::vector<GridPath> mGridPaths;
-    //TODO
-    // std::vector<Location> vias;
 };
 
 #endif
