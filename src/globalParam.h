@@ -4,7 +4,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
+
 #include <string>
+
 #include "util.h"
 
 using namespace std;
@@ -13,8 +15,13 @@ using namespace std;
 
 #define BOUND_CHECKS
 
-// TODO
-// See clearance matrix in the EAGLE/KiCad format
+namespace pr {
+
+using prIntCost = int;
+using prFltCost = double;
+
+}  // namespace pr
+
 class GlobalParam {
    public:
     static int gLayerNum;

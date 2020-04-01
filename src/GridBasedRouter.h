@@ -22,6 +22,7 @@ class GridBasedRouter {
     ~GridBasedRouter() {}
 
     void route();
+    void initialization();
 
     // Setter
     void set_grid_scale(const int _iS) {
@@ -41,6 +42,9 @@ class GridBasedRouter {
 
     void set_track_obstacle_step_size(const double _tocss) { GlobalParam::gStepTraObsCost = _tocss; }
     void set_via_obstacle_step_size(const double _vocss) { GlobalParam::gStepViaObsCost = _vocss; }
+
+    void set_net_layer_pref_weight(const int _netId, const std::string &_layerName, const int _weight);
+    void set_net_all_layers_pref_weights(const int _netId, const int _weight);
 
     // Getter
     unsigned int get_grid_scale() { return GlobalParam::inputScale; }
@@ -68,7 +72,7 @@ class GridBasedRouter {
    private:
     void testRouterWithPinShape();
 
-    bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs); //deprectaed
+    bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);  //deprectaed
     void writeSolutionBackToDbAndSaveOutput(const std::string fileNameTag, std::vector<MultipinRoute> &multipinNets);
 
     // Helpers
@@ -129,9 +133,9 @@ class GridBasedRouter {
     std::vector<GridPin> mGridPins;
 
     // Routing results from iterations
-    std::vector<MultipinRoute> gridNets;
-    std::vector<MultipinRoute> bestSolution;
-    std::vector<std::vector<MultipinRoute> > routingSolutions;
+    std::vector<MultipinRoute> mGridNets;                       //Current routing structures to the board grid
+    std::vector<MultipinRoute> bestSolution;                    //Keep the best routing solutions
+    std::vector<std::vector<MultipinRoute> > routingSolutions;  //Keep the routing solutions of each iteration
     double bestTotalRouteCost = -1.0;
 
     // Board Boundary

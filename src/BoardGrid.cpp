@@ -518,6 +518,8 @@ void BoardGrid::aStarSearching(MultipinRoute &route, Location &finalEnd, float &
             // Test bending cost
             float estCost = getEstimatedCostWithBendingCost(current, next.second);
             int bendCost = getBendingCostOfNext(current, next.second);
+            pr::prIntCost layerPrefCost = getLayerPrefCost(route, next.second);
+            new_cost += layerPrefCost;
 
             // Test bending cost + multi-layers (3D estimation cost)
             // float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
@@ -716,6 +718,17 @@ int BoardGrid::getBendingCostOfNext(const Location &current, const Location &nex
     }
 
     return nextBendingCost;
+}
+
+pr::prIntCost BoardGrid::getLayerPrefCost(const MultipinRoute &route, const Location &pt) const {
+    auto layerId = pt.m_z;
+
+    if (layerId >= route.getLayerCosts().size()) {
+        std::cerr << __FUNCTION__ << ": Invalid layer Id " << layerId << std::endl;
+        return 0;
+    } else {
+        return route.getLayerCosts().at(layerId);
+    }
 }
 
 float BoardGrid::getEstimatedCostWithLayers(const Location &l) {

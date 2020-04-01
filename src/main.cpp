@@ -63,6 +63,11 @@ int main(int argc, char *argv[]) {
         router.set_via_obstacle_step_size(atof(argv[8]));
     }
     // router.testRouterWithPinShape();
+    router.initialization();
+    // GND (20) to route on Bottom Layer
+    // router.set_net_all_layers_pref_weights(20, 100);
+    // router.set_net_layer_pref_weight(20, "Bottom", 0);
+
     router.route();
 
     // db.printRoutedSegmentsWLAndNumVias();

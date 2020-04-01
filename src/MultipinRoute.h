@@ -19,12 +19,18 @@ class MultipinRoute {
         this->netId = netId;
         this->gridNetclassId = gridNetclassId;
     }
+    MultipinRoute(const int netId, const int gridNetclassId, const size_t numGridLayer) {
+        this->netId = netId;
+        this->gridNetclassId = gridNetclassId;
+        this->mLayerCosts.resize(numGridLayer, 0);
+    }
 
     void featuresToGridPaths();
     void gridPathLocationsToSegments();
 
     int getGridNetclassId() const { return gridNetclassId; }
 
+    const std::vector<pr::prIntCost> &getLayerCosts() const { return mLayerCosts; }
     const std::vector<GridPath> &getGridPaths() const { return mGridPaths; }
     void clearGridPaths() { mGridPaths.clear(); }
 
@@ -50,6 +56,9 @@ class MultipinRoute {
     void addCurTrackObstacleCost(const double &stoc) { curTrackObstacleCost += stoc; }
     void addCurViaObstacleCost(const double &svoc) { curViaObstacleCost += svoc; }
 
+    void setLayerCost(const int layerId, const pr::prIntCost cost) { mLayerCosts.at(layerId) = cost; }
+    void setAllLayersCosts(const pr::prIntCost cost) { mLayerCosts.assign(mLayerCosts.size(), cost); }
+
     friend class BoardGrid;
     friend class MultipinRoute;
     friend class GridBasedRouter;
@@ -60,6 +69,7 @@ class MultipinRoute {
     float currentRouteCost = 0.0;
     std::vector<GridPin> mGridPins;
     std::vector<GridPath> mGridPaths;
+    std::vector<pr::prIntCost> mLayerCosts;  //Layer preferences for this net, align with board grid layer
     // std::vector<Location> vias; //TODO
 
     // deprecated, will clean up later

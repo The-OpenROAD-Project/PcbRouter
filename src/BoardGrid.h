@@ -132,8 +132,9 @@ class BoardGrid {
     // Frontiers
     //bool isABetterFrontierOfNext();
 
-    // bending cost
+    // Various costs
     int getBendingCostOfNext(const Location &current, const Location &next) const;
+    pr::prIntCost getLayerPrefCost(const MultipinRoute &route, const Location &pt) const;
 
     // trace_width
     float sized_trace_cost_at(const Location &l, const int traceRadius) const;

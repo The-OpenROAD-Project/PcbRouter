@@ -474,8 +474,8 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
     for (auto &net : mDb.getNets()) {
         std::cout << "Net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
 
-        gridNets.push_back(MultipinRoute{net.getId(), net.getNetclassId()});
-        auto &gridRoute = gridNets.back();
+        mGridNets.push_back(MultipinRoute{net.getId(), net.getNetclassId(), mDb.getCopperLayers().size()});
+        auto &gridRoute = mGridNets.back();
         auto &pins = net.getPins();
         for (auto &pin : pins) {
             // TODO: Id Range Checking?
@@ -584,22 +584,56 @@ void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, cons
     }
 }
 
-void GridBasedRouter::route() {
-    std::cout << std::fixed << std::setprecision(5);
-    std::cout << std::endl
-              << "=================" << __FUNCTION__ << "==================" << std::endl;
+void GridBasedRouter::set_net_layer_pref_weight(const int _netId, const std::string &_layerName, const int _weight) {
+    if (_weight < 0) {
+        std::cout << __FUNCTION__ << ": Invalid weight: " << _weight << std::endl;
+        return;
+    }
+    if (_netId > this->mGridNets.size()) {
+        std::cout << __FUNCTION__ << ": Invalid net Id: " << _netId << std::endl;
+        return;
+    }
+    if (mLayerNameToGridLayer.end() == mLayerNameToGridLayer.find(_layerName)) {
+        std::cout << __FUNCTION__ << ": Invalid layer name: " << _layerName << std::endl;
+        return;
+    }
+    auto gridLayerId = mLayerNameToGridLayer.find(_layerName)->second;
+    auto &gridNet = this->mGridNets.at(_netId);
+    if (gridLayerId >= gridNet.getLayerCosts().size()) {
+        std::cout << __FUNCTION__ << ": Invalid layer Id: " << gridLayerId << " to add weights" << std::endl;
+        return;
+    }
 
-    // TODO
-    // unified structure for Polygon, Rectangle
-    // ====> Rectangle Template....
-    // ====> Put pin rectangle into GridPin and use the rect template....
-    // THROUGH HOLE Pad/Via?????? SMD Pad, Mirco Via?????
+    gridNet.setLayerCost(gridLayerId, _weight);
+    return;
+}
 
+void GridBasedRouter::set_net_all_layers_pref_weights(const int _netId, const int _weight) {
+    if (_weight < 0) {
+        std::cout << __FUNCTION__ << ": Invalid weight: " << _weight << std::endl;
+        return;
+    }
+    if (_netId > this->mGridNets.size()) {
+        std::cout << __FUNCTION__ << ": Invalid net Id: " << _netId << std::endl;
+        return;
+    }
+    auto &gridNet = this->mGridNets.at(_netId);
+    gridNet.setAllLayersCosts(_weight);
+    return;
+}
+
+void GridBasedRouter::initialization() {
     // Initilization
     this->setupLayerMapping();
     this->setupGridNetclass();
     this->setupBoardGrid();
     this->setupGridNetsAndGridPins();
+}
+
+void GridBasedRouter::route() {
+    std::cout << std::fixed << std::setprecision(5);
+    std::cout << std::endl
+              << "=================" << __FUNCTION__ << "==================" << std::endl;
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
     for (auto &gridPin : this->mGridPins) {
@@ -621,7 +655,7 @@ void GridBasedRouter::route() {
         if (net.getPins().size() < 2)
             continue;
 
-        auto &gridRoute = this->gridNets.at(net.getId());
+        auto &gridRoute = this->mGridNets.at(net.getId());
         if (net.getId() != gridRoute.netId)
             std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
@@ -662,13 +696,13 @@ void GridBasedRouter::route() {
     std::vector<double> iterativeCost;
     iterativeCost.push_back(totalCurrentRouteCost);
     bestTotalRouteCost = totalCurrentRouteCost;
-    this->bestSolution = this->gridNets;
-    routingSolutions.push_back(this->gridNets);
+    this->bestSolution = this->mGridNets;
+    routingSolutions.push_back(this->mGridNets);
 
     if (GlobalParam::gOutputDebuggingKiCadFile) {
         std::string nameTag = "fristTimeRouteAll";
         nameTag = nameTag + "." + this->getParamsNameTag();
-        writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
+        writeSolutionBackToDbAndSaveOutput(nameTag, this->mGridNets);
     }
     std::cout << "i=0, totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
 
@@ -681,7 +715,7 @@ void GridBasedRouter::route() {
             if (net.getPins().size() < 2)
                 continue;
 
-            auto &gridRoute = gridNets.at(net.getId());
+            auto &gridRoute = mGridNets.at(net.getId());
             if (net.getId() != gridRoute.netId)
                 std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
@@ -715,7 +749,7 @@ void GridBasedRouter::route() {
         if (GlobalParam::gOutputDebuggingKiCadFile) {
             std::string nameTag = "i_" + std::to_string(i + 1);
             nameTag = nameTag + "." + this->getParamsNameTag();
-            writeSolutionBackToDbAndSaveOutput(nameTag, this->gridNets);
+            writeSolutionBackToDbAndSaveOutput(nameTag, this->mGridNets);
         }
         if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
             std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".i_" + std::to_string(i + 1) + this->getParamsNameTag();
@@ -724,9 +758,9 @@ void GridBasedRouter::route() {
         if (totalCurrentRouteCost < bestTotalRouteCost) {
             std::cout << "!!!!>!!!!> Found new bestTotalRouteCost: " << totalCurrentRouteCost << ", from: " << bestTotalRouteCost << std::endl;
             bestTotalRouteCost = totalCurrentRouteCost;
-            this->bestSolution = this->gridNets;
+            this->bestSolution = this->mGridNets;
         }
-        routingSolutions.push_back(this->gridNets);
+        routingSolutions.push_back(this->mGridNets);
         iterativeCost.push_back(totalCurrentRouteCost);
         std::cout << "i=" << i + 1 << ", totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
     }
@@ -952,7 +986,7 @@ bool GridBasedRouter::getGridLayers(const padstack &pad, const instance &inst, s
 }
 
 int GridBasedRouter::getNextRipUpNetId() {
-    return rand() % gridNets.size();
+    return rand() % mGridNets.size();
 }
 
 std::string GridBasedRouter::getParamsNameTag() {
