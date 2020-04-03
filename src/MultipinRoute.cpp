@@ -1,6 +1,6 @@
 #include "MultipinRoute.h"
 
-double MultipinRoute::getRoutedWirelength() {
+double MultipinRoute::getRoutedWirelength() const {
     double routedWL = 0.0;
     for (const auto &gp : this->mGridPaths) {
         routedWL += gp.getRoutedWirelength();
@@ -8,7 +8,7 @@ double MultipinRoute::getRoutedWirelength() {
     return routedWL;
 }
 
-int MultipinRoute::getRoutedNumVias() {
+int MultipinRoute::getRoutedNumVias() const {
     int numRoutedVias = 0;
     for (const auto &gp : this->mGridPaths) {
         numRoutedVias += gp.getRoutedNumVias();
@@ -16,7 +16,7 @@ int MultipinRoute::getRoutedNumVias() {
     return numRoutedVias;
 }
 
-int MultipinRoute::getRoutedNumBends() {
+int MultipinRoute::getRoutedNumBends() const {
     int numRoutedBends = 0;
     for (const auto &gp : this->mGridPaths) {
         numRoutedBends += gp.getRoutedNumBends();

@@ -43,9 +43,9 @@ class MultipinRoute {
         return mGridPins.back();
     }
 
-    double getRoutedWirelength();
-    int getRoutedNumVias();
-    int getRoutedNumBends();
+    double getRoutedWirelength() const;
+    int getRoutedNumVias() const;
+    int getRoutedNumBends() const;
     double getCurTrackObstacleCost() const { return curTrackObstacleCost; }
     double getCurViaObstacleCost() const { return curViaObstacleCost; }
     double getCurNegTrackObstacleCost() const { return -curTrackObstacleCost; }

@@ -7,7 +7,7 @@ double GridBasedRouter::get_routed_wirelength() {
 
 double GridBasedRouter::get_routed_wirelength(std::vector<MultipinRoute> &mpr) {
     double overallRoutedWL = 0.0;
-    for (auto &mpn : mpr) {
+    for (const auto &mpn : mpr) {
         overallRoutedWL += mpn.getRoutedWirelength();
     }
     return overallRoutedWL;
@@ -19,7 +19,7 @@ int GridBasedRouter::get_routed_num_vias() {
 
 int GridBasedRouter::get_routed_num_vias(std::vector<MultipinRoute> &mpr) {
     int overallNumVias = 0;
-    for (auto &mpn : mpr) {
+    for (const auto &mpn : mpr) {
         overallNumVias += mpn.getRoutedNumVias();
     }
     return overallNumVias;
@@ -31,7 +31,7 @@ int GridBasedRouter::get_routed_num_bends() {
 
 int GridBasedRouter::get_routed_num_bends(std::vector<MultipinRoute> &mpr) {
     int overallNumBends = 0;
-    for (auto &mpn : mpr) {
+    for (const auto &mpn : mpr) {
         overallNumBends += mpn.getRoutedNumBends();
     }
     return overallNumBends;
@@ -556,7 +556,7 @@ void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, cons
     // Calculate pinShapeToGrids
     // 1. Make Boost polygon of pad shape
     polygon_t padShapePoly;
-    for (auto pt : expandedPadPoly) {
+    for (const auto &pt : expandedPadPoly) {
         bg::append(padShapePoly.outer(), point(pt.x() + pinDbLocation.x(), pt.y() + pinDbLocation.y()));
     }
     // printPolygon(padShapePoly);
@@ -597,7 +597,7 @@ void GridBasedRouter::set_net_layer_pref_weight(const int _netId, const std::str
         std::cout << __FUNCTION__ << ": Invalid layer name: " << _layerName << std::endl;
         return;
     }
-    auto gridLayerId = mLayerNameToGridLayer.find(_layerName)->second;
+    int gridLayerId = mLayerNameToGridLayer.find(_layerName)->second;
     auto &gridNet = this->mGridNets.at(_netId);
     if (gridLayerId >= gridNet.getLayerCosts().size()) {
         std::cout << __FUNCTION__ << ": Invalid layer Id: " << gridLayerId << " to add weights" << std::endl;
@@ -938,7 +938,7 @@ void GridBasedRouter::addPinShapeAvoidingCostToGrid(const GridPin &gridPin, cons
     std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR << ", pinShape.size(): " << gridPin.getPinShapeToGrids().size() << std::endl;
 
     for (auto &location : gridPin.getPinWithLayers()) {
-        for (auto pt : gridPin.getPinShapeToGrids()) {
+        for (const auto &pt : gridPin.getPinShapeToGrids()) {
             Location gridPt{pt.x(), pt.y(), location.z()};
             if (!mBg.validate_location(gridPt)) {
                 // std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
@@ -977,7 +977,7 @@ bool GridBasedRouter::getGridLayers(const padstack &pad, const instance &inst, s
     } else {
         //Put all the layers
         int layer = 0;
-        for (auto l : mGridLayerToName) {
+        for (const auto &l : mGridLayerToName) {
             layers.push_back(layer);
             ++layer;
         }
