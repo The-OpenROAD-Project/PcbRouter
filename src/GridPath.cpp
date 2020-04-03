@@ -6,7 +6,7 @@ void GridPath::removeRedundantPoints() {
     }
 
     // std::cout << "All pts:" << std::endl;
-    // for (auto pt : this->mSegments) {
+    // for (const auto &pt : this->mSegments) {
     //     std::cout << pt << std::endl;
     // }
     // std::cout << "End of All pts:" << std::endl;
@@ -32,7 +32,7 @@ void GridPath::removeRedundantPoints() {
         ++prevPointIte;
     }
 
-    for (auto &removePt : pointsToRemove) {
+    for (auto &&removePt : pointsToRemove) {
         this->mSegments.erase(removePt);
     }
 }
@@ -41,7 +41,7 @@ double GridPath::getRoutedWirelength() const {
     double totalEstWL = 0.0;
     Location prevLocation = this->mSegments.front();
 
-    for (auto &location : this->mSegments) {
+    for (const auto &location : this->mSegments) {
         if (prevLocation == location) {
             continue;
         }
@@ -67,7 +67,7 @@ int GridPath::getRoutedNumVias() const {
     int totalNumVia = 0;
     Location prevLocation = this->mSegments.front();
 
-    for (auto &location : this->mSegments) {
+    for (const auto &location : this->mSegments) {
         if (prevLocation == location) {
             continue;
         }
