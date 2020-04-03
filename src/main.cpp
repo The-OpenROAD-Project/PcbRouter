@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     // router.testRouterWithPinShape();
     router.initialization();
     // GND (20) to route on Bottom Layer
-    // router.set_net_all_layers_pref_weights(20, 100);
+    // router.set_net_all_layers_pref_weights(20, 10);
     // router.set_net_layer_pref_weight(20, "Bottom", 0);
 
     router.route();

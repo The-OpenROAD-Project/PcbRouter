@@ -44,7 +44,7 @@ class BoardGrid {
     void setCurrentGridNetclassId(const int id) { currentGridNetclassId = id; }
     void setCurrentNetId(const int id) { currentNetId = id; }
     void addGridNetclass(const GridNetclass &);
-    GridNetclass &getGridNetclass(const int gridNetclassId);
+    const GridNetclass &getGridNetclass(const int gridNetclassId);
     // Routing APIs
     void addRouteWithGridPins(MultipinRoute &route);
     void ripup_route(MultipinRoute &route);

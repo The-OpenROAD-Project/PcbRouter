@@ -109,7 +109,7 @@ void BoardGrid::base_cost_add(float value, const Location &l) {
 }
 
 void BoardGrid::base_cost_add(float value, const Location &l, const std::vector<Point_2D<int>> &shapeToGrids) {
-    for (auto &relativePt : shapeToGrids) {
+    for (const auto &relativePt : shapeToGrids) {
 #ifdef BOUND_CHECKS
         assert(((l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (l.m_z) * this->w * this->h) < this->size);
 #endif
@@ -223,12 +223,12 @@ bool BoardGrid::isTargetedPin(const Location &l) {
 }
 
 void BoardGrid::setTargetedPins(const std::vector<Location> &pins) {
-    for (auto pin : pins) {
+    for (const auto &pin : pins) {
         this->setTargetedPin(pin);
     }
 }
 void BoardGrid::clearTargetedPins(const std::vector<Location> &pins) {
-    for (auto pin : pins) {
+    for (const auto &pin : pins) {
         this->clearTargetedPin(pin);
     }
 }
@@ -258,12 +258,12 @@ bool BoardGrid::isViaForbidden(const Location &l) const {
 }
 
 void BoardGrid::setViaForbiddenArea(const std::vector<Location> &locations) {
-    for (auto loc : locations) {
+    for (const auto &loc : locations) {
         this->setViaForbidden(loc);
     }
 }
 void BoardGrid::clearViaForbiddenArea(const std::vector<Location> &locations) {
-    for (auto loc : locations) {
+    for (const auto &loc : locations) {
         this->clearViaForbidden(loc);
     }
 }
@@ -410,7 +410,7 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
     this->initializeFrontiers(route, frontier);
 
     std::cout << " frontier.size(): " << frontier.size() << ", current targeted pin:  " << std::endl;
-    for (auto pt : currentTargetedPinWithLayers) {
+    for (const auto &pt : currentTargetedPinWithLayers) {
         std::cout << "  " << pt << std::endl;
     }
 
@@ -489,7 +489,7 @@ void BoardGrid::aStarSearching(MultipinRoute &route, Location &finalEnd, float &
     this->initializeFrontiers(route, frontier);
 
     std::cout << " frontier.size(): " << frontier.size() << ", current targeted pin:  " << std::endl;
-    for (auto pt : currentTargetedPinWithLayers) {
+    for (const auto &pt : currentTargetedPinWithLayers) {
         std::cout << "  " << pt << std::endl;
     }
 
@@ -548,7 +548,7 @@ void BoardGrid::initializeFrontiers(const MultipinRoute &route, LocationQueue<Lo
             initializeLocationToFrontier(pt, frontier);
         }
         //     std::cout << " A* Start from: " << std::endl;
-        //     for (auto pt : route.mGridPins.front().pinWithLayers) {
+        //     for (const auto &pt : route.mGridPins.front().pinWithLayers) {
         //         std::cout << "  " << pt << std::endl;
         //         // Initialize the pin grids' obstacle costs
         //         // For incremental cost update of trace
@@ -608,8 +608,8 @@ void BoardGrid::initializeFrontiers(const std::vector<Location> &route, Location
     }
 
     for (int i = 1; i < route.size(); ++i) {
-        auto prevLocation = route.at(i - 1);
-        auto location = route.at(i);
+        const auto &prevLocation = route.at(i - 1);
+        const auto &location = route.at(i);
 
         // TODO: Through hole pins? how to put layers of through hole pins into frontier
         if (location.m_x == prevLocation.m_x && location.m_y == prevLocation.m_y && location.m_z != prevLocation.m_z) {
@@ -777,8 +777,8 @@ float BoardGrid::getEstimatedCostWithLayersAndBendingCost(const Location &curren
 
 void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Location>> &ns) {
     auto &curGridNetclass = mGridNetclasses.at(currentGridNetclassId);
-    auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
-    auto &viaRelativeSearchGrids = curGridNetclass.getViaSearchingSpaceToGrids();
+    const auto &traceRelativeSearchGrids = curGridNetclass.getTraceSearchingSpaceToGrids();
+    const auto &viaRelativeSearchGrids = curGridNetclass.getViaSearchingSpaceToGrids();
 
     // For incremental cost update of trace
     // auto currentGridPenalty = this->cached_trace_cost_at(l);
@@ -1256,7 +1256,7 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
     cost = 0.0;
     // Check through hole via
     for (int z = 0; z < this->l; ++z) {
-        for (auto &gridPt : viaRelativeSearchGrids) {
+        for (const auto &gridPt : viaRelativeSearchGrids) {
             Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), z);
             if (!validate_location(current_l)) {
                 cost += GlobalParam::gViaTouchBoundaryCost;
@@ -1398,7 +1398,7 @@ bool BoardGrid::sizedViaExpandableAndIncrementalCost(const Location &curLoc, con
 
 float BoardGrid::sized_trace_cost_at(const Location &l, const std::vector<Point_2D<int>> &traRelativeSearchGrids) const {
     float cost = 0.0;
-    for (auto &gridPt : traRelativeSearchGrids) {
+    for (const auto &gridPt : traRelativeSearchGrids) {
         Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), l.m_z);
         if (!validate_location(current_l)) {
             cost += GlobalParam::gTraceTouchBoundaryCost;
@@ -1491,7 +1491,7 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 }
 
 void BoardGrid::add_via_cost(const Location &l, const int layer, const float cost, const std::vector<Point_2D<int>> &viaShapeToGrids) {
-    for (auto &relativePt : viaShapeToGrids) {
+    for (const auto &relativePt : viaShapeToGrids) {
 #ifdef BOUND_CHECKS
         assert(((l.m_x + relativePt.x()) + (l.m_y + relativePt.y()) * this->w + (layer) * this->w * this->h) < this->size);
 #endif
@@ -1501,7 +1501,7 @@ void BoardGrid::add_via_cost(const Location &l, const int layer, const float cos
 }
 
 void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
-    auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
+    auto &curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
     int traceExpandingRadius = curGridNetclass.getTraceExpansion();
     int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
     int viaExpandingRadius = curGridNetclass.getViaExpansion();
@@ -1509,14 +1509,14 @@ void BoardGrid::remove_route_from_base_cost(const MultipinRoute &route) {
     // Old API below
     // add_route_to_base_cost(route, traceExpandingRadius, -GlobalParam::gTraceBasicCost, viaExpandingRadius, -GlobalParam::gViaInsertionCost);
 
-    for (auto path : route.getGridPaths()) {
+    for (const auto &path : route.getGridPaths()) {
         addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius,
                               route.getCurNegTrackObstacleCost(), viaExpandingRadius, route.getCurNegViaObstacleCost());
     }
 }
 
 void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
-    auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
+    auto &curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
     int traceExpandingRadius = curGridNetclass.getTraceExpansion();
     int traceDiagonalExpandingRadius = curGridNetclass.getDiagonalTraceExpansion();
     int viaExpandingRadius = curGridNetclass.getViaExpansion();
@@ -1524,7 +1524,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route) {
     // Old API below
     // add_route_to_base_cost(route, traceExpandingRadius, GlobalParam::gTraceBasicCost, viaExpandingRadius, GlobalParam::gViaInsertionCost);
 
-    for (auto path : route.getGridPaths()) {
+    for (const auto &path : route.getGridPaths()) {
         addGridPathToBaseCost(path, route.getGridNetclassId(), traceExpandingRadius, traceDiagonalExpandingRadius,
                               route.getCurTrackObstacleCost(), viaExpandingRadius, route.getCurViaObstacleCost());
     }
@@ -1537,7 +1537,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
     //cout << __FUNCTION__ << "(): traceCost: " << traceCost << ", viaCost: " << viaCost << std::endl;
 
     // Add costs for traces
-    for (auto &l : route.features) {
+    for (const auto &l : route.features) {
         for (int current_radius = 0; current_radius <= traceRadius; ++current_radius) {
             for (int r = l.m_y - current_radius; r <= l.m_y + current_radius; ++r) {
                 if (r < 0) continue;
@@ -1558,15 +1558,15 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
     // Add costs for vias
     // TODO:: Currently handle THROUGH VIA only
     for (int i = 1; i < route.features.size(); ++i) {
-        auto &prevLoc = route.features.at(i - 1);
-        auto &curLoc = route.features.at(i);
+        const auto &prevLoc = route.features.at(i - 1);
+        const auto &curLoc = route.features.at(i);
 
         if ((prevLoc.m_z != curLoc.m_z) && (prevLoc.m_x == curLoc.m_x) && (prevLoc.m_y == curLoc.m_y)) {
             for (int z = 0; z < this->l; ++z) {
                 //this->add_via_cost(prevLoc, z, viaCost, viaRadius);
 
                 // Via shape to grids
-                auto &gridNc = this->getGridNetclass(route.getGridNetclassId());
+                const auto &gridNc = this->getGridNetclass(route.getGridNetclassId());
                 this->add_via_cost(prevLoc, z, viaCost, gridNc.getViaShapeToGrids());
             }
         }
@@ -1574,7 +1574,7 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
 }
 
 void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost) {
-    auto &segs = path.getSegments();
+    const auto &segs = path.getSegments();
     if (segs.empty())
         return;
 
@@ -1599,7 +1599,7 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= traceRadius; ++curRadius) {
                 for (auto curY = startY; curY <= endY; ++curY) {
-                    auto loc = Location(curX + curRadius, curY, curZ);
+                    auto &&loc = Location(curX + curRadius, curY, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
@@ -1623,7 +1623,7 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= traceRadius; ++curRadius) {
                 for (auto curX = startX; curX <= endX; ++curX) {
-                    auto loc = Location(curX, curY + curRadius, curZ);
+                    auto &&loc = Location(curX, curY + curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
@@ -1649,7 +1649,7 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
                 for (int curX = startX, curY = startY; curX <= endX && curY <= endY; ++curX, ++curY) {
-                    auto loc = Location(curX + curRadius, curY - curRadius, curZ);
+                    auto &&loc = Location(curX + curRadius, curY - curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
@@ -1685,7 +1685,7 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
                 for (int curX = startX, curY = endY; curX <= endX && curY >= startY; ++curX, --curY) {
-                    auto loc = Location(curX + curRadius, curY + curRadius, curZ);
+                    auto &&loc = Location(curX + curRadius, curY + curRadius, curZ);
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
@@ -1714,7 +1714,7 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
 
     // Handle trace end
     for (pointIte = segs.begin(); pointIte != segs.end(); ++pointIte) {
-        auto &gridNc = this->getGridNetclass(gridNetclassId);
+        const auto &gridNc = this->getGridNetclass(gridNetclassId);
         this->base_cost_add(traceCost, *pointIte, gridNc.getTraceEndShapeToGrids());
     }
 
@@ -1732,14 +1732,14 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                 // Handle Micro/Blind/Buried vias
                 for (int z = std::min(pointIte->z(), nextPointIte->z()); z <= std::max(pointIte->z(), nextPointIte->z()); ++z) {
                     // Via shape to grids
-                    auto &gridNc = this->getGridNetclass(gridNetclassId);
+                    const auto &gridNc = this->getGridNetclass(gridNetclassId);
                     this->add_via_cost(*pointIte, z, viaCost, gridNc.getViaShapeToGrids());
                 }
             } else {
                 // Handle Through Hole Via
                 for (int z = 0; z < this->l; ++z) {
                     // Via shape to grids
-                    auto &gridNc = this->getGridNetclass(gridNetclassId);
+                    const auto &gridNc = this->getGridNetclass(gridNetclassId);
                     this->add_via_cost(*pointIte, z, viaCost, gridNc.getViaShapeToGrids());
                 }
             }
@@ -1948,7 +1948,6 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     if (route.mGridPins.size() <= 1) return;
 
     // Clear and initialize
-    auto curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
     this->clearAllCameFromId();
     this->cached_trace_cost_fill(-1);
     this->cached_via_cost_fill(-1);
@@ -1995,7 +1994,7 @@ void BoardGrid::addGridNetclass(const GridNetclass &gridNetclass) {
     this->mGridNetclasses.push_back(gridNetclass);
 }
 
-GridNetclass &BoardGrid::getGridNetclass(const int gridNetclassId) {
+const GridNetclass &BoardGrid::getGridNetclass(const int gridNetclassId) {
     if (gridNetclassId < 0 || gridNetclassId > this->mGridNetclasses.size()) {
         std::cerr << "Illegal grid netclass id: " << gridNetclassId << std::endl;
         return this->mGridNetclasses.front();
