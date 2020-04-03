@@ -1599,13 +1599,13 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= traceRadius; ++curRadius) {
                 for (auto curY = startY; curY <= endY; ++curY) {
-                    auto &&loc = Location(curX + curRadius, curY, curZ);
+                    Location loc{curX + curRadius, curY, curZ};
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
-                    loc = Location(curX - curRadius, curY, curZ);
-                    if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                    Location loc2{curX - curRadius, curY, curZ};
+                    if (this->validate_location(loc2)) {
+                        this->base_cost_add(traceCost, loc2);
                     }
                 }
             }
@@ -1623,13 +1623,13 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= traceRadius; ++curRadius) {
                 for (auto curX = startX; curX <= endX; ++curX) {
-                    auto &&loc = Location(curX, curY + curRadius, curZ);
+                    Location loc{curX, curY + curRadius, curZ};
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
-                    loc = Location(curX, curY - curRadius, curZ);
-                    if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                    Location loc2{curX, curY - curRadius, curZ};
+                    if (this->validate_location(loc2)) {
+                        this->base_cost_add(traceCost, loc2);
                     }
                 }
             }
@@ -1649,22 +1649,22 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
                 for (int curX = startX, curY = startY; curX <= endX && curY <= endY; ++curX, ++curY) {
-                    auto &&loc = Location(curX + curRadius, curY - curRadius, curZ);
+                    Location loc{curX + curRadius, curY - curRadius, curZ};
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
-                    loc = Location(curX - curRadius, curY + curRadius, curZ);
-                    if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                    Location loc2{curX - curRadius, curY + curRadius, curZ};
+                    if (this->validate_location(loc2)) {
+                        this->base_cost_add(traceCost, loc2);
                     }
                     if (curX < endX && curY < endY) {
-                        loc = Location(curX + curRadius, curY - curRadius + 1, curZ);
-                        if (this->validate_location(loc)) {
-                            this->base_cost_add(traceCost, loc);
+                        Location loc3{curX + curRadius, curY - curRadius + 1, curZ};
+                        if (this->validate_location(loc3)) {
+                            this->base_cost_add(traceCost, loc3);
                         }
-                        loc = Location(curX - curRadius + 1, curY + curRadius, curZ);
-                        if (this->validate_location(loc)) {
-                            this->base_cost_add(traceCost, loc);
+                        Location loc4{curX - curRadius + 1, curY + curRadius, curZ};
+                        if (this->validate_location(loc4)) {
+                            this->base_cost_add(traceCost, loc4);
                         }
                     }
                 }
@@ -1685,22 +1685,22 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
             // Extended Line
             for (int curRadius = 1; curRadius <= diagonalTraceRadius; ++curRadius) {
                 for (int curX = startX, curY = endY; curX <= endX && curY >= startY; ++curX, --curY) {
-                    auto &&loc = Location(curX + curRadius, curY + curRadius, curZ);
+                    Location loc{curX + curRadius, curY + curRadius, curZ};
                     if (this->validate_location(loc)) {
                         this->base_cost_add(traceCost, loc);
                     }
-                    loc = Location(curX - curRadius, curY - curRadius, curZ);
-                    if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                    Location loc2{curX - curRadius, curY - curRadius, curZ};
+                    if (this->validate_location(loc2)) {
+                        this->base_cost_add(traceCost, loc2);
                     }
                     if (curX < endX && curY > startY) {
-                        loc = Location(curX + curRadius, curY + curRadius - 1, curZ);
-                        if (this->validate_location(loc)) {
-                            this->base_cost_add(traceCost, loc);
+                        Location loc3{curX + curRadius, curY + curRadius - 1, curZ};
+                        if (this->validate_location(loc3)) {
+                            this->base_cost_add(traceCost, loc3);
                         }
-                        loc = Location(curX - curRadius + 1, curY - curRadius, curZ);
-                        if (this->validate_location(loc)) {
-                            this->base_cost_add(traceCost, loc);
+                        Location loc4{curX - curRadius + 1, curY - curRadius, curZ};
+                        if (this->validate_location(loc4)) {
+                            this->base_cost_add(traceCost, loc4);
                         }
                     }
                 }
