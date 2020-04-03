@@ -2,7 +2,7 @@
 
 double MultipinRoute::getRoutedWirelength() {
     double routedWL = 0.0;
-    for (auto &gp : this->mGridPaths) {
+    for (const auto &gp : this->mGridPaths) {
         routedWL += gp.getRoutedWirelength();
     }
     return routedWL;
@@ -10,7 +10,7 @@ double MultipinRoute::getRoutedWirelength() {
 
 int MultipinRoute::getRoutedNumVias() {
     int numRoutedVias = 0;
-    for (auto &gp : this->mGridPaths) {
+    for (const auto &gp : this->mGridPaths) {
         numRoutedVias += gp.getRoutedNumVias();
     }
     return numRoutedVias;
@@ -18,7 +18,7 @@ int MultipinRoute::getRoutedNumVias() {
 
 int MultipinRoute::getRoutedNumBends() {
     int numRoutedBends = 0;
-    for (auto &gp : this->mGridPaths) {
+    for (const auto &gp : this->mGridPaths) {
         numRoutedBends += gp.getRoutedNumBends();
     }
     return numRoutedBends;
@@ -26,12 +26,12 @@ int MultipinRoute::getRoutedNumBends() {
 
 void MultipinRoute::gridPathLocationsToSegments() {
     // 1. Copy GridPath's Locations into Segments
-    for (auto &gp : this->mGridPaths) {
+    for (auto &&gp : this->mGridPaths) {
         gp.copyLocationsToSegments();
     }
 
     // 2. Remove Redundant points in paths
-    for (auto &gp : this->mGridPaths) {
+    for (auto &&gp : this->mGridPaths) {
         gp.removeRedundantPoints();
     }
 }
@@ -48,19 +48,19 @@ void MultipinRoute::featuresToGridPaths() {
     this->mGridPaths.clear();
 
     if (this->features.size() == 2) {
-        auto &path = this->getNewGridPath();
-        for (auto &location : this->features) {
-            path.mSegments.emplace_back(location);
+        auto &&path = this->getNewGridPath();
+        for (const auto &location : this->features) {
+            path.mSegments.push_back(location);
         }
     }
 
     // Handle this->features.size() > 2
     // New start of a path
     this->mGridPaths.push_back(GridPath{});
-    mGridPaths.back().mSegments.emplace_back(this->features.front());
+    mGridPaths.back().mSegments.push_back(this->features.front());
 
     // Debuging
-    // for (auto &feature : this->features) {
+    // for (const auto &feature : this->features) {
     //     std::cout << feature << std::endl;
     // }
     // Debugging
@@ -68,8 +68,8 @@ void MultipinRoute::featuresToGridPaths() {
 
     // 1. Separate the features into paths
     for (int i = 1; i < this->features.size(); ++i) {
-        auto prevLocation = this->features.at(i - 1);
-        auto location = this->features.at(i);
+        const auto &prevLocation = this->features.at(i - 1);
+        const auto &location = this->features.at(i);
 
         // if (abs(location.m_x - prevLocation.m_x) <= 1 &&
         //     abs(location.m_y - prevLocation.m_y) <= 1 &&
@@ -102,7 +102,7 @@ void MultipinRoute::featuresToGridPaths() {
     // std::cout << __FUNCTION__ << "(): # paths: " << this->mGridPaths.size() << ", estimated Grid WL: " << estGridWL << std::endl;
 
     // 2. Remove Redundant points in paths
-    for (auto &path : this->mGridPaths) {
+    for (auto &&path : this->mGridPaths) {
         path.removeRedundantPoints();
     }
 

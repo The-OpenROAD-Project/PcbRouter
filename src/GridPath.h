@@ -23,9 +23,9 @@ class GridPath {
     void removeRedundantPoints();
     void copyLocationsToSegments() { mSegments = mLocations; }
 
-    double getRoutedWirelength();
-    int getRoutedNumVias();
-    int getRoutedNumBends();
+    double getRoutedWirelength() const;
+    int getRoutedNumVias() const;
+    int getRoutedNumBends() const;
 
     friend class BoardGrid;
     friend class MultipinRoute;

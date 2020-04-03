@@ -37,7 +37,7 @@ void GridPath::removeRedundantPoints() {
     }
 }
 
-double GridPath::getRoutedWirelength() {
+double GridPath::getRoutedWirelength() const {
     double totalEstWL = 0.0;
     Location prevLocation = this->mSegments.front();
 
@@ -63,7 +63,7 @@ double GridPath::getRoutedWirelength() {
     return totalEstWL;
 }
 
-int GridPath::getRoutedNumVias() {
+int GridPath::getRoutedNumVias() const {
     int totalNumVia = 0;
     Location prevLocation = this->mSegments.front();
 
@@ -88,7 +88,7 @@ int GridPath::getRoutedNumVias() {
     return totalNumVia;
 }
 
-int GridPath::getRoutedNumBends() {
+int GridPath::getRoutedNumBends() const {
     if (this->mSegments.size() <= 2) {
         return 0;
     }
