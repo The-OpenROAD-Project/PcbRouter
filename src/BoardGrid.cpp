@@ -1306,7 +1306,7 @@ void BoardGrid::sizedViaCostBetweenStartEndLayer(const Location &l, const int st
     int start = std::min(startLayerId, endLayerId);
     int end = std::max(startLayerId, endLayerId);
     // Check through hole via
-    for (int z = start; z < end; ++z) {
+    for (int z = start; z <= end; ++z) {
         for (const auto &gridPt : viaRelativeSearchGrids) {
             Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), z);
             if (!validate_location(current_l)) {
