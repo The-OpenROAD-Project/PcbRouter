@@ -883,65 +883,92 @@ void BoardGrid::getNeighbors(const Location &l, std::vector<std::pair<float, Loc
         ns.push_back(std::pair<float, Location>(backwardCost, backward));
     }
 
-    // Make a through hole via
-    float viaCost = 0.0;
-    Location viaCachedLocation{l.m_x, l.m_y, 0};
-    // Correct Implementation
-    // if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
-    //     //std::cout << "VIA cached missed at " << viaCachedLocation << ", cost: " << viaCost << std::endl;
-    //     viaCost += GlobalParam::gLayerChangeCost;
+    if (GlobalParam::gUseMircoVia) {
+        // up
+        if (l.m_z + 1 < this->l) {
+            Location up{l.m_x, l.m_y, l.m_z + 1};
+            float upCost = 0.0;
 
-    //     // Put all the layers (through hole via) into the neighbors
-    //     for (int z = 0; z < this->l; ++z) {
-    //         Location viaLayer{l.m_x, l.m_y, z};
-    //         ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
-    //     }
-    // }
+            sizedViaCostBetweenStartEndLayer(l, l.m_z, l.m_z + 1, viaRelativeSearchGrids, upCost);
+            upCost += GlobalParam::gLayerChangeCost;
+            ns.push_back(std::pair<float, Location>(upCost, up));
 
-    // Trying to cached the via cost
-    if (this->cached_via_cost_at(viaCachedLocation) < -1.5) {
-        // ViaForbidden location, do nothing
+            // Incremental searching
+            // this->cached_trace_cost_set(sized_trace_cost_at(up, traceRelativeSearchGrids), up);
+        }
+        // down
+        if (l.m_z - 1 > -1) {
+            Location down{l.m_x, l.m_y, l.m_z - 1};
+            float downCost = 0.0;
+
+            sizedViaCostBetweenStartEndLayer(l, l.m_z - 1, l.m_z, viaRelativeSearchGrids, downCost);
+            downCost += GlobalParam::gLayerChangeCost;
+            ns.push_back(std::pair<float, Location>(downCost, down));
+
+            // Incremental searching
+            // this->cached_trace_cost_set(sized_trace_cost_at(down, traceRelativeSearchGrids), down);
+        }
     } else {
-        if (this->cached_via_cost_at(viaCachedLocation) < -0.5) {
-            ++this->viaCachedMissed;
+        // Make a through hole via
+        float viaCost = 0.0;
+        Location viaCachedLocation{l.m_x, l.m_y, 0};
+        // Correct Implementation
+        // if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
+        //     //std::cout << "VIA cached missed at " << viaCachedLocation << ", cost: " << viaCost << std::endl;
+        //     viaCost += GlobalParam::gLayerChangeCost;
 
-            // For incremental Via cost update
-            int currentId = this->locationToId(l);
-            int prevId = this->getCameFromId(currentId);
-            Location prevLocation;
-            this->idToLocation(prevId, prevLocation);
-            prevLocation.m_z = 0;  // To access the cache
-            auto prevLocViaCost = this->cached_via_cost_at(prevLocation);
+        //     // Put all the layers (through hole via) into the neighbors
+        //     for (int z = 0; z < this->l; ++z) {
+        //         Location viaLayer{l.m_x, l.m_y, z};
+        //         ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
+        //     }
+        // }
 
-            // No cached via cost value - correct implementation
-            // if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
-            // No cached via cost value => try incremental cost updating
-            if (sizedViaExpandableAndIncrementalCost(l, viaRelativeSearchGrids, prevLocation, prevLocViaCost, curGridNetclass.getViaIncrementalSearchGrids(), viaCost)) {
-                // Put in the cache
-                this->cached_via_cost_set(viaCost, viaCachedLocation);
+        // Trying to cached the via cost
+        if (this->cached_via_cost_at(viaCachedLocation) < -1.5) {
+            // ViaForbidden location, do nothing
+        } else {
+            if (this->cached_via_cost_at(viaCachedLocation) < -0.5) {
+                ++this->viaCachedMissed;
 
-                viaCost += GlobalParam::gLayerChangeCost;
+                // For incremental Via cost update
+                int currentId = this->locationToId(l);
+                int prevId = this->getCameFromId(currentId);
+                Location prevLocation;
+                this->idToLocation(prevId, prevLocation);
+                prevLocation.m_z = 0;  // To access the cache
+                auto prevLocViaCost = this->cached_via_cost_at(prevLocation);
+
+                // No cached via cost value - correct implementation
+                // if (sizedViaExpandableAndCost(l, viaRelativeSearchGrids, viaCost)) {
+                // No cached via cost value => try incremental cost updating
+                if (sizedViaExpandableAndIncrementalCost(l, viaRelativeSearchGrids, prevLocation, prevLocViaCost, curGridNetclass.getViaIncrementalSearchGrids(), viaCost)) {
+                    // Put in the cache
+                    this->cached_via_cost_set(viaCost, viaCachedLocation);
+
+                    viaCost += GlobalParam::gLayerChangeCost;
+
+                    // Put all the layers (through hole via) into the neighbors
+                    for (int z = 0; z < this->l; ++z) {
+                        Location viaLayer{l.m_x, l.m_y, z};
+                        ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
+                    }
+                } else {
+                    // Put in the cache the via forbidden flag
+                    this->cached_via_cost_set(-2.0, viaCachedLocation);
+                }
+
+            } else {
+                ++this->viaCachedHit;
+
+                // Got a cached via cost value
+                viaCost = this->cached_via_cost_at(viaCachedLocation) + GlobalParam::gLayerChangeCost;
 
                 // Put all the layers (through hole via) into the neighbors
                 for (int z = 0; z < this->l; ++z) {
                     Location viaLayer{l.m_x, l.m_y, z};
                     ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
                 }
-            } else {
-                // Put in the cache the via forbidden flag
-                this->cached_via_cost_set(-2.0, viaCachedLocation);
-            }
-
-        } else {
-            ++this->viaCachedHit;
-
-            // Got a cached via cost value
-            viaCost = this->cached_via_cost_at(viaCachedLocation) + GlobalParam::gLayerChangeCost;
-
-            // Put all the layers (through hole via) into the neighbors
-            for (int z = 0; z < this->l; ++z) {
-                Location viaLayer{l.m_x, l.m_y, z};
-                ns.push_back(std::pair<float, Location>(viaCost, viaLayer));
             }
         }
     }
@@ -1272,6 +1299,28 @@ bool BoardGrid::sizedViaExpandableAndCost(const Location &l, const std::vector<P
         }
     }
     return true;
+}
+
+void BoardGrid::sizedViaCostBetweenStartEndLayer(const Location &l, const int startLayerId, const int endLayerId, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const {
+    cost = 0.0;
+    int start = std::min(startLayerId, endLayerId);
+    int end = std::max(startLayerId, endLayerId);
+    // Check through hole via
+    for (int z = start; z < end; ++z) {
+        for (const auto &gridPt : viaRelativeSearchGrids) {
+            Location current_l = Location(l.m_x + gridPt.x(), l.m_y + gridPt.y(), z);
+            if (!validate_location(current_l)) {
+                cost += GlobalParam::gViaTouchBoundaryCost;
+                continue;
+            }
+            if (this->isViaForbidden(current_l)) {
+                //return false;
+                cost += GlobalParam::gViaForbiddenCost;
+                continue;
+            }
+            cost += this->base_cost_at(current_l);
+        }
+    }
 }
 
 bool BoardGrid::sizedViaExpandableAndIncrementalCost(const Location &curLoc, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, const Location &prevLoc, const float &prevCost, const IncrementalSearchGrids &searchGrids, float &cost) const {

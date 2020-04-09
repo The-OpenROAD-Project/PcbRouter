@@ -73,6 +73,7 @@ class BoardGrid {
     // via
     [[deprecated]] bool sizedViaExpandableAndCost(const Location &l, const int viaRadius, float &cost) const;
     bool sizedViaExpandableAndCost(const Location &l, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const;
+    void sizedViaCostBetweenStartEndLayer(const Location &l, const int startLayerId, const int endLayerId, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, float &cost) const;
     bool sizedViaExpandableAndIncrementalCost(const Location &curLoc, const std::vector<Point_2D<int>> &viaRelativeSearchGrids, const Location &prevLoc, const float &prevCost, const IncrementalSearchGrids &searchGrids, float &cost) const;
     float via_cost_at(const Location &l) const;
     void add_via_cost(const Location &l, const int layer, const float cost, const int viaRadius);
