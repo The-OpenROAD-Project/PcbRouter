@@ -2,19 +2,16 @@
 #define PCBROUTER_BOARD_GRID_H
 
 #include <algorithm>
-#include <array>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <list>
-#include <queue>
+#include <map>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "GridCell.h"
+#include "GridDiffPairNetclass.h"
 #include "GridNetclass.h"
 #include "GridPath.h"
 #include "GridPin.h"
@@ -129,6 +126,9 @@ class BoardGrid {
 
     // Netclass mapping from DB netclasses, indices are aligned
     std::vector<GridNetclass> mGridNetclasses;
+    // Derived differential pairs' netclasses
+    std::vector<GridDiffPairNetclass> mGridDiffPairNetclasses;
+    std::map<std::pair<int, int>, int> mGridNetclassIdsToDiffPairOne;  // unordered_map doesn't support std::pair as a key
 
     // Frontiers
     //bool isABetterFrontierOfNext();
