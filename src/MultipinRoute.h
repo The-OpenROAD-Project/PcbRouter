@@ -51,6 +51,10 @@ class MultipinRoute {
     double getCurNegTrackObstacleCost() const { return -curTrackObstacleCost; }
     double getCurNegViaObstacleCost() const { return -curViaObstacleCost; }
 
+    int getPairNetId() const { return mPairNetId; }
+    bool isDiffPair() const { return mPairNetId != -1; }
+
+    void setPairNetId(const int _netId) { mPairNetId = _netId; }
     void setCurTrackObstacleCost(const double &toc) { curTrackObstacleCost = toc; }
     void setCurViaObstacleCost(const double &voc) { curViaObstacleCost = voc; }
     void addCurTrackObstacleCost(const double &stoc) { curTrackObstacleCost += stoc; }
@@ -66,6 +70,8 @@ class MultipinRoute {
    private:
     int netId = -1;
     int gridNetclassId = -1;
+    int mPairNetId = -1;
+    int mGridDiffPairNetclassId = -1;
     float currentRouteCost = 0.0;
     std::vector<GridPin> mGridPins;
     std::vector<GridPath> mGridPaths;

@@ -46,6 +46,8 @@ class GridBasedRouter {
     void set_net_layer_pref_weight(const int _netId, const std::string &_layerName, const int _weight);
     void set_net_all_layers_pref_weights(const int _netId, const int _weight);
 
+    void set_diff_pair_net_id(const int _netId1, const int _netId2);
+
     // Getter
     unsigned int get_grid_scale() { return GlobalParam::inputScale; }
     unsigned int get_num_iterations() { return GlobalParam::gNumRipUpReRouteIteration; }

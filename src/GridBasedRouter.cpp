@@ -622,6 +622,20 @@ void GridBasedRouter::set_net_all_layers_pref_weights(const int _netId, const in
     return;
 }
 
+void GridBasedRouter::set_diff_pair_net_id(const int _netId1, const int _netId2) {
+    if (_netId1 >= mGridNets.size()) {
+        std::cout << __FUNCTION__ << ": Invalid netId: " << _netId1 << std::endl;
+    }
+    if (_netId2 >= mGridNets.size()) {
+        std::cout << __FUNCTION__ << ": Invalid netId: " << _netId2 << std::endl;
+    }
+
+    auto &gn1 = this->mGridNets.at(_netId1);
+    gn1.setPairNetId(_netId2);
+    auto &gn2 = this->mGridNets.at(_netId2);
+    gn2.setPairNetId(_netId1);
+}
+
 void GridBasedRouter::initialization() {
     // Initilization
     this->setupLayerMapping();
