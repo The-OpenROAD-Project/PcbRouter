@@ -128,7 +128,6 @@ class BoardGrid {
     std::vector<GridNetclass> mGridNetclasses;
     // Derived differential pairs' netclasses
     std::vector<GridDiffPairNetclass> mGridDiffPairNetclasses;
-    std::map<std::pair<int, int>, int> mGridNetclassIdsToDiffPairOne;  // unordered_map doesn't support std::pair as a key
 
     // Frontiers
     //bool isABetterFrontierOfNext();

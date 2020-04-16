@@ -272,6 +272,83 @@ void GridBasedRouter::setupLayerMapping() {
     }
 }
 
+void GridBasedRouter::setupGridDiffPairNetclass(const int netclassId1, const int netclassId2) {
+    const int ncId1 = min(netclassId1, netclassId2);
+    const int ncId2 = max(netclassId1, netclassId2);
+
+    const auto &gnc1 = mBg.getGridNetclass(ncId1);
+    const auto &gnc2 = mBg.getGridNetclass(ncId2);
+
+    int id = mGridNetclassIdsToDiffPairOne.size();
+    //TODO: don't duplicate the same diff pair netclasses
+    this->mGridNetclassIdsToDiffPairOne.emplace(make_pair(ncId1, ncId2), id);
+
+    int clearance = max(gnc1.getClearance(), gnc2.getClearance());
+    int traceWidth = gnc1.getTraceWidth() + clearance + gnc2.getTraceWidth();
+    int viaDia = gnc1.getViaDia() + clearance + gnc2.getViaDia();
+    int viaDrill = gnc1.getViaDrill() + clearance + gnc2.getViaDrill();
+    int microViaDia = gnc1.getMicroViaDia() + clearance + gnc2.getMicroViaDia();
+    int microViaDrill = gnc1.getMicroViaDrill() + clearance + gnc2.getMicroViaDrill();
+
+    GridDiffPairNetclass gridDiffPairNetclass{id, clearance, traceWidth, viaDia, viaDrill, microViaDia, microViaDrill, ncId1, ncId2};
+
+    // Setup derived values
+    gridDiffPairNetclass.setHalfTraceWidth((int)floor((double)traceWidth / 2.0));
+    gridDiffPairNetclass.setHalfViaDia((int)floor((double)viaDia / 2.0));
+    gridDiffPairNetclass.setHalfMicroViaDia((int)floor((double)microViaDia / 2.0));
+    // Diagnoal cases // Watch out the conservative values over here if need more spaces for routing
+    int diagonalTraceWidth = (int)ceil(traceWidth / sqrt(2));
+    gridDiffPairNetclass.setDiagonalTraceWidth(diagonalTraceWidth);
+    gridDiffPairNetclass.setHalfDiagonalTraceWidth((int)floor((double)diagonalTraceWidth / 2.0));
+    int diagonalClearance = (int)ceil(clearance / sqrt(2));
+    gridDiffPairNetclass.setDiagonalClearance(diagonalClearance);
+
+    gridDiffPairNetclass.setViaExpansion(gridDiffPairNetclass.getHalfViaDia());
+    gridDiffPairNetclass.setTraceExpansion(gridDiffPairNetclass.getHalfTraceWidth());
+    gridDiffPairNetclass.setDiagonalTraceExpansion(gridDiffPairNetclass.getHalfDiagonalTraceWidth());
+    GridNetclass::setObstacleExpansion(0);
+    if (GlobalParam::gUseMircoVia) {
+        gridDiffPairNetclass.setViaExpansion(gridDiffPairNetclass.getHalfMicroViaDia());
+    }
+
+    // Update Trace-end shape grids and Calculate the trace-end shape grids
+    int halfTraceWidth = gridDiffPairNetclass.getHalfTraceWidth();
+    std::vector<Point_2D<int>> traceEndGrids;
+    getRasterizedCircle(halfTraceWidth, (double)halfTraceWidth, traceEndGrids);
+    gridDiffPairNetclass.setTraceEndShapeGrids(traceEndGrids);
+
+    // Update trace searching grids and Calculate the trace searching grid
+    int traceSearchRadius = gridDiffPairNetclass.getHalfTraceWidth() + gridDiffPairNetclass.getClearance();
+    std::vector<Point_2D<int>> traceSearchingGrids;
+    getRasterizedCircle(traceSearchRadius, (double)traceSearchRadius, traceSearchingGrids);
+    gridDiffPairNetclass.setTraceSearchingSpaceToGrids(traceSearchingGrids);
+
+    // Update Via shape grids
+    int halfViaDia = (int)floor((double)viaDia / 2.0);
+    if (GlobalParam::gUseMircoVia) {
+        halfViaDia = (int)floor((double)microViaDia / 2.0);
+    }
+    std::vector<Point_2D<int>> viaGrids;
+    getRasterizedCircle(halfViaDia, (double)halfViaDia, viaGrids);
+    gridDiffPairNetclass.setViaShapeGrids(viaGrids);
+
+    // Update via searching grids
+    int viaSearchRadius = gridDiffPairNetclass.getHalfViaDia() + gridDiffPairNetclass.getClearance();
+    if (GlobalParam::gUseMircoVia) {
+        viaSearchRadius = gridDiffPairNetclass.getHalfMicroViaDia() + gridDiffPairNetclass.getClearance();
+    }
+    std::vector<Point_2D<int>> viaSearchingGrids;
+    // Watch out the case of via size < trace size
+    if (viaSearchRadius < traceSearchRadius) {
+        // Use trace searching grids instead
+        gridDiffPairNetclass.setViaSearchingSpaceToGrids(traceSearchingGrids);
+    } else {
+        // Calculate the via searching grid
+        getRasterizedCircle(viaSearchRadius, (double)viaSearchRadius, viaSearchingGrids);
+        gridDiffPairNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
+    }
+}
+
 void GridBasedRouter::setupGridNetclass() {
     for (auto &netclassIte : mDb.getNetclasses()) {
         int id = netclassIte.getId();
@@ -634,6 +711,8 @@ void GridBasedRouter::set_diff_pair_net_id(const int _netId1, const int _netId2)
     gn1.setPairNetId(_netId2);
     auto &gn2 = this->mGridNets.at(_netId2);
     gn2.setPairNetId(_netId1);
+
+    setupGridDiffPairNetclass(gn1.getGridNetclassId(), gn2.getGridNetclassId());
 }
 
 void GridBasedRouter::initialization() {
@@ -642,6 +721,124 @@ void GridBasedRouter::initialization() {
     this->setupGridNetclass();
     this->setupBoardGrid();
     this->setupGridNetsAndGridPins();
+}
+
+void GridBasedRouter::route_diff_pairs() {
+    std::cout << std::fixed << std::setprecision(5);
+    std::cout << std::endl
+              << "=================" << __FUNCTION__ << "==================" << std::endl;
+
+    // Add all instances' pins to a cost in grid (without inflation for spacing)
+    for (auto &gridPin : this->mGridPins) {
+        this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
+    }
+
+    std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + this->getParamsNameTag();
+    mBg.printMatPlot(initialMapNameTag);
+
+    // Add all nets to grid routes
+    double totalCurrentRouteCost = 0.0;
+    bestTotalRouteCost = 0.0;
+    auto &nets = mDb.getNets();
+
+    for (auto &gridNet : this->mGridNets) {
+        if (!gridNet.isDiffPair()) {
+            continue;
+        }
+
+        if (gridNet.getGridPins().size() < 2) {
+            continue;
+        }
+
+        if (gridNet.getNetId() >= nets.size()) {
+            std::cout << __FUNCTION__ << "(): Invalid grid net id: " << gridNet.getNetId() << std::endl;
+            continue;
+        }
+
+        std::cout << "\n\nRouting net: " << nets.at(gridNet.getNetId()).getName()
+                  << ", netId: " << gridNet.getNetId() << ", netDegree: " << gridNet.getGridPins().size() << "..." << std::endl;
+
+        // Temporary reomve the pin cost on the cost grid
+        for (auto &gridPin : gridNet.mGridPins) {
+            // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
+            this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
+        }
+
+        // if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
+        //     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".Net_" + std::to_string(net.getId()) + ".removeSTPad." + this->getParamsNameTag();
+        //     mBg.printMatPlot(mapNameTag);
+        // }
+
+        // Setup design rules in board grid
+        if (!mDb.isNetclassId(gridNet.getGridNetclassId())) {
+            std::cerr << __FUNCTION__ << "() Invalid netclass id: " << gridNet.getGridNetclassId() << std::endl;
+            continue;
+        }
+        mBg.setCurrentGridNetclassId(gridNet.getGridNetclassId());
+        gridNet.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+        gridNet.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+        mBg.setCurrentNetId(gridNet.getNetId());
+
+        // Route the net
+        mBg.addRouteWithGridPins(gridNet);
+        totalCurrentRouteCost += gridNet.currentRouteCost;
+        std::cout << "=====> currentRouteCost: " << gridNet.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
+
+        // Put back the pin cost on base cost grid
+        for (auto &gridPin : gridNet.mGridPins) {
+            // addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
+            this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
+        }
+    }
+
+    // Set up the base solution
+    std::vector<double> iterativeCost;
+    iterativeCost.push_back(totalCurrentRouteCost);
+    bestTotalRouteCost = totalCurrentRouteCost;
+    this->bestSolution = this->mGridNets;
+    routingSolutions.push_back(this->mGridNets);
+
+    if (GlobalParam::gOutputDebuggingKiCadFile) {
+        std::string nameTag = "fristTimeRouteAll";
+        nameTag = nameTag + "." + this->getParamsNameTag();
+        writeSolutionBackToDbAndSaveOutput(nameTag, this->mGridNets);
+    }
+    std::cout << "i=0, totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
+
+    /*
+    *
+    * 
+    * 
+    * Do the rip-up and re-route
+    * 
+    * 
+    */
+
+    std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
+    for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
+        cout << "i=" << i << ", cost: " << iterativeCost.at(i)
+             << ", WL: " << this->get_routed_wirelength(routingSolutions.at(i))
+             << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i))
+             << ", #Bends: " << this->get_routed_num_bends(routingSolutions.at(i));
+
+        if (fabs(bestTotalRouteCost - iterativeCost.at(i)) < GlobalParam::gEpsilon) {
+            cout << " <- best result" << std::endl;
+        } else {
+            cout << std::endl;
+        }
+    }
+
+    std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
+              << std::endl;
+
+    // Routing has done. Print the final base cost
+    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + this->getParamsNameTag();
+    mBg.printMatPlot(mapNameTag);
+
+    // Output final result to KiCad file
+    std::string nameTag = "bestSolutionWithMerging";
+    nameTag = nameTag + "." + this->getParamsNameTag();
+    writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
 }
 
 void GridBasedRouter::route() {

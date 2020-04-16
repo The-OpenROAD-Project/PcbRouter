@@ -75,7 +75,8 @@ int main(int argc, char *argv[]) {
     // DDR_CLKN(376), DDR_CLK(274)
     router.set_diff_pair_net_id(274, 376);
 
-    router.route();
+    // router.route();
+    router.route_diff_pairs();
 
     // db.printRoutedSegmentsWLAndNumVias();
 

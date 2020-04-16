@@ -22,6 +22,7 @@ class GridBasedRouter {
     ~GridBasedRouter() {}
 
     void route();
+    void route_diff_pairs();
     void initialization();
 
     // Setter
@@ -81,6 +82,7 @@ class GridBasedRouter {
     void setupBoardGrid();
     void setupLayerMapping();
     void setupGridNetclass();
+    void setupGridDiffPairNetclass(const int netclassId1, const int netclassId2);
     void setupGridNetsAndGridPins();
     void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
     void getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);
@@ -130,6 +132,9 @@ class GridBasedRouter {
     std::vector<std::string> mGridLayerToName;
     std::unordered_map<std::string, int> mLayerNameToGridLayer;
     std::unordered_map<int, int> mDbLayerIdToGridLayer;
+
+    // GridNetclasses mapping to GridDiffPairNetclass
+    std::map<std::pair<int, int>, int> mGridNetclassIdsToDiffPairOne;  // unordered_map doesn't support std::pair as a key
 
     // Global GridPins including the pins aren't connected by nets
     std::vector<GridPin> mGridPins;
