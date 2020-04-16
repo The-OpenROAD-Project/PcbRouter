@@ -440,7 +440,6 @@ void GridBasedRouter::setupGridNetclass() {
         gridNetclass.setViaShapeGrids(viaGrids);
 
         // Update via searching grids
-
         std::vector<Point_2D<int>> viaSearchingGrids;
         int viaSearchRadius = gridNetclass.getHalfViaDia() + gridNetclass.getClearance();
         double viaSearchRadiusFloating = halfViaDiaFloating + dbLengthToGridLength(netclassIte.getClearance());
@@ -462,6 +461,13 @@ void GridBasedRouter::setupGridNetclass() {
             // Calculate the via searching grid
             getRasterizedCircle(viaSearchRadius, viaSearchRadiusFloating, viaSearchingGrids);
             gridNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
+
+            // Debugging
+            std::cout << "viaSearchRadius: " << viaSearchRadius << ", viaSearchRadiusFloating: " << viaSearchRadiusFloating << std::endl;
+            std::cout << "Relative via searching grids points: " << std::endl;
+            for (auto &pt : gridNetclass.getViaSearchingSpaceToGrids()) {
+                std::cout << pt << std::endl;
+            }
         }
 
         // Setup incremental searching grids
