@@ -29,9 +29,11 @@ class MultipinRoute {
     void gridPathLocationsToSegments();
 
     int getGridNetclassId() const { return gridNetclassId; }
+    int getNetId() const { return netId; }
 
     const std::vector<pr::prIntCost> &getLayerCosts() const { return mLayerCosts; }
     const std::vector<GridPath> &getGridPaths() const { return mGridPaths; }
+    const std::vector<GridPin> &getGridPins() const { return mGridPins; }
     void clearGridPaths() { mGridPaths.clear(); }
 
     GridPath &getNewGridPath() {
@@ -79,7 +81,7 @@ class MultipinRoute {
     // std::vector<Location> vias; //TODO
 
     // deprecated, will clean up later
-    std::vector<Location> features;  // Make this obsolete, please
+    /*[[deprecated]]*/ std::vector<Location> features;  // Make this obsolete, please
 
     // Cost along with this net
     double curTrackObstacleCost = 0.0;

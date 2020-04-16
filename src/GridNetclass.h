@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <vector>
+
 #include "IncrementalSearchGrids.h"
 #include "globalParam.h"
 #include "point.h"
@@ -21,23 +22,23 @@ class GridNetclass {
     //dtor
     ~GridNetclass() {}
 
-    int getId() { return m_id; }
-    int getClearance() { return m_clearance; }
-    int getDiagonalClearance() { return m_clearance_diagonal; }
-    int getTraceWidth() { return m_trace_width; }
-    int getDiagonalTraceWidth() { return m_trace_width_diagonal; }
-    int getHalfTraceWidth() { return m_half_trace_width; }
-    int getHalfDiagonalTraceWidth() { return m_half_trace_width_diagonal; }
-    int getViaDia() { return m_via_dia; }
-    int getHalfViaDia() { return m_half_via_dia; }
-    int getHalfMicroViaDia() { return m_half_uvia_dia; }
-    int getViaDrill() { return m_via_drill; }
-    int getMicroViaDia() { return m_uvia_dia; }
-    int getMicroViaDrill() { return m_uvia_drill; }
-    int getViaExpansion() { return m_via_expansion; }
+    int getId() const { return m_id; }
+    int getClearance() const { return m_clearance; }
+    int getDiagonalClearance() const { return m_clearance_diagonal; }
+    int getTraceWidth() const { return m_trace_width; }
+    int getDiagonalTraceWidth() const { return m_trace_width_diagonal; }
+    int getHalfTraceWidth() const { return m_half_trace_width; }
+    int getHalfDiagonalTraceWidth() const { return m_half_trace_width_diagonal; }
+    int getViaDia() const { return m_via_dia; }
+    int getHalfViaDia() const { return m_half_via_dia; }
+    int getHalfMicroViaDia() const { return m_half_uvia_dia; }
+    int getViaDrill() const { return m_via_drill; }
+    int getMicroViaDia() const { return m_uvia_dia; }
+    int getMicroViaDrill() const { return m_uvia_drill; }
+    int getViaExpansion() const { return m_via_expansion; }
     static int getObstacleExpansion() { return m_obstacle_expansion; }
-    int getTraceExpansion() { return m_trace_expansion; }
-    int getDiagonalTraceExpansion() { return m_trace_expansion_diagonal; }
+    int getTraceExpansion() const { return m_trace_expansion; }
+    int getDiagonalTraceExpansion() const { return m_trace_expansion_diagonal; }
     // Setup Derived
     void setHalfTraceWidth(const int halfTraWid) { m_half_trace_width = halfTraWid; }
     void setHalfViaDia(const int halfViaDia) { m_half_via_dia = halfViaDia; }
