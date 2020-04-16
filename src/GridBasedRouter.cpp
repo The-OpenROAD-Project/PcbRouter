@@ -1193,10 +1193,8 @@ bool GridBasedRouter::getGridLayers(const padstack &pad, const instance &inst, s
         }
     } else {
         //Put all the layers
-        int layer = 0;
-        for (const auto &l : mGridLayerToName) {
+        for (int layer = 0; layer < mGridLayerToName.size(); ++layer) {
             layers.push_back(layer);
-            ++layer;
         }
     }
     return true;
