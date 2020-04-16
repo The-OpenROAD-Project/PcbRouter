@@ -78,7 +78,7 @@ class MultipinRoute {
     std::vector<GridPin> mGridPins;
     std::vector<GridPath> mGridPaths;
     std::vector<pr::prIntCost> mLayerCosts;  //Layer preferences for this net, align with board grid layer
-    // std::vector<Location> vias; //TODO
+                                             // std::vector<Location> vias; //TODO
 
     // deprecated, will clean up later
     /*[[deprecated]]*/ std::vector<Location> features;  // Make this obsolete, please

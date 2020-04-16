@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "BoardGrid.h"
+#include "GridDiffPairNet.h"
 #include "globalParam.h"
 #include "kicadPcbDataBase.h"
 #include "util.h"

@@ -52,6 +52,7 @@ set (PCBROUTER_HEADER
   src/GridBasedRouter.h
   src/GridNetclass.h
   src/GridDiffPairNetclass.h
+  src/GridDiffPairNet.h
   src/GridCell.h
   src/GridPin.h
   src/GridPath.h
