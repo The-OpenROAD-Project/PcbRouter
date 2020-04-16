@@ -272,15 +272,21 @@ void GridBasedRouter::setupLayerMapping() {
     }
 }
 
-void GridBasedRouter::setupGridDiffPairNetclass(const int netclassId1, const int netclassId2) {
+void GridBasedRouter::setupGridDiffPairNetclass(const int netclassId1, const int netclassId2, int &gridDiffPairNetclassId) {
     const int ncId1 = min(netclassId1, netclassId2);
     const int ncId2 = max(netclassId1, netclassId2);
 
     const auto &gnc1 = mBg.getGridNetclass(ncId1);
     const auto &gnc2 = mBg.getGridNetclass(ncId2);
 
+    auto it = mGridNetclassIdsToDiffPairOne.find(make_pair(ncId1, ncId2));
+    if (it != mGridNetclassIdsToDiffPairOne.end()) {
+        gridDiffPairNetclassId = it->second;
+        return;
+    }
+
     int id = mGridNetclassIdsToDiffPairOne.size();
-    //TODO: don't duplicate the same diff pair netclasses
+    gridDiffPairNetclassId = id;
     this->mGridNetclassIdsToDiffPairOne.emplace(make_pair(ncId1, ncId2), id);
 
     int clearance = max(gnc1.getClearance(), gnc2.getClearance());
@@ -347,6 +353,29 @@ void GridBasedRouter::setupGridDiffPairNetclass(const int netclassId1, const int
         getRasterizedCircle(viaSearchRadius, (double)viaSearchRadius, viaSearchingGrids);
         gridDiffPairNetclass.setViaSearchingSpaceToGrids(viaSearchingGrids);
     }
+
+    // Setup incremental searching grids
+    // gridNetclass.setupTraceIncrementalSearchGrids();
+    // gridNetclass.setupViaIncrementalSearchGrids();
+    
+    // Put the netclass into class vectors
+    mBg.addGridDiffPairNetclass(gridDiffPairNetclass);
+
+    // std::cout << "==============DB netclass: id: " << netclassIte.getId() << "==============" << std::endl;
+    // std::cout << "clearance: " << netclassIte.getClearance() << ", traceWidth: " << netclassIte.getTraceWidth() << std::endl;
+    // std::cout << "viaDia: " << netclassIte.getViaDia() << ", viaDrill: " << netclassIte.getViaDrill() << std::endl;
+    // std::cout << "microViaDia: " << netclassIte.getMicroViaDia() << ", microViaDrill: " << netclassIte.getMicroViaDrill() << std::endl;
+    // std::cout << "==============Grid netclass: id: " << id << "==============" << std::endl;
+    // std::cout << "clearance: " << gridNetclass.getClearance() << ", diagonal clearance: " << gridNetclass.getDiagonalClearance() << std::endl;
+    // std::cout << "traceWidth: " << gridNetclass.getTraceWidth() << ", half traceWidth: " << gridNetclass.getHalfTraceWidth() << std::endl;
+    // std::cout << "diagonal traceWidth: " << gridNetclass.getDiagonalTraceWidth() << ", half diagonal traceWidth: " << gridNetclass.getHalfDiagonalTraceWidth() << std::endl;
+    // std::cout << "viaDia: " << gridNetclass.getViaDia() << ", halfViaDia: " << gridNetclass.getHalfViaDia() << ", viaDrill: " << gridNetclass.getViaDrill() << std::endl;
+    // std::cout << "microViaDia: " << gridNetclass.getMicroViaDia() << ", microViaDrill: " << gridNetclass.getMicroViaDrill() << std::endl;
+    // std::cout << "==============Grid netclass: id: " << id << ", Expansions==============" << std::endl;
+    // std::cout << "viaExpansion: " << gridNetclass.getViaExpansion() << std::endl;
+    // std::cout << "traceExpansion: " << gridNetclass.getTraceExpansion() << std::endl;
+    // std::cout << "DiagonalTraceExpansion: " << gridNetclass.getDiagonalTraceExpansion() << std::endl;
+    // std::cout << "(static)obstacleExpansion: " << GridNetclass::getObstacleExpansion() << std::endl;
 }
 
 void GridBasedRouter::setupGridNetclass() {
@@ -718,7 +747,8 @@ void GridBasedRouter::set_diff_pair_net_id(const int _netId1, const int _netId2)
     auto &gn2 = this->mGridNets.at(_netId2);
     gn2.setPairNetId(_netId1);
 
-    setupGridDiffPairNetclass(gn1.getGridNetclassId(), gn2.getGridNetclassId());
+    int gridDiffPairNetclassId = -1;
+    setupGridDiffPairNetclass(gn1.getGridNetclassId(), gn2.getGridNetclassId(), gridDiffPairNetclassId);
 }
 
 void GridBasedRouter::initialization() {

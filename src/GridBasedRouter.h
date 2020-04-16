@@ -83,7 +83,7 @@ class GridBasedRouter {
     void setupBoardGrid();
     void setupLayerMapping();
     void setupGridNetclass();
-    void setupGridDiffPairNetclass(const int netclassId1, const int netclassId2);
+    void setupGridDiffPairNetclass(const int netclassId1, const int netclassId2, int &gridDiffPairNetclassId);
     void setupGridNetsAndGridPins();
     void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
     void getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);

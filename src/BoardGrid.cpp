@@ -2043,11 +2043,24 @@ void BoardGrid::addGridNetclass(const GridNetclass &gridNetclass) {
     this->mGridNetclasses.push_back(gridNetclass);
 }
 
+void BoardGrid::addGridDiffPairNetclass(const GridDiffPairNetclass &gridDPNetclass) {
+    this->mGridDiffPairNetclasses.push_back(gridDPNetclass);
+}
+
 const GridNetclass &BoardGrid::getGridNetclass(const int gridNetclassId) {
     if (gridNetclassId < 0 || gridNetclassId > this->mGridNetclasses.size()) {
-        std::cerr << "Illegal grid netclass id: " << gridNetclassId << std::endl;
+        std::cerr << "Illegal grid netclass id: " << gridNetclassId << ", use the default netclass (first one) instead." << std::endl;
         return this->mGridNetclasses.front();
     } else {
         return this->mGridNetclasses.at(gridNetclassId);
+    }
+}
+
+const GridDiffPairNetclass &BoardGrid::getGridDiffPairNetclass(const int gridDPNetclassId) {
+    if (gridDPNetclassId < 0 || gridDPNetclassId > this->mGridDiffPairNetclasses.size()) {
+        std::cerr << "Illegal grid diff pair netclass id: " << gridDPNetclassId << ", use the default diff pair netclass (first one) instead." << std::endl;
+        return this->mGridDiffPairNetclasses.front();
+    } else {
+        return this->mGridDiffPairNetclasses.at(gridDPNetclassId);
     }
 }
