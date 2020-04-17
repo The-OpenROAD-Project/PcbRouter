@@ -1991,6 +1991,52 @@ void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route
 //     }
 // }
 
+void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
+    // 1. Route the grouped nets by thicker netclass
+    // 2. Separate the thicker net into two
+    // 3. Connect the pins with the two separated nets
+
+    std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.mGridPins.size() << std::endl;
+
+    if (route.mGridPins.size() <= 1) return;
+
+    // Clear and initialize
+    this->clearAllCameFromId();
+    this->cached_trace_cost_fill(-1);
+    this->cached_via_cost_fill(-1);
+    route.currentRouteCost = 0.0;
+
+    for (size_t i = 1; i < route.mGridPins.size(); ++i) {
+        // For early break
+        this->setTargetedPins(route.mGridPins.at(i).pinWithLayers);
+        // For 2D cost estimation (cares about x and y only)
+        current_targeted_pin = route.mGridPins.at(i).pinWithLayers.front();
+        // For 3D cost estimation
+        currentTargetedPinWithLayers = route.mGridPins.at(i).pinWithLayers;
+
+        Location finalEnd{0, 0, 0};
+        float routeCost = 0.0;
+
+        this->aStarSearching(dynamic_cast<MultipinRoute &>(route), finalEnd, routeCost);
+        route.currentRouteCost += routeCost;
+
+        // TODO Fix this, when THROUGH PAD as a start?
+        this->backtrackingToGridPath(finalEnd, dynamic_cast<MultipinRoute &>(route));
+
+        // Reset temporary stuff
+        // For early break
+        this->clearTargetedPins(route.mGridPins.at(i).pinWithLayers);
+        // For 2D cost estimation
+        current_targeted_pin = Location{0, 0, 0};
+        // For 3D cost estimation
+        currentTargetedPinWithLayers.clear();
+    }
+
+    // Convert from grid locations to grid paths
+    route.gridPathLocationsToSegments();
+    this->add_route_to_base_cost(dynamic_cast<MultipinRoute &>(route));
+}
+
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.mGridPins.size() << std::endl;
 
@@ -2013,6 +2059,7 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         Location finalEnd{0, 0, 0};
         float routeCost = 0.0;
 
+        // GridPin.front() will be initilized inside
         this->aStarSearching(route, finalEnd, routeCost);
         route.currentRouteCost += routeCost;
 

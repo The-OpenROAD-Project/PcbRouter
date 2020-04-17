@@ -285,7 +285,14 @@ void GridBasedRouter::setupGridDiffPairNetclass(const int netclassId1, const int
         return;
     }
 
+    /*
+    // Store in mBg.mGridDiffPairNetclass
     int id = mGridNetclassIdsToDiffPairOne.size();
+    gridDiffPairNetclassId = id;
+    this->mGridNetclassIdsToDiffPairOne.emplace(make_pair(ncId1, ncId2), id);
+    */
+    // Store in mBg.mGridNetclass
+    int id = mBg.getGridNetclasses().size();
     gridDiffPairNetclassId = id;
     this->mGridNetclassIdsToDiffPairOne.emplace(make_pair(ncId1, ncId2), id);
 
@@ -355,11 +362,12 @@ void GridBasedRouter::setupGridDiffPairNetclass(const int netclassId1, const int
     }
 
     // Setup incremental searching grids
-    // gridNetclass.setupTraceIncrementalSearchGrids();
-    // gridNetclass.setupViaIncrementalSearchGrids();
-    
+    gridDiffPairNetclass.setupTraceIncrementalSearchGrids();
+    gridDiffPairNetclass.setupViaIncrementalSearchGrids();
+
     // Put the netclass into class vectors
-    mBg.addGridDiffPairNetclass(gridDiffPairNetclass);
+    mBg.addGridNetclass(static_cast<GridNetclass>(gridDiffPairNetclass));
+    // mBg.addGridDiffPairNetclass(gridDiffPairNetclass);
 
     // std::cout << "==============DB netclass: id: " << netclassIte.getId() << "==============" << std::endl;
     // std::cout << "clearance: " << netclassIte.getClearance() << ", traceWidth: " << netclassIte.getTraceWidth() << std::endl;
@@ -747,8 +755,16 @@ void GridBasedRouter::set_diff_pair_net_id(const int _netId1, const int _netId2)
     auto &gn2 = this->mGridNets.at(_netId2);
     gn2.setPairNetId(_netId1);
 
+    // Create or get a corresponding diff pair netclass
     int gridDiffPairNetclassId = -1;
     setupGridDiffPairNetclass(gn1.getGridNetclassId(), gn2.getGridNetclassId(), gridDiffPairNetclassId);
+
+    // Create a diff pair net instance
+    this->mGridDiffPairNets.emplace_back(this->mGridDiffPairNets.size(),
+                                         gridDiffPairNetclassId, mDb.getCopperLayers().size(), gn1, gn2);
+
+    GridDiffPairNet &gDpNet = this->mGridDiffPairNets.back();
+    gDpNet.setupDiffPairGridPins(0, this->mGridLayerToName.size() - 1);
 }
 
 void GridBasedRouter::initialization() {
@@ -777,54 +793,29 @@ void GridBasedRouter::route_diff_pairs() {
     bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
 
-    for (auto &gridNet : this->mGridNets) {
-        if (!gridNet.isDiffPair()) {
-            continue;
-        }
+    for (auto &gridDPNet : this->mGridDiffPairNets) {
+        MultipinRoute &gn1 = gridDPNet.getGridNet1();
+        MultipinRoute &gn2 = gridDPNet.getGridNet2();
 
-        if (gridNet.getGridPins().size() < 2) {
-            continue;
-        }
+        std::cout << "\n\nRouting differential pair nets: " << nets.at(gn1.getNetId()).getName()
+                  << "(" << gn1.getNetId() << ") and " << nets.at(gn2.getNetId()).getName()
+                  << "(" << gn2.getNetId() << "), dpNetId: " << gridDPNet.getNetId()
+                  << ", dpNetclassId: " << gridDPNet.getGridDiffPairNetclassId() << std::endl;
 
-        if (gridNet.getNetId() >= nets.size()) {
-            std::cout << __FUNCTION__ << "(): Invalid grid net id: " << gridNet.getNetId() << std::endl;
-            continue;
-        }
-
-        std::cout << "\n\nRouting net: " << nets.at(gridNet.getNetId()).getName()
-                  << ", netId: " << gridNet.getNetId() << ", netDegree: " << gridNet.getGridPins().size() << "..." << std::endl;
-
-        // Temporary reomve the pin cost on the cost grid
-        for (auto &gridPin : gridNet.mGridPins) {
-            // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
-            this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
-        }
-
-        // if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
-        //     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".Net_" + std::to_string(net.getId()) + ".removeSTPad." + this->getParamsNameTag();
-        //     mBg.printMatPlot(mapNameTag);
-        // }
-
-        // Setup design rules in board grid
-        if (!mDb.isNetclassId(gridNet.getGridNetclassId())) {
-            std::cerr << __FUNCTION__ << "() Invalid netclass id: " << gridNet.getGridNetclassId() << std::endl;
-            continue;
-        }
-        mBg.setCurrentGridNetclassId(gridNet.getGridNetclassId());
-        gridNet.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
-        gridNet.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
-        mBg.setCurrentNetId(gridNet.getNetId());
+        mBg.setCurrentGridNetclassId(gridDPNet.getGridNetclassId());
+        gridDPNet.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+        gridDPNet.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+        // mBg.setCurrentNetId(gridNet.getNetId());
 
         // Route the net
-        mBg.addRouteWithGridPins(gridNet);
-        totalCurrentRouteCost += gridNet.currentRouteCost;
-        std::cout << "=====> currentRouteCost: " << gridNet.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
+        // mBg.addRouteWithGridPins(dynamic_cast<MultipinRoute &>(gridDPNet));
+        mBg.addGridDiffPairNet(gridDPNet);
 
-        // Put back the pin cost on base cost grid
-        for (auto &gridPin : gridNet.mGridPins) {
-            // addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
-            this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
-        }
+        // totalCurrentRouteCost += gridNet.currentRouteCost;
+        // std::cout << "=====> currentRouteCost: " << gridNet.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
+
+        // Debugging purpose, put the GridDiffPairNet routing result into DB
+        gn1.mGridPaths = gridDPNet.mGridPaths;
     }
 
     // Set up the base solution

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "GridCell.h"
+#include "GridDiffPairNet.h"
 #include "GridDiffPairNetclass.h"
 #include "GridNetclass.h"
 #include "GridPath.h"
@@ -43,9 +44,11 @@ class BoardGrid {
     void addGridNetclass(const GridNetclass &);
     void addGridDiffPairNetclass(const GridDiffPairNetclass &);
     const GridNetclass &getGridNetclass(const int gridNetclassId);
+    const std::vector<GridNetclass> &getGridNetclasses() { return mGridNetclasses; }
     const GridDiffPairNetclass &getGridDiffPairNetclass(const int gridDPNetclassId);
     // Routing APIs
     void addRouteWithGridPins(MultipinRoute &route);
+    void addGridDiffPairNet(GridDiffPairNet &route);
     void ripup_route(MultipinRoute &route);
     // working cost
     void working_cost_fill(float value);

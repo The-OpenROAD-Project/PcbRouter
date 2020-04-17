@@ -146,6 +146,9 @@ class GridBasedRouter {
     std::vector<std::vector<MultipinRoute> > routingSolutions;  //Keep the routing solutions of each iteration
     double bestTotalRouteCost = -1.0;
 
+    // Diff pairs
+    std::vector<GridDiffPairNet> mGridDiffPairNets;
+
     // Board Boundary
     double mMinX = std::numeric_limits<double>::max();
     double mMaxX = std::numeric_limits<double>::min();
