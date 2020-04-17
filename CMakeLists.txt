@@ -41,6 +41,7 @@ set (PCBROUTER_SRC
   src/GridNetclass.cpp
   src/GridPath.cpp
   src/MultipinRoute.cpp
+  src/GridDiffPairNet.cpp
   src/globalParam.cpp
   src/frTime.cpp
   src/frTime_helper.cpp
