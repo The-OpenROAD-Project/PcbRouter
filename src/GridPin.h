@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <vector>
+
 #include "globalParam.h"
 #include "point.h"
 
@@ -22,6 +23,7 @@ class GridPin {
     void setPinLL(Point_2D<int> &point) { pinLL = point; }
     void setPinUR(Point_2D<int> &point) { pinUR = point; }
     const std::vector<Location> &getPinWithLayers() const { return pinWithLayers; }
+    void addPinWithLayer(const Location pt) { pinWithLayers.push_back(pt); }
     void addPinShapeGridPoint(const Point_2D<int> &pt) { pinShapeToGrids.push_back(pt); }
     const std::vector<Point_2D<int>> &getPinShapeToGrids() const { return pinShapeToGrids; }
 
