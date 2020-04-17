@@ -22,6 +22,18 @@ using prFltCost = double;
 
 }  // namespace pr
 
+enum VerboseLevel {
+    CRITICAL = 50,
+    FATAL = CRITICAL,
+    ERROR = 40,
+    WARNING = 30,
+    WARN = WARNING,
+    INFO = 20,
+    DEBUG = 10,
+    NOTSET = 0,
+    DEFAULT = WARN
+};
+
 class GlobalParam {
    public:
     static int gLayerNum;
@@ -66,6 +78,7 @@ class GlobalParam {
 
     //Log
     static string gLogFolder;
+    static VerboseLevel verboseLevel;
 
     const static double gSqrt2;
     const static double gTan22_5;

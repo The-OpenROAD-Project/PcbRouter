@@ -34,6 +34,7 @@ bool GlobalParam::gOutputDebuggingGridValuesPyFile = true;
 bool GlobalParam::gOutputStackedMicroVias = true;
 // logfile
 string GlobalParam::gLogFolder = "log";
+VerboseLevel GlobalParam::verboseLevel = VerboseLevel::DEBUG;
 
 int GlobalParam::gSeed = 1470295829;  //time(NULL);
 const double GlobalParam::gSqrt2 = sqrt(2);
