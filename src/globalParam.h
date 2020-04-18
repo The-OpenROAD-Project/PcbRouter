@@ -78,7 +78,7 @@ class GlobalParam {
 
     //Log
     static string gLogFolder;
-    static VerboseLevel verboseLevel;
+    static VerboseLevel gVerboseLevel;
 
     const static double gSqrt2;
     const static double gTan22_5;

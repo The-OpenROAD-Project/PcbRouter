@@ -13,6 +13,11 @@ void GridDiffPairNet::setupDiffPairGridPins(const int startLayerId, const int en
     //               << " NetId: " << this->mNet2.getNetId() << " has net degree of " << gridPins2.size() << std::endl;
     // }
 
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
+        std::cout << std::endl
+                  << __FUNCTION__ << "(): start finding differential pairs' median points..." << std::endl;
+    }
+
     // For each GridPin1 find a nearest GridPin2
     for (unsigned int i = 0; i < gridPins1.size(); ++i) {
         const auto &gp1 = gridPins1.at(i);
@@ -44,7 +49,9 @@ void GridDiffPairNet::setupDiffPairGridPins(const int startLayerId, const int en
         }
 
         // Debugging
-        std::cout << "GP1: " << gp1.getPinWithLayers().front() << ", GP2: " << gp2.getPinWithLayers().front() << std::endl;
-        std::cout << "Median Point: (" << medianPtX << ", " << medianPtY << ")" << std::endl;
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
+            std::cout << "GP1: " << gp1.getPinWithLayers().front() << ", GP2: " << gp2.getPinWithLayers().front() << std::endl;
+            std::cout << "Median Point: (" << medianPtX << ", " << medianPtY << ")" << std::endl;
+        }
     }
 }

@@ -365,25 +365,32 @@ void GridBasedRouter::setupGridDiffPairNetclass(const int netclassId1, const int
     gridDiffPairNetclass.setupTraceIncrementalSearchGrids();
     gridDiffPairNetclass.setupViaIncrementalSearchGrids();
 
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
+        std::cout << __FUNCTION__ << "(): Create new diff pair netclass..." << std::endl;
+        std::cout << "==============Base netclass 1: id: " << gnc1.getId() << "==============" << std::endl;
+        std::cout << "clearance: " << gnc1.getClearance() << ", traceWidth: " << gnc1.getTraceWidth() << std::endl;
+        std::cout << "viaDia: " << gnc1.getViaDia() << ", viaDrill: " << gnc1.getViaDrill() << std::endl;
+        std::cout << "microViaDia: " << gnc1.getMicroViaDia() << ", microViaDrill: " << gnc1.getMicroViaDrill() << std::endl;
+        std::cout << "==============Base netclass 2: id: " << gnc2.getId() << "==============" << std::endl;
+        std::cout << "clearance: " << gnc2.getClearance() << ", traceWidth: " << gnc2.getTraceWidth() << std::endl;
+        std::cout << "viaDia: " << gnc2.getViaDia() << ", viaDrill: " << gnc2.getViaDrill() << std::endl;
+        std::cout << "microViaDia: " << gnc2.getMicroViaDia() << ", microViaDrill: " << gnc2.getMicroViaDrill() << std::endl;
+        std::cout << "==============Grid netclass: id: " << id << "==============" << std::endl;
+        std::cout << "clearance: " << gridDiffPairNetclass.getClearance() << ", diagonal clearance: " << gridDiffPairNetclass.getDiagonalClearance() << std::endl;
+        std::cout << "traceWidth: " << gridDiffPairNetclass.getTraceWidth() << ", half traceWidth: " << gridDiffPairNetclass.getHalfTraceWidth() << std::endl;
+        std::cout << "diagonal traceWidth: " << gridDiffPairNetclass.getDiagonalTraceWidth() << ", half diagonal traceWidth: " << gridDiffPairNetclass.getHalfDiagonalTraceWidth() << std::endl;
+        std::cout << "viaDia: " << gridDiffPairNetclass.getViaDia() << ", halfViaDia: " << gridDiffPairNetclass.getHalfViaDia() << ", viaDrill: " << gridDiffPairNetclass.getViaDrill() << std::endl;
+        std::cout << "microViaDia: " << gridDiffPairNetclass.getMicroViaDia() << ", microViaDrill: " << gridDiffPairNetclass.getMicroViaDrill() << std::endl;
+        std::cout << "==============Grid netclass: id: " << id << ", Expansions==============" << std::endl;
+        std::cout << "viaExpansion: " << gridDiffPairNetclass.getViaExpansion() << std::endl;
+        std::cout << "traceExpansion: " << gridDiffPairNetclass.getTraceExpansion() << std::endl;
+        std::cout << "DiagonalTraceExpansion: " << gridDiffPairNetclass.getDiagonalTraceExpansion() << std::endl;
+        std::cout << "(static)obstacleExpansion: " << GridNetclass::getObstacleExpansion() << std::endl;
+    }
+
     // Put the netclass into class vectors
     mBg.addGridNetclass(static_cast<GridNetclass>(gridDiffPairNetclass));
     // mBg.addGridDiffPairNetclass(gridDiffPairNetclass);
-
-    // std::cout << "==============DB netclass: id: " << netclassIte.getId() << "==============" << std::endl;
-    // std::cout << "clearance: " << netclassIte.getClearance() << ", traceWidth: " << netclassIte.getTraceWidth() << std::endl;
-    // std::cout << "viaDia: " << netclassIte.getViaDia() << ", viaDrill: " << netclassIte.getViaDrill() << std::endl;
-    // std::cout << "microViaDia: " << netclassIte.getMicroViaDia() << ", microViaDrill: " << netclassIte.getMicroViaDrill() << std::endl;
-    // std::cout << "==============Grid netclass: id: " << id << "==============" << std::endl;
-    // std::cout << "clearance: " << gridNetclass.getClearance() << ", diagonal clearance: " << gridNetclass.getDiagonalClearance() << std::endl;
-    // std::cout << "traceWidth: " << gridNetclass.getTraceWidth() << ", half traceWidth: " << gridNetclass.getHalfTraceWidth() << std::endl;
-    // std::cout << "diagonal traceWidth: " << gridNetclass.getDiagonalTraceWidth() << ", half diagonal traceWidth: " << gridNetclass.getHalfDiagonalTraceWidth() << std::endl;
-    // std::cout << "viaDia: " << gridNetclass.getViaDia() << ", halfViaDia: " << gridNetclass.getHalfViaDia() << ", viaDrill: " << gridNetclass.getViaDrill() << std::endl;
-    // std::cout << "microViaDia: " << gridNetclass.getMicroViaDia() << ", microViaDrill: " << gridNetclass.getMicroViaDrill() << std::endl;
-    // std::cout << "==============Grid netclass: id: " << id << ", Expansions==============" << std::endl;
-    // std::cout << "viaExpansion: " << gridNetclass.getViaExpansion() << std::endl;
-    // std::cout << "traceExpansion: " << gridNetclass.getTraceExpansion() << std::endl;
-    // std::cout << "DiagonalTraceExpansion: " << gridNetclass.getDiagonalTraceExpansion() << std::endl;
-    // std::cout << "(static)obstacleExpansion: " << GridNetclass::getObstacleExpansion() << std::endl;
 }
 
 void GridBasedRouter::setupGridNetclass() {
@@ -588,11 +595,15 @@ void GridBasedRouter::getRasterizedCircle(const int radius, const double radiusF
 }
 
 void GridBasedRouter::setupGridNetsAndGridPins() {
-    std::cout << "Starting " << __FUNCTION__ << "()..." << std::endl;
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
+        std::cout << "Starting " << __FUNCTION__ << "()..." << std::endl;
+    }
 
     // Iterate nets
     for (auto &net : mDb.getNets()) {
-        std::cout << "Net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET) {
+            std::cout << "Net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+        }
 
         mGridNets.push_back(MultipinRoute{net.getId(), net.getNetclassId(), mDb.getCopperLayers().size()});
         auto &gridRoute = mGridNets.back();
@@ -644,12 +655,18 @@ void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, cons
     std::vector<int> layers;
     this->getGridLayers(pad, inst, layers);
 
-    std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET)
+        std::cout << " location in grid: " << pinGridLocation << ", original abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
+
     for (auto layer : layers) {
         gridPin.pinWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
-        std::cout << " " << layer;
+
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET)
+            std::cout << " " << layer;
     }
-    std::cout << ", #layers:" << gridPin.pinWithLayers.size() << " " << layers.size() << std::endl;
+
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET)
+        std::cout << ", #layers:" << gridPin.pinWithLayers.size() << " " << layers.size() << std::endl;
 
     // Setup GridPin's LL,UR boundary
     double width = 0, height = 0;
@@ -755,6 +772,14 @@ void GridBasedRouter::set_diff_pair_net_id(const int _netId1, const int _netId2)
     auto &gn2 = this->mGridNets.at(_netId2);
     gn2.setPairNetId(_netId1);
 
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
+        if (gn1.getGridNetclassId() != gn2.getGridNetclassId()) {
+            std::cout << __FUNCTION__ << "(): Different netclass between differential pair nets"
+                      << ", net1's netclass: " << gn1.getGridNetclassId()
+                      << ", net2's netclass: " << gn2.getGridNetclassId() << std::endl;
+        }
+    }
+
     // Create or get a corresponding diff pair netclass
     int gridDiffPairNetclassId = -1;
     setupGridDiffPairNetclass(gn1.getGridNetclassId(), gn2.getGridNetclassId(), gridDiffPairNetclassId);
@@ -765,6 +790,13 @@ void GridBasedRouter::set_diff_pair_net_id(const int _netId1, const int _netId2)
 
     GridDiffPairNet &gDpNet = this->mGridDiffPairNets.back();
     gDpNet.setupDiffPairGridPins(0, this->mGridLayerToName.size() - 1);
+
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
+        std::cout << std::endl
+                  << __FUNCTION__ << "(): Create a new diff pair..." << std::endl;
+        std::cout << "NetId1: " << gn1.getNetId() << ", NetId2: " << gn2.getNetId() << std::endl;
+        std::cout << "GridDiffPairNetId: " << gDpNet.getNetId() << ", GridDiffPairNetclassId: " << gDpNet.getGridNetclassId() << std::endl;
+    }
 }
 
 void GridBasedRouter::initialization() {
@@ -1171,9 +1203,11 @@ void GridBasedRouter::addPinShapeAvoidingCostToGrid(const GridPin &gridPin, cons
     Point_2D<int> pinGridLL = gridPin.getPinLL();
     Point_2D<int> pinGridUR = gridPin.getPinUR();
 
-    std::cout << __FUNCTION__ << "()"
-              << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
-    std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR << ", pinShape.size(): " << gridPin.getPinShapeToGrids().size() << std::endl;
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET) {
+        std::cout << __FUNCTION__ << "()"
+                  << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
+        std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR << ", pinShape.size(): " << gridPin.getPinShapeToGrids().size() << std::endl;
+    }
 
     for (auto &location : gridPin.getPinWithLayers()) {
         for (const auto &pt : gridPin.getPinShapeToGrids()) {
