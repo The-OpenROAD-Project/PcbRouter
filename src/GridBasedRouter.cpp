@@ -847,7 +847,10 @@ void GridBasedRouter::route_diff_pairs() {
         // std::cout << "=====> currentRouteCost: " << gridNet.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
 
         // Debugging purpose, put the GridDiffPairNet routing result into DB
-        gn1.mGridPaths = gridDPNet.mGridPaths;
+        // for (const auto &gp : gridDPNet.mGridPaths) {
+        //     auto &ngp = gn1.getNewGridPath();
+        //     ngp = gp;
+        // }
     }
 
     // Set up the base solution
@@ -918,7 +921,8 @@ void GridBasedRouter::route() {
     bestTotalRouteCost = 0.0;
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
-        // if (net.getId() != 19 && net.getId() != 7)
+        //Diff Pair
+        // if (net.getId() != 228 && net.getId() != 230 && net.getId() != 274 && net.getId() != 376)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
