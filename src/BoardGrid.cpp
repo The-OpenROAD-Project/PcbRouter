@@ -1993,6 +1993,44 @@ void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route
 //     }
 // }
 
+void BoardGrid::addPinShapeObstacleCostToGrid(const std::vector<GridPin> &gridPins, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
+    for (const auto &gridPin : gridPins) {
+        this->addPinShapeObstacleCostToGrid(gridPin, value, toViaCost, toViaForbidden, toBaseCost);
+    }
+}
+
+void BoardGrid::addPinShapeObstacleCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
+    Point_2D<int> pinGridLL = gridPin.getPinLL();
+    Point_2D<int> pinGridUR = gridPin.getPinUR();
+
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET) {
+        std::cout << __FUNCTION__ << "()"
+                  << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
+        std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR << ", pinShape.size(): " << gridPin.getPinShapeToGrids().size() << std::endl;
+    }
+
+    for (auto &location : gridPin.getPinWithLayers()) {
+        for (const auto &pt : gridPin.getPinShapeToGrids()) {
+            Location gridPt{pt.x(), pt.y(), location.z()};
+            if (!this->validate_location(gridPt)) {
+                // std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
+                continue;
+            }
+            //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
+            if (toBaseCost) {
+                this->base_cost_add(value, gridPt);
+            }
+            if (toViaCost) {
+                this->via_cost_add(value, gridPt);
+            }
+            //TODO:: How to controll clear/set
+            if (toViaForbidden) {
+                this->setViaForbidden(gridPt);
+            }
+        }
+    }
+}
+
 void BoardGrid::convertDiffPairPathToTwoNetPaths(GridDiffPairNet &route) {
     auto &curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
     int traceClearance = curGridNetclass.getClearance();
@@ -2059,6 +2097,10 @@ void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
     // std::cout << "GridPaht2.size: " << route.getGridNet2().getGridPaths().size() << std::endl;
     this->add_route_to_base_cost(route.getGridNet1());
     this->add_route_to_base_cost(route.getGridNet2());
+
+    // Should Remove the pad costs
+    this->addRouteWithGridPins(route.getGridNet1());
+    this->addRouteWithGridPins(route.getGridNet2());
 }
 
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {

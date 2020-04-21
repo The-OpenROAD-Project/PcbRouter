@@ -762,9 +762,11 @@ void GridBasedRouter::set_net_all_layers_pref_weights(const int _netId, const in
 void GridBasedRouter::set_diff_pair_net_id(const int _netId1, const int _netId2) {
     if (_netId1 >= mGridNets.size()) {
         std::cout << __FUNCTION__ << ": Invalid netId: " << _netId1 << std::endl;
+        return;
     }
     if (_netId2 >= mGridNets.size()) {
         std::cout << __FUNCTION__ << ": Invalid netId: " << _netId2 << std::endl;
+        return;
     }
 
     auto &gn1 = this->mGridNets.at(_netId1);
@@ -813,9 +815,7 @@ void GridBasedRouter::route_diff_pairs() {
               << "=================" << __FUNCTION__ << "==================" << std::endl;
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
-    for (auto &gridPin : this->mGridPins) {
-        this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
-    }
+    mBg.addPinShapeObstacleCostToGrid(this->mGridPins, GlobalParam::gPinObstacleCost, true, true, true);
 
     std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + this->getParamsNameTag();
     mBg.printMatPlot(initialMapNameTag);
@@ -913,9 +913,7 @@ void GridBasedRouter::route() {
               << "=================" << __FUNCTION__ << "==================" << std::endl;
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
-    for (auto &gridPin : this->mGridPins) {
-        this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
-    }
+    mBg.addPinShapeObstacleCostToGrid(this->mGridPins, GlobalParam::gPinObstacleCost, true, true, true);
 
     std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + this->getParamsNameTag();
     mBg.printMatPlot(initialMapNameTag);
@@ -938,10 +936,7 @@ void GridBasedRouter::route() {
             std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
 
         // Temporary reomve the pin cost on the cost grid
-        for (auto &gridPin : gridRoute.mGridPins) {
-            // addPinAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
-            this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
-        }
+        mBg.addPinShapeObstacleCostToGrid(gridRoute.mGridPins, -GlobalParam::gPinObstacleCost, true, false, true);
 
         // if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
         //     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".Net_" + std::to_string(net.getId()) + ".removeSTPad." + this->getParamsNameTag();
@@ -964,10 +959,7 @@ void GridBasedRouter::route() {
         std::cout << "=====> currentRouteCost: " << gridRoute.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
 
         // Put back the pin cost on base cost grid
-        for (auto &gridPin : gridRoute.mGridPins) {
-            // addPinAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
-            this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
-        }
+        mBg.addPinShapeObstacleCostToGrid(gridRoute.mGridPins, GlobalParam::gPinObstacleCost, true, false, true);
     }
 
     // Set up the base solution
@@ -1000,9 +992,7 @@ void GridBasedRouter::route() {
             std::cout << "\n\ni=" << i + 1 << ", Routing net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
 
             // Temporary reomve the pin cost on the cost grid
-            for (auto &gridPin : gridRoute.mGridPins) {
-                this->addPinShapeAvoidingCostToGrid(gridPin, -GlobalParam::gPinObstacleCost, true, false, true);
-            }
+            mBg.addPinShapeObstacleCostToGrid(gridRoute.mGridPins, -GlobalParam::gPinObstacleCost, true, false, true);
 
             if (!mDb.isNetclassId(net.getNetclassId())) {
                 std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
@@ -1020,9 +1010,7 @@ void GridBasedRouter::route() {
             totalCurrentRouteCost += gridRoute.currentRouteCost;
 
             // Put back the pin cost on base cost grid
-            for (auto &gridPin : gridRoute.mGridPins) {
-                this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, false, true);
-            }
+            mBg.addPinShapeObstacleCostToGrid(gridRoute.mGridPins, GlobalParam::gPinObstacleCost, true, false, true);
         }
         if (GlobalParam::gOutputDebuggingKiCadFile) {
             std::string nameTag = "i_" + std::to_string(i + 1);
@@ -1084,9 +1072,7 @@ void GridBasedRouter::testRouterWithPinShape() {
 
     // Add all instances' pins to a cost in grid (without inflation for spacing)
     //this->addAllPinCostToGrid(0);
-    for (auto &gridPin : this->mGridPins) {
-        this->addPinShapeAvoidingCostToGrid(gridPin, GlobalParam::gPinObstacleCost, true, true, true);
-    }
+    mBg.addPinShapeObstacleCostToGrid(this->mGridPins, GlobalParam::gPinObstacleCost, true, true, true);
 
     // Routing has done
     // Print the final base cost
@@ -1202,38 +1188,6 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const GridPin &gridPin, const flo
                 if (toViaForbidden) {
                     mBg.setViaForbidden(gridPt);
                 }
-            }
-        }
-    }
-}
-
-void GridBasedRouter::addPinShapeAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost) {
-    Point_2D<int> pinGridLL = gridPin.getPinLL();
-    Point_2D<int> pinGridUR = gridPin.getPinUR();
-
-    if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET) {
-        std::cout << __FUNCTION__ << "()"
-                  << " toViaCostGrid:" << toViaCost << ", toViaForbidden:" << toViaForbidden << ", toBaseCostGrid:" << toBaseCost;
-        std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR << ", pinShape.size(): " << gridPin.getPinShapeToGrids().size() << std::endl;
-    }
-
-    for (auto &location : gridPin.getPinWithLayers()) {
-        for (const auto &pt : gridPin.getPinShapeToGrids()) {
-            Location gridPt{pt.x(), pt.y(), location.z()};
-            if (!mBg.validate_location(gridPt)) {
-                // std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
-                continue;
-            }
-            //std::cout << "\tAdd pin cost at " << gridPt << std::endl;
-            if (toBaseCost) {
-                mBg.base_cost_add(value, gridPt);
-            }
-            if (toViaCost) {
-                mBg.via_cost_add(value, gridPt);
-            }
-            //TODO:: How to controll clear/set
-            if (toViaForbidden) {
-                mBg.setViaForbidden(gridPt);
             }
         }
     }

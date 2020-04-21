@@ -50,6 +50,9 @@ class BoardGrid {
     void addRouteWithGridPins(MultipinRoute &route);
     void addGridDiffPairNet(GridDiffPairNet &route);
     void ripup_route(MultipinRoute &route);
+    // Obstacle cost
+    void addPinShapeObstacleCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
+    void addPinShapeObstacleCostToGrid(const std::vector<GridPin> &gridPins, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
     // working cost
     void working_cost_fill(float value);
     float working_cost_at(const Location &l) const;

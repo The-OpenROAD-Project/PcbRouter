@@ -87,13 +87,15 @@ class GridBasedRouter {
     void setupGridNetsAndGridPins();
     void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
     void getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);
+
+    // Obastcle costs
     void addAllPinCostToGrid(const int);
     // void addAllPinInflationCostToGrid(const int);
     void addPinAvoidingCostToGrid(const Pin &, const float, const bool, const bool, const bool, const int inflate = 0);
     void addPinAvoidingCostToGrid(const padstack &, const instance &, const float, const bool, const bool, const bool, const int inflate = 0);
     void addPinAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost, const int inflate = 0);
     // PadShape version
-    void addPinShapeAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
+    // void addPinShapeAvoidingCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
 
     // Rasterize circle
     void getRasterizedCircle(const int radius, const double radiusFloating, std::vector<Point_2D<int> > &grids);
