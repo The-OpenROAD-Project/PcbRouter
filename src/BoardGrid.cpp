@@ -2099,11 +2099,12 @@ void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
     this->add_route_to_base_cost(route.getGridNet2());
 
     // Should Remove the pad costs
-    this->addRouteWithGridPins(route.getGridNet1());
-    this->addRouteWithGridPins(route.getGridNet2());
+    bool removeGridPinObstacleCost = true;
+    this->addRouteWithGridPins(route.getGridNet1(), removeGridPinObstacleCost);
+    this->addRouteWithGridPins(route.getGridNet2(), removeGridPinObstacleCost);
 }
 
-void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
+void BoardGrid::addRouteWithGridPins(MultipinRoute &route, const bool removeGridPinObstacles) {
     std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.mGridPins.size() << std::endl;
 
     if (route.mGridPins.size() <= 1) return;
@@ -2113,6 +2114,11 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
     this->cached_trace_cost_fill(-1);
     this->cached_via_cost_fill(-1);
     route.currentRouteCost = 0.0;
+
+    // Remove GridPin's obstacle costs
+    if (removeGridPinObstacles) {
+        this->addPinShapeObstacleCostToGrid(route.mGridPins, -GlobalParam::gPinObstacleCost, true, false, true);
+    }
 
     for (size_t i = 1; i < route.mGridPins.size(); ++i) {
         // For early break
@@ -2140,6 +2146,12 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {
         // For 3D cost estimation
         currentTargetedPinWithLayers.clear();
     }
+
+    // Put back GridPin's obstacle costs
+    if (removeGridPinObstacles) {
+        this->addPinShapeObstacleCostToGrid(route.mGridPins, GlobalParam::gPinObstacleCost, true, false, true);
+    }
+
     // Convert from grid locations to grid paths
     route.gridPathLocationsToSegments();
     this->add_route_to_base_cost(route);

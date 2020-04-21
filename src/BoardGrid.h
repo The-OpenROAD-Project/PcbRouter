@@ -47,7 +47,7 @@ class BoardGrid {
     const std::vector<GridNetclass> &getGridNetclasses() { return mGridNetclasses; }
     const GridDiffPairNetclass &getGridDiffPairNetclass(const int gridDPNetclassId);
     // Routing APIs
-    void addRouteWithGridPins(MultipinRoute &route);
+    void addRouteWithGridPins(MultipinRoute &route, const bool removeGridPinObstacles = false);
     void addGridDiffPairNet(GridDiffPairNet &route);
     void ripup_route(MultipinRoute &route);
     // Obstacle cost
@@ -120,27 +120,9 @@ class BoardGrid {
     }
 
    private:
-    GridCell *grid = nullptr;  //Initialize to nullptr
-    int size = 0;              //Total number of cells
-
-    long long viaCachedMissed = 0;
-    long long viaCachedHit = 0;
-
-    int currentGridNetclassId;
-    int currentNetId;
-    Location current_targeted_pin;
-    //TODO:: Experiment on this...
-    std::vector<Location> currentTargetedPinWithLayers;
-
-    // Netclass mapping from DB netclasses, indices are aligned
-    std::vector<GridNetclass> mGridNetclasses;
-    // Derived differential pairs' netclasses
-    std::vector<GridDiffPairNetclass> mGridDiffPairNetclasses;
-
     // Frontiers
     //bool isABetterFrontierOfNext();
 
-   private:
     // Various costs
     int getBendingCostOfNext(const Location &current, const Location &next) const;
     pr::prIntCost getLayerPrefCost(const MultipinRoute &route, const Location &pt) const;
@@ -187,6 +169,24 @@ class BoardGrid {
 
     int locationToId(const Location &l) const;
     void idToLocation(const int id, Location &l) const;
+
+   private:
+    GridCell *grid = nullptr;  //Initialize to nullptr
+    int size = 0;              //Total number of cells
+
+    long long viaCachedMissed = 0;
+    long long viaCachedHit = 0;
+
+    int currentGridNetclassId;
+    int currentNetId;
+    Location current_targeted_pin;
+    //TODO:: Experiment on this...
+    std::vector<Location> currentTargetedPinWithLayers;
+
+    // Netclass mapping from DB netclasses, indices are aligned
+    std::vector<GridNetclass> mGridNetclasses;
+    // Derived differential pairs' netclasses
+    std::vector<GridDiffPairNetclass> mGridDiffPairNetclasses;
 };
 
 #endif
