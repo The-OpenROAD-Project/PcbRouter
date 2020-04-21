@@ -1627,7 +1627,9 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
     if (segs.empty())
         return;
 
-    //cout << __FUNCTION__ << "(): traceCost: " << traceCost << ", viaCost: " << viaCost << std::endl;
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
+        cout << __FUNCTION__ << "(): traceCost: " << traceCost << ", viaCost: " << viaCost << ", # Segments: " << segs.size() << std::endl;
+    }
 
     // Add costs for traces
     auto pointIte = segs.begin();
@@ -2047,8 +2049,16 @@ void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
     route.gridPathLocationsToSegments();
     // Convert from grouped net into two GridPaths with proper clearance
     this->convertDiffPairPathToTwoNetPaths(route);
+    // For the two grid nets' GridPath, transform from segments to locations
+    // for grid costs and path searching to their pads
+    route.getGridNet1().gridPathSegmentsToLocations();
+    route.getGridNet2().gridPathSegmentsToLocations();
 
-    this->add_route_to_base_cost(dynamic_cast<MultipinRoute &>(route));
+    // this->add_route_to_base_cost(dynamic_cast<MultipinRoute &>(route));
+    // std::cout << "GridPaht1.size: " << route.getGridNet1().getGridPaths().size() << std::endl;
+    // std::cout << "GridPaht2.size: " << route.getGridNet2().getGridPaths().size() << std::endl;
+    this->add_route_to_base_cost(route.getGridNet1());
+    this->add_route_to_base_cost(route.getGridNet2());
 }
 
 void BoardGrid::addRouteWithGridPins(MultipinRoute &route) {

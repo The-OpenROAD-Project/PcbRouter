@@ -837,6 +837,10 @@ void GridBasedRouter::route_diff_pairs() {
         mBg.setCurrentGridNetclassId(gridDPNet.getGridNetclassId());
         gridDPNet.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
         gridDPNet.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+        gn1.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+        gn1.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+        gn2.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+        gn2.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
         // mBg.setCurrentNetId(gridNet.getNetId());
 
         // Route the net
