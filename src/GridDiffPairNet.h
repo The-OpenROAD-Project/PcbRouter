@@ -19,6 +19,19 @@ class GridDiffPairNet : public MultipinRoute {
     MultipinRoute &getGridNet2() const { return mNet2; }
 
     void setupDiffPairGridPins(const int startLayerId, const int endLayerId);
+    void separateGridPathsIntoTwo(const int traceClr, const int traceDiagClr, const int traceDiagOffset);
+
+   private:
+    void separateGridPath(const GridPath &path, const int traceClr, const int traceDiagClr, const int traceDiagOffset);
+    void locBetweenHorizontalAndDiagonal(const Location &horizon, const Location &middle, const Location &diag,
+                                         const int traceClr, const int traceDiagOffset, Location &middleL, Location &middleR);
+    void locBetweenVerticalAndDiagonal(const Location &vertical, const Location &middle, const Location &diag,
+                                       const int traceClr, const int traceDiagOffset, Location &middleL, Location &middleR);
+    void endLocByStartEndLocations(const Location &start, const Location &end, const Location &startL, const Location &startR,
+                                   const int traceClr, const int traceDiagOffset, Location &endL, Location &endR);
+    void locsForStartEndLocationsWithoutMiddlePoints(const Location &start, const Location &end,
+                                                     const int traceClr, const int traceDiagClr,
+                                                     std::list<Location> &locsL, std::list<Location> &locsR);
 
    private:
     // int mGridDiffPairNetclassId = -1;

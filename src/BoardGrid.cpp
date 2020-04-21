@@ -1991,6 +1991,17 @@ void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route
 //     }
 // }
 
+void BoardGrid::convertDiffPairPathToTwoNetPaths(GridDiffPairNet &route) {
+    auto &curGridNetclass = mGridNetclasses.at(route.getGridNetclassId());
+    int traceClearance = curGridNetclass.getClearance();
+    int traceDiagonalClearance = curGridNetclass.getDiagonalClearance();
+
+    //!!! Put this to GridNetclass Setup?
+    int traceDiagonalOffset = (int)ceil(GlobalParam::gTan22_5 * traceClearance);
+
+    route.separateGridPathsIntoTwo(traceClearance, traceDiagonalClearance, traceDiagonalOffset);
+}
+
 void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
     // 1. Route the grouped nets by thicker netclass
     // 2. Separate the thicker net into two
@@ -2034,6 +2045,9 @@ void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
 
     // Convert from grid locations to grid paths
     route.gridPathLocationsToSegments();
+    // Convert from grouped net into two GridPaths with proper clearance
+    this->convertDiffPairPathToTwoNetPaths(route);
+
     this->add_route_to_base_cost(dynamic_cast<MultipinRoute &>(route));
 }
 

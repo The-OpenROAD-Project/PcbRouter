@@ -137,6 +137,7 @@ class BoardGrid {
     // Frontiers
     //bool isABetterFrontierOfNext();
 
+   private:
     // Various costs
     int getBendingCostOfNext(const Location &current, const Location &next) const;
     pr::prIntCost getLayerPrefCost(const MultipinRoute &route, const Location &pt) const;
@@ -174,6 +175,8 @@ class BoardGrid {
     // void dijkstrasWithGridCameFrom(const std::vector<Location> &route, int via_size);
     void aStarWithGridCameFrom(const std::vector<Location> &route, Location &finalEnd, float &finalCost);
     void aStarSearching(MultipinRoute &route, Location &finalEnd, float &finalCost);
+
+    void convertDiffPairPathToTwoNetPaths(GridDiffPairNet &route);
 
     void initializeFrontiers(const std::vector<Location> &route, LocationQueue<Location, float> &frontier);
     void initializeFrontiers(const MultipinRoute &route, LocationQueue<Location, float> &frontier);
