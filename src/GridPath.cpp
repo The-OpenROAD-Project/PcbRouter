@@ -1,5 +1,74 @@
 #include "GridPath.h"
 
+void GridPath::transformSegmentsToLocations() {
+    this->mLocations.clear();
+
+    if (this->mSegments.empty()) {
+        return;
+    }
+
+    if (this->mSegments.size() <= 1) {
+        this->mLocations = this->mSegments;
+        return;
+    }
+
+    // Check though all the points in segments
+    auto pointIte = this->mSegments.begin();
+    auto nextPointIte = ++this->mSegments.begin();
+    this->mLocations.emplace_back(*pointIte);
+
+    for (; nextPointIte != this->mSegments.end();) {
+        if (pointIte->z() != nextPointIte->z()) {
+            // Vias
+            this->mLocations.emplace_back(*nextPointIte);
+        } else {
+            // Traces
+            int diffX = 0;
+            int diffY = 0;
+
+            // Vertical
+            if (pointIte->x() == nextPointIte->x() && pointIte->y() != nextPointIte->y()) {
+                diffY = pointIte->y() > nextPointIte->y() ? -1 : 1;
+            }
+            // Horizontal
+            else if (pointIte->x() != nextPointIte->x() && pointIte->y() == nextPointIte->y()) {
+                diffX = pointIte->x() > nextPointIte->x() ? -1 : 1;
+            }
+            // Diagonal
+            else if (abs(pointIte->x() - nextPointIte->x()) == abs(pointIte->y() - nextPointIte->y())) {
+                diffY = pointIte->y() > nextPointIte->y() ? -1 : 1;
+                diffX = pointIte->x() > nextPointIte->x() ? -1 : 1;
+            } else {
+                if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
+                    std::cout << __FUNCTION__ << "(): Not a correct 45-degree routing segments" << std::endl;
+                }
+            }
+
+            Location tempLoc{*pointIte};
+            while (tempLoc != *nextPointIte) {
+                tempLoc.m_x += diffX;
+                tempLoc.m_y += diffY;
+                this->mLocations.emplace_back(tempLoc);
+            }
+        }
+
+        ++pointIte;
+        ++nextPointIte;
+    }
+
+    // std::cout << "All Segment pts:" << std::endl;
+    // for (const auto &pt : this->mSegments) {
+    //     std::cout << pt << std::endl;
+    // }
+    // std::cout << "End of All Segment pts:" << std::endl;
+
+    // std::cout << "All Location pts:" << std::endl;
+    // for (const auto &pt : this->mLocations) {
+    //     std::cout << pt << std::endl;
+    // }
+    // std::cout << "End of All Location pts:" << std::endl;
+}
+
 void GridPath::removeRedundantPoints() {
     if (this->mSegments.size() <= 2) {
         return;

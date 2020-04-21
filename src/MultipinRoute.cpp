@@ -24,6 +24,12 @@ int MultipinRoute::getRoutedNumBends() const {
     return numRoutedBends;
 }
 
+void MultipinRoute::gridPathSegmentsToLocations() {
+    for (auto &&gp : this->mGridPaths) {
+        gp.transformSegmentsToLocations();
+    }
+}
+
 void MultipinRoute::gridPathLocationsToSegments() {
     // 1. Copy GridPath's Locations into Segments
     for (auto &&gp : this->mGridPaths) {

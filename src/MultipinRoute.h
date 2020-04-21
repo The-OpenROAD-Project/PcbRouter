@@ -27,6 +27,7 @@ class MultipinRoute {
 
     void featuresToGridPaths();
     void gridPathLocationsToSegments();
+    void gridPathSegmentsToLocations();
 
     int getGridNetclassId() const { return gridNetclassId; }
     int getNetId() const { return netId; }
