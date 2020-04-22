@@ -701,11 +701,13 @@ float BoardGrid::get2dEstimatedCostWithBendingCost(const Location &current, cons
 
     // return max(abs(current.m_x - this->current_targeted_pin.m_x), abs(current.m_y - this->current_targeted_pin.m_y)) - bendingCost;
 
-    int absDiffX = abs(next.m_x - this->current_targeted_pin.m_x);
-    int absDiffY = abs(next.m_y - this->current_targeted_pin.m_y);
-    int minDiff = min(absDiffX, absDiffY);
-    int maxDiff = max(absDiffX, absDiffY);
-    return (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff - bendingCost;
+    // int absDiffX = abs(next.m_x - this->current_targeted_pin.m_x);
+    // int absDiffY = abs(next.m_y - this->current_targeted_pin.m_y);
+    // int minDiff = min(absDiffX, absDiffY);
+    // int maxDiff = max(absDiffX, absDiffY);
+    // return (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff - bendingCost;
+
+    return this->get2dEstimatedCost(next) - bendingCost;
 }
 
 int BoardGrid::getBendingCostOfNext(const Location &current, const Location &next) const {
