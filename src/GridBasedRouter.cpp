@@ -842,7 +842,6 @@ void GridBasedRouter::route_diff_pairs() {
         gn2.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
 
         // Route the net
-        // mBg.addRouteWithGridPins(dynamic_cast<MultipinRoute &>(gridDPNet));
         mBg.routeGridDiffPairNet(gridDPNet);
 
         // totalCurrentRouteCost += gridNet.currentRouteCost;
@@ -862,35 +861,7 @@ void GridBasedRouter::route_diff_pairs() {
     this->bestSolution = this->mGridNets;
     routingSolutions.push_back(this->mGridNets);
 
-    if (GlobalParam::gOutputDebuggingKiCadFile) {
-        std::string nameTag = "fristTimeRouteAll";
-        nameTag = nameTag + "." + this->getParamsNameTag();
-        writeSolutionBackToDbAndSaveOutput(nameTag, this->mGridNets);
-    }
     std::cout << "i=0, totalCurrentRouteCost: " << totalCurrentRouteCost << ", bestTotalRouteCost: " << bestTotalRouteCost << std::endl;
-
-    /*
-    *
-    * 
-    * 
-    * Do the rip-up and re-route
-    * 
-    * 
-    */
-
-    std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
-    for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
-        cout << "i=" << i << ", cost: " << iterativeCost.at(i)
-             << ", WL: " << this->get_routed_wirelength(routingSolutions.at(i))
-             << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i))
-             << ", #Bends: " << this->get_routed_num_bends(routingSolutions.at(i));
-
-        if (fabs(bestTotalRouteCost - iterativeCost.at(i)) < GlobalParam::gEpsilon) {
-            cout << " <- best result" << std::endl;
-        } else {
-            cout << std::endl;
-        }
-    }
 
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
               << std::endl;
