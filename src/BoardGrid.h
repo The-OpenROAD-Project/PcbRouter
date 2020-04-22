@@ -47,9 +47,10 @@ class BoardGrid {
     const std::vector<GridNetclass> &getGridNetclasses() { return mGridNetclasses; }
     const GridDiffPairNetclass &getGridDiffPairNetclass(const int gridDPNetclassId);
     // Routing APIs
-    void addRouteWithGridPins(MultipinRoute &route, const bool removeGridPinObstacles = false);
-    void addGridDiffPairNet(GridDiffPairNet &route);
-    void ripup_route(MultipinRoute &route);
+    void routeGridNetFromScratch(MultipinRoute &route, const bool removeGridPinObstacles = false);
+    void routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles = false);
+    void routeGridDiffPairNet(GridDiffPairNet &route);
+    void ripup_route(MultipinRoute &route, const bool clearGridPaths = true);
     // Obstacle cost
     void addPinShapeObstacleCostToGrid(const GridPin &gridPin, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);
     void addPinShapeObstacleCostToGrid(const std::vector<GridPin> &gridPins, const float value, const bool toViaCost, const bool toViaForbidden, const bool toBaseCost);

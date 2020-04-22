@@ -82,8 +82,8 @@ void GridDiffPairNet::separateGridPath(const GridPath &path, const int traceClr,
 
     // TODO:: Decide which net is at the left/right of the thicker net
     // By exchanging the Net1/Net2 order
-    auto &gpNetL = this->mNet1.getNewGridPath();
-    auto &gpNetR = this->mNet2.getNewGridPath();
+    auto &gpNetL = this->mNet2.getNewGridPath();
+    auto &gpNetR = this->mNet1.getNewGridPath();
 
     auto &locsL = gpNetL.setLocations();
     auto &locsR = gpNetR.setLocations();

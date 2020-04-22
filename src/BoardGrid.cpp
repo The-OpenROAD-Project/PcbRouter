@@ -495,6 +495,7 @@ void BoardGrid::aStarSearching(MultipinRoute &route, Location &finalEnd, float &
 
     while (!frontier.empty()) {
         Location current = frontier.front();
+        // cout << "Search Location: " << frontier.front() << ", with key: " << frontier.frontKey() << std::endl;
 
         // A* termination
         if (isTargetedPin(current)) {
@@ -651,6 +652,8 @@ void BoardGrid::initializeLocationToFrontier(const Location &start, LocationQueu
 
     // Set a ending for the backtracking
     this->setCameFromId(start, this->locationToId(start));
+
+    // std::cout << __FUNCTION__ << "(): point: " << start << ", cost: " << cost << std::endl;
 }
 
 float BoardGrid::getEstimatedCost(const Location &l) {
@@ -1873,7 +1876,7 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
 // }
 
 void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route) const {
-    std::cout << __FUNCTION__ << ": Starting backtracking and create new GridPath" << std::endl;
+    std::cout << __FUNCTION__ << ": Starting backtracking and create new GridPath from Location: " << end << std::endl;
 
     if (!this->validate_location(end)) {
         std::cout << __FUNCTION__ << "Bad final end" << std::endl;
@@ -1895,7 +1898,8 @@ void BoardGrid::backtrackingToGridPath(const Location &end, MultipinRoute &route
         Location next;
         this->idToLocation(nextId, next);
 
-        // features.push_back(next);
+        // std::cout << "Next: " << next << std::endl;
+
         gp.addLocation(next);
         currentId = nextId;
         nextId = this->getCameFromId(currentId);
@@ -2042,7 +2046,7 @@ void BoardGrid::convertDiffPairPathToTwoNetPaths(GridDiffPairNet &route) {
     route.separateGridPathsIntoTwo(traceClearance, traceDiagonalClearance, traceDiagonalOffset);
 }
 
-void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
+void BoardGrid::routeGridDiffPairNet(GridDiffPairNet &route) {
     // 1. Route the grouped nets by thicker netclass
     // 2. Separate the thicker net into two
     // 3. Connect the pins with the two separated nets
@@ -2095,16 +2099,70 @@ void BoardGrid::addGridDiffPairNet(GridDiffPairNet &route) {
     // this->add_route_to_base_cost(dynamic_cast<MultipinRoute &>(route));
     // std::cout << "GridPaht1.size: " << route.getGridNet1().getGridPaths().size() << std::endl;
     // std::cout << "GridPaht2.size: " << route.getGridNet2().getGridPaths().size() << std::endl;
-    this->add_route_to_base_cost(route.getGridNet1());
-    this->add_route_to_base_cost(route.getGridNet2());
 
     // Should Remove the pad costs
     bool removeGridPinObstacleCost = true;
-    this->addRouteWithGridPins(route.getGridNet1(), removeGridPinObstacleCost);
-    this->addRouteWithGridPins(route.getGridNet2(), removeGridPinObstacleCost);
+    // this->add_route_to_base_cost(route.getGridNet2());
+    this->routeGridNetWithRoutedGridPaths(route.getGridNet1(), removeGridPinObstacleCost);
+    // this->ripup_route(route.getGridNet2(), false);
+
+    // this->add_route_to_base_cost(route.getGridNet1());
+    this->routeGridNetWithRoutedGridPaths(route.getGridNet2(), removeGridPinObstacleCost);
+    // this->ripup_route(route.getGridNet1(), false);
 }
 
-void BoardGrid::addRouteWithGridPins(MultipinRoute &route, const bool removeGridPinObstacles) {
+void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles) {
+    std::cout << __FUNCTION__ << "(): netId: " << route.getNetId() << ", route.gridPins.size: " << route.mGridPins.size() << std::endl;
+
+    // Clear and initialize
+    this->clearAllCameFromId();
+    this->cached_trace_cost_fill(-1);
+    this->cached_via_cost_fill(-1);
+    route.currentRouteCost = 0.0;
+
+    // Remove GridPin's obstacle costs
+    if (removeGridPinObstacles) {
+        this->addPinShapeObstacleCostToGrid(route.mGridPins, -GlobalParam::gPinObstacleCost, true, false, true);
+    }
+
+    for (size_t i = 1; i < route.mGridPins.size(); ++i) {
+        // For early break
+        this->setTargetedPins(route.mGridPins.at(i).pinWithLayers);
+        // For 2D cost estimation (cares about x and y only)
+        current_targeted_pin = route.mGridPins.at(i).pinWithLayers.front();
+        // For 3D cost estimation
+        currentTargetedPinWithLayers = route.mGridPins.at(i).pinWithLayers;
+
+        Location finalEnd{0, 0, 0};
+        float routeCost = 0.0;
+
+        // GridPin.front() will be initilized inside
+        this->aStarSearching(route, finalEnd, routeCost);
+        route.currentRouteCost += routeCost;
+
+        // TODO Fix this, when THROUGH PAD as a start?
+        this->backtrackingToGridPath(finalEnd, route);
+
+        // Reset temporary stuff
+        // For early break
+        this->clearTargetedPins(route.mGridPins.at(i).pinWithLayers);
+        // For 2D cost estimation
+        current_targeted_pin = Location{0, 0, 0};
+        // For 3D cost estimation
+        currentTargetedPinWithLayers.clear();
+    }
+
+    // Put back GridPin's obstacle costs
+    if (removeGridPinObstacles) {
+        this->addPinShapeObstacleCostToGrid(route.mGridPins, GlobalParam::gPinObstacleCost, true, false, true);
+    }
+
+    // Convert from grid locations to grid paths
+    route.gridPathLocationsToSegments();
+    this->add_route_to_base_cost(route);
+}
+
+void BoardGrid::routeGridNetFromScratch(MultipinRoute &route, const bool removeGridPinObstacles) {
     std::cout << __FUNCTION__ << "() route.gridPins.size: " << route.mGridPins.size() << std::endl;
 
     if (route.mGridPins.size() <= 1) return;
@@ -2157,10 +2215,12 @@ void BoardGrid::addRouteWithGridPins(MultipinRoute &route, const bool removeGrid
     this->add_route_to_base_cost(route);
 }
 
-void BoardGrid::ripup_route(MultipinRoute &route) {
+void BoardGrid::ripup_route(MultipinRoute &route, const bool clearGridPaths) {
     std::cout << "Doing ripup" << std::endl;
     this->remove_route_from_base_cost(route);
-    route.clearGridPaths();
+    if (clearGridPaths) {
+        route.clearGridPaths();
+    }
     std::cout << "Finished ripup" << std::endl;
 }
 

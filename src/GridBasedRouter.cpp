@@ -845,7 +845,7 @@ void GridBasedRouter::route_diff_pairs() {
 
         // Route the net
         // mBg.addRouteWithGridPins(dynamic_cast<MultipinRoute &>(gridDPNet));
-        mBg.addGridDiffPairNet(gridDPNet);
+        mBg.routeGridDiffPairNet(gridDPNet);
 
         // totalCurrentRouteCost += gridNet.currentRouteCost;
         // std::cout << "=====> currentRouteCost: " << gridNet.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
@@ -954,7 +954,7 @@ void GridBasedRouter::route() {
         mBg.setCurrentNetId(net.getId());
 
         // Route the net
-        mBg.addRouteWithGridPins(gridRoute);
+        mBg.routeGridNetFromScratch(gridRoute);
         totalCurrentRouteCost += gridRoute.currentRouteCost;
         std::cout << "=====> currentRouteCost: " << gridRoute.currentRouteCost << ", totalCost: " << totalCurrentRouteCost << std::endl;
 
@@ -1006,7 +1006,7 @@ void GridBasedRouter::route() {
 
             gridRoute.addCurTrackObstacleCost(GlobalParam::gStepTraObsCost);
             gridRoute.addCurViaObstacleCost(GlobalParam::gStepViaObsCost);
-            mBg.addRouteWithGridPins(gridRoute);
+            mBg.routeGridNetFromScratch(gridRoute);
             totalCurrentRouteCost += gridRoute.currentRouteCost;
 
             // Put back the pin cost on base cost grid
