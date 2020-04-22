@@ -2103,13 +2103,13 @@ void BoardGrid::routeGridDiffPairNet(GridDiffPairNet &route) {
 
     // Should Remove the pad costs
     bool removeGridPinObstacleCost = true;
-    // this->add_route_to_base_cost(route.getGridNet2());
+    this->add_route_to_base_cost(route.getGridNet2());
     this->routeGridNetWithRoutedGridPaths(route.getGridNet1(), removeGridPinObstacleCost);
-    // this->ripup_route(route.getGridNet2(), false);
+    this->ripup_route(route.getGridNet2(), false);
 
-    // this->add_route_to_base_cost(route.getGridNet1());
+    this->add_route_to_base_cost(route.getGridNet1());
     this->routeGridNetWithRoutedGridPaths(route.getGridNet2(), removeGridPinObstacleCost);
-    // this->ripup_route(route.getGridNet1(), false);
+    this->ripup_route(route.getGridNet1(), false);
 }
 
 void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles) {
@@ -2127,7 +2127,7 @@ void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool
         this->addPinShapeObstacleCostToGrid(route.mGridPins, -GlobalParam::gPinObstacleCost, true, false, true);
     }
 
-    for (size_t i = 1; i < route.mGridPins.size(); ++i) {
+    for (size_t i = 0; i < route.mGridPins.size(); ++i) {
         // For early break
         this->setTargetedPins(route.mGridPins.at(i).pinWithLayers);
         // For 2D cost estimation (cares about x and y only)
