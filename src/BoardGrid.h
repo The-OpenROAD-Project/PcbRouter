@@ -39,8 +39,6 @@ class BoardGrid {
     void initilization(int w, int h, int l);
 
     // constraints
-    void setCurrentGridNetclassId(const int id) { currentGridNetclassId = id; }
-    void setCurrentNetId(const int id) { currentNetId = id; }
     void addGridNetclass(const GridNetclass &);
     void addGridDiffPairNetclass(const GridDiffPairNetclass &);
     const GridNetclass &getGridNetclass(const int gridNetclassId);
@@ -121,6 +119,9 @@ class BoardGrid {
     }
 
    private:
+    //Constraints
+    void setCurrentGridNetclassId(const int id) { currentGridNetclassId = id; }
+
     // Frontiers
     //bool isABetterFrontierOfNext();
 
@@ -179,7 +180,6 @@ class BoardGrid {
     long long viaCachedHit = 0;
 
     int currentGridNetclassId;
-    int currentNetId;
     Location current_targeted_pin;
     //TODO:: Experiment on this...
     std::vector<Location> currentTargetedPinWithLayers;

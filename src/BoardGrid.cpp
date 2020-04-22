@@ -2056,6 +2056,7 @@ void BoardGrid::routeGridDiffPairNet(GridDiffPairNet &route) {
     if (route.mGridPins.size() <= 1) return;
 
     // Clear and initialize
+    this->setCurrentGridNetclassId(route.getGridNetclassId());
     this->clearAllCameFromId();
     this->cached_trace_cost_fill(-1);
     this->cached_via_cost_fill(-1);
@@ -2115,6 +2116,7 @@ void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool
     std::cout << __FUNCTION__ << "(): netId: " << route.getNetId() << ", route.gridPins.size: " << route.mGridPins.size() << std::endl;
 
     // Clear and initialize
+    this->setCurrentGridNetclassId(route.getGridNetclassId());
     this->clearAllCameFromId();
     this->cached_trace_cost_fill(-1);
     this->cached_via_cost_fill(-1);
@@ -2168,6 +2170,7 @@ void BoardGrid::routeGridNetFromScratch(MultipinRoute &route, const bool removeG
     if (route.mGridPins.size() <= 1) return;
 
     // Clear and initialize
+    this->setCurrentGridNetclassId(route.getGridNetclassId());
     this->clearAllCameFromId();
     this->cached_trace_cost_fill(-1);
     this->cached_via_cost_fill(-1);

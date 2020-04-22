@@ -834,14 +834,12 @@ void GridBasedRouter::route_diff_pairs() {
                   << "(" << gn2.getNetId() << "), dpNetId: " << gridDPNet.getNetId()
                   << ", dpNetclassId: " << gridDPNet.getGridDiffPairNetclassId() << std::endl;
 
-        mBg.setCurrentGridNetclassId(gridDPNet.getGridNetclassId());
         gridDPNet.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
         gridDPNet.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
         gn1.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
         gn1.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
         gn2.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
         gn2.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
-        // mBg.setCurrentNetId(gridNet.getNetId());
 
         // Route the net
         // mBg.addRouteWithGridPins(dynamic_cast<MultipinRoute &>(gridDPNet));
@@ -948,10 +946,8 @@ void GridBasedRouter::route() {
             std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
             continue;
         }
-        mBg.setCurrentGridNetclassId(net.getNetclassId());
         gridRoute.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
         gridRoute.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
-        mBg.setCurrentNetId(net.getId());
 
         // Route the net
         mBg.routeGridNetFromScratch(gridRoute);
@@ -998,7 +994,6 @@ void GridBasedRouter::route() {
                 std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
                 continue;
             }
-            mBg.setCurrentGridNetclassId(net.getNetclassId());
 
             // Rip-up and re-route
             mBg.ripup_route(gridRoute);
