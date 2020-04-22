@@ -42,6 +42,39 @@ void MultipinRoute::gridPathLocationsToSegments() {
     }
 }
 
+void MultipinRoute::removeFirstGridPathRedudantLocations() {
+    if (this->mGridPaths.size() != 3) {
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
+            std::cout << __FUNCTION__ << "(): Supports only 3 gridpaths and removes redundant locations in the first grid path." << std::endl;
+        }
+        return;
+    }
+
+    auto &gpToModify = this->mGridPaths.front();
+    auto &gpLocations = gpToModify.setLocations();
+    for (unsigned int i = 1; i < this->mGridPaths.size(); ++i) {
+        auto &gp = this->mGridPaths.at(i);
+        const Location &endOnFirstGp = gp.getLocations().back();
+
+        int disToBack = abs(gpLocations.back().x() - endOnFirstGp.x()) + abs(gpLocations.back().y() - endOnFirstGp.y());
+        int disToFront = abs(gpLocations.front().x() - endOnFirstGp.x()) + abs(gpLocations.front().y() - endOnFirstGp.y());
+
+        if (disToBack < disToFront) {
+            // std::cout << "endOnFirstGp: " << endOnFirstGp << ", gpLocations.back(): " << gpLocations.back() << std::endl;
+            // Remove locations in gpLocations from the back
+            while (gpLocations.back() != endOnFirstGp) {
+                gpLocations.pop_back();
+            }
+        } else {
+            // std::cout << "endOnFirstGp: " << endOnFirstGp << ", gpLocations.back(): " << gpLocations.front() << std::endl;
+            // Remove locations in gpLocations from the front
+            while (gpLocations.front() != endOnFirstGp) {
+                gpLocations.pop_front();
+            }
+        }
+    }
+}
+
 void MultipinRoute::featuresToGridPaths() {
     if (this->features.empty() || this->features.size() == 1) {
         cerr << __FUNCTION__ << "(): No features to translate to segments. Features.size(): " << this->features.size() << std::endl;
