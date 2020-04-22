@@ -137,12 +137,15 @@ class BoardGrid {
     int getCameFromId(const Location &l) const;
     int getCameFromId(const int id) const;
     void clearAllCameFromId();
-    // 2D cost estimation
-    float getEstimatedCost(const Location &l);
-    float getEstimatedCostWithBendingCost(const Location &current, const Location &next);
-    // 3D cost esitmation
-    float getEstimatedCostWithLayers(const Location &current);
-    float getEstimatedCostWithLayersAndBendingCost(const Location &current, const Location &next);
+
+    // A* estimated cost
+    float getAStarEstimatedCost(const Location &next);
+    float getAStarEstimatedCost(const Location &current, const Location &next);
+    // Helpers for cost estimation
+    float get2dEstimatedCost(const Location &l);
+    float get2dEstimatedCostWithBendingCost(const Location &current, const Location &next);
+    float get3dEstimatedCost(const Location &current);
+    float get3dEstimatedCostWithBendingCost(const Location &current, const Location &next);
 
     void add_route_to_base_cost(const MultipinRoute &route);
     void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);

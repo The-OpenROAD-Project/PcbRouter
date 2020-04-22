@@ -444,13 +444,10 @@ void BoardGrid::aStarWithGridCameFrom(const std::vector<Location> &route, Locati
         for (std::pair<float, Location> &next : neighbors) {
             float new_cost = current_cost + next.first;  // Can be optimized!!!!
 
-            //float estCost = getEstimatedCost(next.second);
+            //float estCost = getAStarEstimatedCost(next.second);
             // Test bending cost
-            float estCost = getEstimatedCostWithBendingCost(current, next.second);
+            float estCost = getAStarEstimatedCost(current, next.second);
             int bendCost = getBendingCostOfNext(current, next.second);
-
-            // Test bending cost + multi-layers (3D estimation cost)
-            // float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
 
             if (new_cost + bendCost < this->working_cost_at(next.second) + this->bending_cost_at(next.second)) {
                 //if () {
@@ -515,15 +512,12 @@ void BoardGrid::aStarSearching(MultipinRoute &route, Location &finalEnd, float &
         for (std::pair<float, Location> &next : neighbors) {
             float new_cost = current_cost + next.first;  // Can be optimized!!!!
 
-            //float estCost = getEstimatedCost(next.second);
+            //float estCost = getAStarEstimatedCost(next.second);
             // Test bending cost
-            float estCost = getEstimatedCostWithBendingCost(current, next.second);
+            float estCost = getAStarEstimatedCost(current, next.second);
             int bendCost = getBendingCostOfNext(current, next.second);
             pr::prIntCost layerPrefCost = getLayerPrefCost(route, next.second);
             new_cost += layerPrefCost;
-
-            // Test bending cost + multi-layers (3D estimation cost)
-            // float estCost = getEstimatedCostWithLayersAndBendingCost(current, next.second);
 
             if (new_cost + bendCost < this->working_cost_at(next.second) + this->bending_cost_at(next.second)) {
                 this->working_cost_set(new_cost, next.second);
@@ -641,10 +635,7 @@ void BoardGrid::initializeFrontiers(const std::vector<Location> &route, Location
 
 void BoardGrid::initializeLocationToFrontier(const Location &start, LocationQueue<Location, float> &frontier) {
     // Walked cost (= 0) + estimated future cost
-    // 2D cost estimation
-    float cost = getEstimatedCost(start);
-    // 3D cost estimation
-    //float cost = getEstimatedCostWithLayers(start);
+    float cost = getAStarEstimatedCost(start);
 
     this->working_cost_set(0.0, start);
     frontier.push(start, cost);
@@ -656,7 +647,25 @@ void BoardGrid::initializeLocationToFrontier(const Location &start, LocationQueu
     // std::cout << __FUNCTION__ << "(): point: " << start << ", cost: " << cost << std::endl;
 }
 
-float BoardGrid::getEstimatedCost(const Location &l) {
+float BoardGrid::getAStarEstimatedCost(const Location &next) {
+    //2D Version
+    return this->get2dEstimatedCost(next);
+
+    //3D Version
+    // 3D cost estimation
+    return this->get3dEstimatedCost(next);
+}
+
+float BoardGrid::getAStarEstimatedCost(const Location &current, const Location &next) {
+    //2D Version
+    return this->get2dEstimatedCostWithBendingCost(current, next);
+
+    //3D Version
+    // Test bending cost + multi-layers (3D estimation cost)
+    return this->get3dEstimatedCostWithBendingCost(current, next);
+}
+
+float BoardGrid::get2dEstimatedCost(const Location &l) {
     // return max(abs(l.m_x - this->current_targeted_pin.m_x), abs(l.m_y - this->current_targeted_pin.m_y));
 
     int absDiffX = abs(l.m_x - this->current_targeted_pin.m_x);
@@ -666,7 +675,7 @@ float BoardGrid::getEstimatedCost(const Location &l) {
     return (float)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff;
 }
 
-float BoardGrid::getEstimatedCostWithBendingCost(const Location &current, const Location &next) {
+float BoardGrid::get2dEstimatedCostWithBendingCost(const Location &current, const Location &next) {
     int currentId = this->locationToId(current);
     int prevId = this->getCameFromId(current);
     float bendingCost = 0;
@@ -734,7 +743,7 @@ pr::prIntCost BoardGrid::getLayerPrefCost(const MultipinRoute &route, const Loca
     }
 }
 
-float BoardGrid::getEstimatedCostWithLayers(const Location &l) {
+float BoardGrid::get3dEstimatedCost(const Location &l) {
     int absDiffX = abs(l.m_x - this->currentTargetedPinWithLayers.front().m_x);
     int absDiffY = abs(l.m_y - this->currentTargetedPinWithLayers.front().m_y);
     int minDiff = min(absDiffX, absDiffY);
@@ -748,7 +757,7 @@ float BoardGrid::getEstimatedCostWithLayers(const Location &l) {
     return estCost;
 }
 
-float BoardGrid::getEstimatedCostWithLayersAndBendingCost(const Location &current, const Location &next) {
+float BoardGrid::get3dEstimatedCostWithBendingCost(const Location &current, const Location &next) {
     // Bending cost
     int currentId = this->locationToId(current);
     int prevId = this->getCameFromId(current);
@@ -2102,14 +2111,14 @@ void BoardGrid::routeGridDiffPairNet(GridDiffPairNet &route) {
     // std::cout << "GridPaht2.size: " << route.getGridNet2().getGridPaths().size() << std::endl;
 
     // Should Remove the pad costs
-    bool removeGridPinObstacleCost = true;
-    this->add_route_to_base_cost(route.getGridNet2());
-    this->routeGridNetWithRoutedGridPaths(route.getGridNet1(), removeGridPinObstacleCost);
-    this->ripup_route(route.getGridNet2(), false);
+    // bool removeGridPinObstacleCost = true;
+    // this->add_route_to_base_cost(route.getGridNet2());
+    // this->routeGridNetWithRoutedGridPaths(route.getGridNet1(), removeGridPinObstacleCost);
+    // this->ripup_route(route.getGridNet2(), false);
 
-    this->add_route_to_base_cost(route.getGridNet1());
-    this->routeGridNetWithRoutedGridPaths(route.getGridNet2(), removeGridPinObstacleCost);
-    this->ripup_route(route.getGridNet1(), false);
+    // this->add_route_to_base_cost(route.getGridNet1());
+    // this->routeGridNetWithRoutedGridPaths(route.getGridNet2(), removeGridPinObstacleCost);
+    // this->ripup_route(route.getGridNet1(), false);
 }
 
 void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles) {
