@@ -46,7 +46,7 @@ class BoardGrid {
     const GridDiffPairNetclass &getGridDiffPairNetclass(const int gridDPNetclassId);
     // Routing APIs
     void routeGridNetFromScratch(MultipinRoute &route, const bool removeGridPinObstacles = false);
-    void routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles = false);
+    void routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles = false, const bool routedPathsToGridCost = true);
     void routeGridDiffPairNet(GridDiffPairNet &route);
     void ripup_route(MultipinRoute &route, const bool clearGridPaths = true);
     // Obstacle cost
@@ -144,6 +144,8 @@ class BoardGrid {
     // Helpers for cost estimation
     float get2dEstimatedCost(const Location &l);
     float get2dEstimatedCostWithBendingCost(const Location &current, const Location &next);
+    float get2dMultiTargetEstimatedCost(const Location &l);
+    float get2dMultiTargetEstimatedCostWithBendingCost(const Location &current, const Location &next);
     float get3dEstimatedCost(const Location &current);
     float get3dEstimatedCostWithBendingCost(const Location &current, const Location &next);
 

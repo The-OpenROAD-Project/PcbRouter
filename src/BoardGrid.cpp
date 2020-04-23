@@ -649,20 +649,68 @@ void BoardGrid::initializeLocationToFrontier(const Location &start, LocationQueu
 
 float BoardGrid::getAStarEstimatedCost(const Location &next) {
     //2D Version
-    return this->get2dEstimatedCost(next);
+    // return this->get2dEstimatedCost(next);
+    return this->get2dMultiTargetEstimatedCost(next);
 
-    //3D Version
-    // 3D cost estimation
-    return this->get3dEstimatedCost(next);
+    //3D Version // 3D cost estimation
+    // return this->get3dEstimatedCost(next);
 }
 
 float BoardGrid::getAStarEstimatedCost(const Location &current, const Location &next) {
     //2D Version
-    return this->get2dEstimatedCostWithBendingCost(current, next);
+    // return this->get2dEstimatedCostWithBendingCost(current, next);
+    return this->get2dMultiTargetEstimatedCostWithBendingCost(current, next);
 
-    //3D Version
-    // Test bending cost + multi-layers (3D estimation cost)
-    return this->get3dEstimatedCostWithBendingCost(current, next);
+    //3D Version // Test bending cost + multi-layers (3D estimation cost)
+    // return this->get3dEstimatedCostWithBendingCost(current, next);
+}
+
+float BoardGrid::get2dMultiTargetEstimatedCost(const Location &l) {
+    float cost = std::numeric_limits<float>::infinity();
+    for (const auto &target : this->currentTargetedPinWithLayers) {
+        int absDiffX = abs(l.m_x - target.m_x);
+        int absDiffY = abs(l.m_y - target.m_y);
+        int minDiff = min(absDiffX, absDiffY);
+        int maxDiff = max(absDiffX, absDiffY);
+
+        cost = std::min(cost, (float)(GlobalParam::gDiagonalCost * minDiff + maxDiff - minDiff));
+    }
+    return cost;
+}
+
+float BoardGrid::get2dMultiTargetEstimatedCostWithBendingCost(const Location &current, const Location &next) {
+    int currentId = this->locationToId(current);
+    int prevId = this->getCameFromId(current);
+    float bendingCost = 0;
+    if (prevId != currentId) {
+        Location prev;
+        this->idToLocation(prevId, prev);
+
+        if (prev.z() == current.z() &&
+            current.z() == next.z() &&
+            prev.x() - current.x() == current.x() - next.x() &&
+            prev.y() - current.y() == current.y() - next.y()) {
+            bendingCost += 0.5;
+        }
+    } else {
+        // Count the starting point as zero bending
+        bendingCost += 0.5;
+    }
+
+    float cost = std::numeric_limits<float>::infinity();
+    for (const auto &target : this->currentTargetedPinWithLayers) {
+        if (next.m_x == target.m_x ||
+            next.m_y == target.m_y ||
+            abs(next.m_x - target.m_x) == abs(next.m_y - target.m_y)) {
+            // bendingCost += 0.5;
+
+            cost = std::min(cost, float(this->get2dMultiTargetEstimatedCost(next) - bendingCost - 0.5));
+        } else {
+            cost = std::min(cost, this->get2dMultiTargetEstimatedCost(next) - bendingCost);
+        }
+    }
+
+    return cost;
 }
 
 float BoardGrid::get2dEstimatedCost(const Location &l) {
@@ -2066,6 +2114,9 @@ void BoardGrid::routeGridDiffPairNet(GridDiffPairNet &route) {
 
     if (route.mGridPins.size() <= 1) return;
 
+    //========================================
+    //       Step 1
+    //========================================
     // Clear and initialize
     this->setCurrentGridNetclassId(route.getGridNetclassId());
     this->clearAllCameFromId();
@@ -2099,6 +2150,9 @@ void BoardGrid::routeGridDiffPairNet(GridDiffPairNet &route) {
         currentTargetedPinWithLayers.clear();
     }
 
+    //========================================
+    //       Step 2
+    //========================================
     // Convert from grid locations to grid paths
     route.gridPathLocationsToSegments();
     // Convert from grouped net into two GridPaths with proper clearance
@@ -2112,18 +2166,35 @@ void BoardGrid::routeGridDiffPairNet(GridDiffPairNet &route) {
     // std::cout << "GridPaht1.size: " << route.getGridNet1().getGridPaths().size() << std::endl;
     // std::cout << "GridPaht2.size: " << route.getGridNet2().getGridPaths().size() << std::endl;
 
+    //========================================
+    //       Step 3
+    //========================================
     // Should Remove the pad costs
-    // bool removeGridPinObstacleCost = true;
-    // this->add_route_to_base_cost(route.getGridNet2());
-    // this->routeGridNetWithRoutedGridPaths(route.getGridNet1(), removeGridPinObstacleCost);
-    // this->ripup_route(route.getGridNet2(), false);
+    bool removeGridPinObstacleCost = true;
+    bool routedGridPathToGridCost = false;
+    bool clearGridPathsWhenRipUp = false;
+    // Handle GridNet1
+    this->add_route_to_base_cost(route.getGridNet2());
+    this->routeGridNetWithRoutedGridPaths(route.getGridNet1(), removeGridPinObstacleCost, routedGridPathToGridCost);
+    route.getGridNet1().removeFirstGridPathRedudantLocations();
+    route.getGridNet1().gridPathLocationsToSegments();
+    this->add_route_to_base_cost(route.getGridNet1());
+    this->ripup_route(route.getGridNet2(), clearGridPathsWhenRipUp);
 
+    // Handle GridNet2
     // this->add_route_to_base_cost(route.getGridNet1());
-    // this->routeGridNetWithRoutedGridPaths(route.getGridNet2(), removeGridPinObstacleCost);
-    // this->ripup_route(route.getGridNet1(), false);
+    this->routeGridNetWithRoutedGridPaths(route.getGridNet2(), removeGridPinObstacleCost, routedGridPathToGridCost);
+    route.getGridNet2().removeFirstGridPathRedudantLocations();
+    route.getGridNet2().gridPathLocationsToSegments();
+    this->add_route_to_base_cost(route.getGridNet2());
+    // this->ripup_route(route.getGridNet1(), clearGridPathsWhenRipUp);
+
+    // Update overall routing cost of GridNet1/2
+    route.getGridNet1().currentRouteCost += route.currentRouteCost;
+    route.getGridNet2().currentRouteCost += route.currentRouteCost;
 }
 
-void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles) {
+void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool removeGridPinObstacles, const bool routedPathsToGridCost) {
     std::cout << __FUNCTION__ << "(): netId: " << route.getNetId() << ", route.gridPins.size: " << route.mGridPins.size() << std::endl;
 
     // Clear and initialize
@@ -2171,8 +2242,10 @@ void BoardGrid::routeGridNetWithRoutedGridPaths(MultipinRoute &route, const bool
     }
 
     // Convert from grid locations to grid paths
-    route.gridPathLocationsToSegments();
-    this->add_route_to_base_cost(route);
+    if (routedPathsToGridCost) {
+        route.gridPathLocationsToSegments();
+        this->add_route_to_base_cost(route);
+    }
 }
 
 void BoardGrid::routeGridNetFromScratch(MultipinRoute &route, const bool removeGridPinObstacles) {
