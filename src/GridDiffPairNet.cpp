@@ -37,23 +37,42 @@ void GridDiffPairNet::setupDiffPairGridPins(const int startLayerId, const int en
 
         // Record the pair
         this->mGridPinPairsId.emplace_back(std::make_pair(i, nearestPinId2));
-        const auto &gp2 = gridPins2.at(nearestPinId2);
+    }
 
-        // Add GridPins as median (merging) points and as pseudo through-hole pin
+    // Add GridPins as median (merging) points and as pseudo through-hole pin
+    for (const auto &pinPairIds : this->mGridPinPairsId) {
+        const auto &gp1 = gridPins1.at(pinPairIds.first);
+        const auto &gp2 = gridPins2.at(pinPairIds.second);
+
         GridPin &gridPin = this->getNewGridPin();
+        int halfDiffX = abs(gp1.getPinWithLayers().front().m_x - gp2.getPinWithLayers().front().m_x) / 2;
+        int halfDiffY = abs(gp1.getPinWithLayers().front().m_y - gp2.getPinWithLayers().front().m_y) / 2;
+
         int medianPtX = (gp1.getPinWithLayers().front().m_x + gp2.getPinWithLayers().front().m_x) / 2;
         int medianPtY = (gp1.getPinWithLayers().front().m_y + gp2.getPinWithLayers().front().m_y) / 2;
 
         for (int layerId = startLayerId; layerId <= endLayerId; ++layerId) {
             gridPin.addPinWithLayer(Location(medianPtX, medianPtY, layerId));
+
+            // Test for multiple pin locations
+            gridPin.addPinWithLayer(Location(medianPtX + halfDiffY, medianPtY + halfDiffX, layerId));
+            gridPin.addPinWithLayer(Location(medianPtX - halfDiffY, medianPtY - halfDiffX, layerId));
         }
 
         // Debugging
         if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
             std::cout << "GP1: " << gp1.getPinWithLayers().front() << ", GP2: " << gp2.getPinWithLayers().front() << std::endl;
-            std::cout << "Median Point: (" << medianPtX << ", " << medianPtY << ")" << std::endl;
+            std::cout << "Median Point: (" << medianPtX << ", " << medianPtY << "), GridPins: " << std::endl;
+            for (const auto &gp : gridPin.getPinWithLayers()) {
+                std::cout << gp << std::endl;
+            }
         }
     }
+}
+
+void GridDiffPairNet::postProcessingGridPaths() {
+    this->mNet1.removeFirstGridPathRedudantLocations();
+    this->mNet2.removeFirstGridPathRedudantLocations();
 }
 
 void GridDiffPairNet::separateGridPathsIntoTwo(const int traceClr, const int traceDiagClr, const int traceDiagOffset) {

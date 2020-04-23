@@ -20,6 +20,7 @@ class GridDiffPairNet : public MultipinRoute {
 
     void setupDiffPairGridPins(const int startLayerId, const int endLayerId);
     void separateGridPathsIntoTwo(const int traceClr, const int traceDiagClr, const int traceDiagOffset);
+    void postProcessingGridPaths();
 
    private:
     void separateGridPath(const GridPath &path, const int traceClr, const int traceDiagClr, const int traceDiagOffset);
