@@ -23,6 +23,7 @@ class GridBasedRouter {
     ~GridBasedRouter() {}
 
     void route();
+    void route_all();
     void route_diff_pairs();
     void initialization();
 
@@ -75,6 +76,7 @@ class GridBasedRouter {
 
    private:
     void testRouterWithPinShape();
+    void routeSingleIteration(const bool ripupRoutedNet = false);
 
     bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);  //deprectaed
     void writeSolutionBackToDbAndSaveOutput(const std::string fileNameTag, std::vector<MultipinRoute> &multipinNets);
@@ -87,6 +89,7 @@ class GridBasedRouter {
     void setupGridNetsAndGridPins();
     void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
     void getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);
+    float getOverallRouteCost(const std::vector<MultipinRoute> &gridNets);
 
     // Obastcle costs
     void addAllPinCostToGrid(const int);

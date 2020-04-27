@@ -76,7 +76,8 @@ int main(int argc, char *argv[]) {
     // router.set_diff_pair_net_id(274, 376);
 
     // router.route_diff_pairs();
-    router.route();
+    // router.route();
+    router.route_all();
 
     // db.printRoutedSegmentsWLAndNumVias();
 

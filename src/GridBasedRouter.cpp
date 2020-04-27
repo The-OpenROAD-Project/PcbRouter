@@ -876,6 +876,146 @@ void GridBasedRouter::route_diff_pairs() {
     writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
 }
 
+void GridBasedRouter::route_all() {
+    std::cout << std::fixed << std::setprecision(5);
+    std::cout << std::endl
+              << "=================" << __FUNCTION__ << "==================" << std::endl;
+
+    // Add all instances' pins to a cost in grid (without inflation for spacing)
+    mBg.addPinShapeObstacleCostToGrid(this->mGridPins, GlobalParam::gPinObstacleCost, true, true, true);
+
+    std::string initialMapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".initial" + this->getParamsNameTag();
+    mBg.printMatPlot(initialMapNameTag);
+
+    // Route all nets!
+    this->routeSingleIteration();
+
+    // Set up the base solution
+    std::vector<double> iterativeCost;
+    double totalCurrentRouteCost = this->getOverallRouteCost(this->mGridNets);
+    iterativeCost.push_back(totalCurrentRouteCost);
+    routingSolutions.push_back(this->mGridNets);
+    this->bestTotalRouteCost = totalCurrentRouteCost;
+    this->bestSolution = this->mGridNets;
+
+    if (GlobalParam::gOutputDebuggingKiCadFile) {
+        std::string nameTag = "fristTimeRouteAll";
+        nameTag = nameTag + "." + this->getParamsNameTag();
+        writeSolutionBackToDbAndSaveOutput(nameTag, this->mGridNets);
+    }
+
+    std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n";
+
+    for (int i = 0; i < static_cast<int>(GlobalParam::gNumRipUpReRouteIteration); ++i) {
+        // Route all nets!
+        this->routeSingleIteration(true);
+
+        // Debugging output files
+        if (GlobalParam::gOutputDebuggingKiCadFile) {
+            std::string nameTag = "i_" + std::to_string(i + 1);
+            nameTag = nameTag + "." + this->getParamsNameTag();
+            writeSolutionBackToDbAndSaveOutput(nameTag, this->mGridNets);
+        }
+        if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
+            std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".i_" + std::to_string(i + 1) + this->getParamsNameTag();
+            mBg.printMatPlot(mapNameTag);
+        }
+
+        // See if is a better routing solution
+        totalCurrentRouteCost = this->getOverallRouteCost(this->mGridNets);
+        if (totalCurrentRouteCost < bestTotalRouteCost) {
+            bestTotalRouteCost = totalCurrentRouteCost;
+            this->bestSolution = this->mGridNets;
+        }
+        routingSolutions.push_back(this->mGridNets);
+        iterativeCost.push_back(totalCurrentRouteCost);
+    }
+
+    std::cout << "\n\n======= Rip-up and Re-route cost breakdown =======" << std::endl;
+    for (std::size_t i = 0; i < iterativeCost.size(); ++i) {
+        cout << "i=" << i << ", cost: " << iterativeCost.at(i)
+             << ", WL: " << this->get_routed_wirelength(routingSolutions.at(i))
+             << ", #Vias: " << this->get_routed_num_vias(routingSolutions.at(i))
+             << ", #Bends: " << this->get_routed_num_bends(routingSolutions.at(i));
+
+        if (fabs(bestTotalRouteCost - iterativeCost.at(i)) < GlobalParam::gEpsilon) {
+            cout << " <- best result" << std::endl;
+        } else {
+            cout << std::endl;
+        }
+    }
+
+    std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
+              << std::endl;
+
+    // Routing has done. Print the final base cost
+    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + this->getParamsNameTag();
+    mBg.printMatPlot(mapNameTag);
+
+    // Output final result to KiCad file
+    std::string nameTag = "bestSolutionWithMerging";
+    nameTag = nameTag + "." + this->getParamsNameTag();
+    writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
+}
+
+float GridBasedRouter::getOverallRouteCost(const std::vector<MultipinRoute> &gridNets) {
+    float overallRouteCost = 0;
+    for (const auto &gn : gridNets) {
+        overallRouteCost += gn.currentRouteCost;
+    }
+    return overallRouteCost;
+}
+
+void GridBasedRouter::routeSingleIteration(const bool ripupRoutedNet) {
+    auto &nets = mDb.getNets();
+    for (auto &net : nets) {
+        //Diff Pair
+        // if (net.getId() != 228 && net.getId() != 230 && net.getId() != 274 && net.getId() != 376)
+        //     continue;
+
+        std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
+        if (net.getPins().size() < 2)
+            continue;
+
+        auto &gridRoute = this->mGridNets.at(net.getId());
+        if (net.getId() != gridRoute.netId) {
+            std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
+        }
+
+        // Temporary reomve the pin cost on the cost grid
+        mBg.addPinShapeObstacleCostToGrid(gridRoute.mGridPins, -GlobalParam::gPinObstacleCost, true, false, true);
+
+        // if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
+        //     std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".Net_" + std::to_string(net.getId()) + ".removeSTPad." + this->getParamsNameTag();
+        //     mBg.printMatPlot(mapNameTag);
+        // }
+
+        // Setup design rules in board grid
+        if (!mDb.isNetclassId(net.getNetclassId())) {
+            std::cerr << __FUNCTION__ << "() Invalid netclass id: " << net.getNetclassId() << std::endl;
+            continue;
+        }
+
+        if (!ripupRoutedNet) {
+            // First Iteration
+            gridRoute.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+            gridRoute.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+        } else {
+            // Rip-up routed net
+            mBg.ripup_route(gridRoute);
+            // Reroute with updated obstacle costs
+            gridRoute.addCurTrackObstacleCost(GlobalParam::gStepTraObsCost);
+            gridRoute.addCurViaObstacleCost(GlobalParam::gStepViaObsCost);
+        }
+
+        // Route the net
+        mBg.routeGridNetFromScratch(gridRoute);
+
+        // Put back the pin cost on base cost grid
+        mBg.addPinShapeObstacleCostToGrid(gridRoute.mGridPins, GlobalParam::gPinObstacleCost, true, false, true);
+    }
+}
+
 void GridBasedRouter::route() {
     std::cout << std::fixed << std::setprecision(5);
     std::cout << std::endl
