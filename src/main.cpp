@@ -71,9 +71,11 @@ int main(int argc, char *argv[]) {
 
     // // Differential pairs for BBBC
     // // PDDR_CLKN(228), PDDR_CLK(230)
-    // router.set_diff_pair_net_id(228, 230);
+    router.set_diff_pair_net_id(228, 230);
     // // DDR_CLKN(376), DDR_CLK(274)
-    // router.set_diff_pair_net_id(274, 376);
+    router.set_diff_pair_net_id(274, 376);
+    // bm2
+    // router.set_diff_pair_net_id(27, 28);
 
     // router.route_diff_pairs();
     // router.route();
