@@ -40,7 +40,14 @@ void GridPath::transformSegmentsToLocations() {
                 diffX = pointIte->x() > nextPointIte->x() ? -1 : 1;
             } else {
                 if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
-                    std::cout << __FUNCTION__ << "(): Not a correct 45-degree routing segments" << std::endl;
+                    std::cout << __FUNCTION__ << "(): Not a correct 45-degree routing segments" << std::endl
+                              << "Location: " << *pointIte << ", next location: " << *nextPointIte << std::endl;
+
+                    std::cout << "=>All Segment pts:" << std::endl;
+                    for (const auto &pt : this->mSegments) {
+                        std::cout << pt << std::endl;
+                    }
+                    std::cout << "=>End of All Segment pts:" << std::endl;
                 }
             }
 
