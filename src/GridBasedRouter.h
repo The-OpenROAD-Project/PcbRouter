@@ -77,6 +77,8 @@ class GridBasedRouter {
    private:
     void testRouterWithPinShape();
     void routeSingleIteration(const bool ripupRoutedNet = false);
+    void routeDiffPairs(const bool ripupRoutedNet = false);
+    void routeSignalNets(const bool ripupRoutedNet = false);
 
     bool writeNetsFromGridPaths(std::vector<MultipinRoute> &multipinNets, std::ofstream &ofs);  //deprectaed
     void writeSolutionBackToDbAndSaveOutput(const std::string fileNameTag, std::vector<MultipinRoute> &multipinNets);

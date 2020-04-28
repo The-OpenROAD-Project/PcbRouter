@@ -903,6 +903,10 @@ void GridBasedRouter::route_all() {
         nameTag = nameTag + "." + this->getParamsNameTag();
         writeSolutionBackToDbAndSaveOutput(nameTag, this->mGridNets);
     }
+    if (GlobalParam::gOutputDebuggingGridValuesPyFile) {
+        std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + ".i_" + std::to_string(0) + this->getParamsNameTag();
+        mBg.printMatPlot(mapNameTag);
+    }
 
     std::cout << "\n\n======= Start Fixed-Order Rip-Up and Re-Route all nets. =======\n\n";
 
@@ -948,10 +952,6 @@ void GridBasedRouter::route_all() {
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
               << std::endl;
 
-    // Routing has done. Print the final base cost
-    std::string mapNameTag = util::getFileNameWoExtension(mDb.getFileName()) + this->getParamsNameTag();
-    mBg.printMatPlot(mapNameTag);
-
     // Output final result to KiCad file
     std::string nameTag = "bestSolutionWithMerging";
     nameTag = nameTag + "." + this->getParamsNameTag();
@@ -967,6 +967,51 @@ float GridBasedRouter::getOverallRouteCost(const std::vector<MultipinRoute> &gri
 }
 
 void GridBasedRouter::routeSingleIteration(const bool ripupRoutedNet) {
+    routeDiffPairs(ripupRoutedNet);
+    routeSignalNets(ripupRoutedNet);
+}
+
+void GridBasedRouter::routeDiffPairs(const bool ripupRoutedNet) {
+    auto &nets = mDb.getNets();
+
+    for (auto &gridDPNet : this->mGridDiffPairNets) {
+        MultipinRoute &gn1 = gridDPNet.getGridNet1();
+        MultipinRoute &gn2 = gridDPNet.getGridNet2();
+
+        std::cout << "\n\nRouting differential pair nets: " << nets.at(gn1.getNetId()).getName()
+                  << "(" << gn1.getNetId() << ") and " << nets.at(gn2.getNetId()).getName()
+                  << "(" << gn2.getNetId() << "), dpNetId: " << gridDPNet.getNetId()
+                  << ", dpNetclassId: " << gridDPNet.getGridDiffPairNetclassId() << std::endl;
+
+        if (!ripupRoutedNet) {
+            // First Iteration
+            gridDPNet.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+            gridDPNet.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+            gn1.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+            gn1.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+            gn2.setCurTrackObstacleCost(GlobalParam::gTraceBasicCost);
+            gn2.setCurViaObstacleCost(GlobalParam::gViaInsertionCost);
+        } else {
+            // Rip-up routed net
+            gridDPNet.clearGridPaths();
+            mBg.ripup_route(gn1);
+            mBg.ripup_route(gn2);
+
+            // Reroute with updated obstacle costs
+            gridDPNet.addCurTrackObstacleCost(GlobalParam::gStepTraObsCost);
+            gridDPNet.addCurViaObstacleCost(GlobalParam::gStepViaObsCost);
+            gn1.addCurTrackObstacleCost(GlobalParam::gStepTraObsCost);
+            gn1.addCurViaObstacleCost(GlobalParam::gStepViaObsCost);
+            gn2.addCurTrackObstacleCost(GlobalParam::gStepTraObsCost);
+            gn2.addCurViaObstacleCost(GlobalParam::gStepViaObsCost);
+        }
+
+        // Route the net
+        mBg.routeGridDiffPairNet(gridDPNet);
+    }
+}
+
+void GridBasedRouter::routeSignalNets(const bool ripupRoutedNet) {
     auto &nets = mDb.getNets();
     for (auto &net : nets) {
         //Diff Pair
@@ -980,6 +1025,9 @@ void GridBasedRouter::routeSingleIteration(const bool ripupRoutedNet) {
         auto &gridRoute = this->mGridNets.at(net.getId());
         if (net.getId() != gridRoute.netId) {
             std::cout << "!!!!!!! inconsistent net.getId(): " << net.getId() << ", gridRoute.netId: " << gridRoute.netId << std::endl;
+        }
+        if (gridRoute.isDiffPair()) {
+            continue;
         }
 
         // Temporary reomve the pin cost on the cost grid
