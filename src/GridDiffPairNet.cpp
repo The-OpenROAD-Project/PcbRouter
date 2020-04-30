@@ -84,6 +84,14 @@ void GridDiffPairNet::separateGridPathsIntoTwo(const int traceClr, const int tra
         return;
     }
 
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
+        std::cout << __FUNCTION__ << "(): Grouped Nets: " << std::endl;
+        for (const auto &gp : this->getGridPaths()) {
+            gp.printSegments();
+            gp.printLocations();
+        }
+    }
+
     for (const auto &gp : gridPaths) {
         this->separateGridPath(gp, traceClr, traceDiagClr, traceDiagOffset);
     }
