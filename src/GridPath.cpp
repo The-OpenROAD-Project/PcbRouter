@@ -63,17 +63,24 @@ void GridPath::transformSegmentsToLocations() {
         ++nextPointIte;
     }
 
-    // std::cout << "All Segment pts:" << std::endl;
-    // for (const auto &pt : this->mSegments) {
-    //     std::cout << pt << std::endl;
-    // }
-    // std::cout << "End of All Segment pts:" << std::endl;
+    this->printSegments();
+    this->printLocations();
+}
 
-    // std::cout << "All Location pts:" << std::endl;
-    // for (const auto &pt : this->mLocations) {
-    //     std::cout << pt << std::endl;
-    // }
-    // std::cout << "End of All Location pts:" << std::endl;
+void GridPath::printLocations() const {
+    std::cout << __FUNCTION__ << "(): All Location pts:" << std::endl;
+    for (const auto &pt : this->mLocations) {
+        std::cout << pt << std::endl;
+    }
+    std::cout << __FUNCTION__ << "(): End of All Location pts." << std::endl;
+}
+
+void GridPath::printSegments() const {
+    std::cout << __FUNCTION__ << "(): All Segment pts:" << std::endl;
+    for (const auto &pt : this->mSegments) {
+        std::cout << pt << std::endl;
+    }
+    std::cout << __FUNCTION__ << "(): End of All Segment pts." << std::endl;
 }
 
 void GridPath::removeRedundantPoints() {

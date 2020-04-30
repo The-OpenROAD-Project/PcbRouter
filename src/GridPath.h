@@ -25,6 +25,8 @@ class GridPath {
     void removeRedundantPoints();
     void copyLocationsToSegments() { mSegments = mLocations; }
     void transformSegmentsToLocations();
+    void printLocations() const;
+    void printSegments() const;
 
     double getRoutedWirelength() const;
     int getRoutedNumVias() const;
