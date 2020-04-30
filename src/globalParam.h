@@ -67,6 +67,7 @@ class GlobalParam {
     //Routing Options
     static bool gViaUnderPad;
     static bool gUseMircoVia;
+    static bool gAllowViaForRouting;
     static unsigned int gNumRipUpReRouteIteration;
 
     //Outputfile
