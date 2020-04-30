@@ -190,6 +190,11 @@ int GridPath::getRoutedNumBends() const {
             pointIte->m_x != prevPointIte->m_x &&
             pointIte->m_y != prevPointIte->m_y) {
             std::cerr << __FUNCTION__ << "() Invalid path between location: " << *pointIte << ", and prevLocation: " << *prevPointIte << std::endl;
+
+            this->printSegments();
+            ++pointIte;
+            ++nextPointIte;
+            ++prevPointIte;
             continue;
         }
 
