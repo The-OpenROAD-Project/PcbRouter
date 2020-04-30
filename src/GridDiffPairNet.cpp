@@ -88,9 +88,6 @@ void GridDiffPairNet::separateGridPathsIntoTwo(const int traceClr, const int tra
         this->separateGridPath(gp, traceClr, traceDiagClr, traceDiagOffset);
     }
 
-    this->mNet1.gridPathLocationsToSegments();
-    this->mNet2.gridPathLocationsToSegments();
-
     return;
 }
 
@@ -104,8 +101,8 @@ void GridDiffPairNet::separateGridPath(const GridPath &path, const int traceClr,
     auto &gpNetL = this->mNet2.getNewGridPath();
     auto &gpNetR = this->mNet1.getNewGridPath();
 
-    auto &locsL = gpNetL.setLocations();
-    auto &locsR = gpNetR.setLocations();
+    auto &locsL = gpNetL.setSegments();
+    auto &locsR = gpNetR.setSegments();
 
     auto prevPointIte = segs.begin();
     auto pointIte = ++segs.begin();

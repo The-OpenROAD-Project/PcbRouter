@@ -17,6 +17,7 @@ class GridPath {
 
     void addLocation(const Location &l) { mLocations.emplace_back(l); }
     std::list<Location> &setLocations() { return mLocations; }
+    std::list<Location> &setSegments() { return mSegments; }
 
     const std::list<Location> &getSegments() const { return mSegments; }
     const std::list<Location> &getLocations() const { return mLocations; }
