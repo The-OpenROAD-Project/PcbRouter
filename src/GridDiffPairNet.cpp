@@ -123,27 +123,43 @@ void GridDiffPairNet::separateGridPath(const GridPath &path, const int traceClr,
             Location middleL{*pointIte};
             Location middleR{*pointIte};
 
-            // Horizontal to Diagonal
+            // Horizontal to Diagonal (45-degree turn)
             if (pointIte->x() != prevPointIte->x() && pointIte->y() == prevPointIte->y() &&
                 pointIte->x() != nextPointIte->x() && pointIte->y() != nextPointIte->y()) {
                 this->locBetweenHorizontalAndDiagonal(*prevPointIte, *pointIte, *nextPointIte, traceClr, traceDiagOffset, middleL, middleR);
             }
-            // Diagonal to Horizontal
+            // Diagonal to Horizontal (45-degree turn)
             else if (pointIte->x() != nextPointIte->x() && pointIte->y() == nextPointIte->y() &&
                      pointIte->x() != prevPointIte->x() && pointIte->y() != prevPointIte->y()) {
                 // Note: Swap next/prev iterators and middleL/R
                 this->locBetweenHorizontalAndDiagonal(*nextPointIte, *pointIte, *prevPointIte, traceClr, traceDiagOffset, middleR, middleL);
             }
-            // Vertical to Diagonal
+            // Vertical to Diagonal (45-degree turn)
             else if (pointIte->x() == prevPointIte->x() && pointIte->y() != prevPointIte->y() &&
                      pointIte->x() != nextPointIte->x() && pointIte->y() != nextPointIte->y()) {
                 this->locBetweenVerticalAndDiagonal(*prevPointIte, *pointIte, *nextPointIte, traceClr, traceDiagOffset, middleL, middleR);
             }
-            // Diagonal to Vertical
+            // Diagonal to Vertical (45-degree turn)
             else if (pointIte->x() == nextPointIte->x() && pointIte->y() != nextPointIte->y() &&
                      pointIte->x() != prevPointIte->x() && pointIte->y() != prevPointIte->y()) {
                 // Note: Swap next/prev iterators and middleL/R
                 this->locBetweenVerticalAndDiagonal(*nextPointIte, *pointIte, *prevPointIte, traceClr, traceDiagOffset, middleR, middleL);
+            }
+            // Diagonal to Diagonal (90-degree turn)
+            else if (pointIte->x() != prevPointIte->x() && pointIte->y() != prevPointIte->y() &&
+                     pointIte->x() != nextPointIte->x() && pointIte->y() != nextPointIte->y()) {
+                this->locBetweenDiagonalAndDiagonal(*prevPointIte, *pointIte, *nextPointIte, traceClr, traceDiagOffset, middleL, middleR);
+            }
+            // Orthogonal to Orthogonal  (90-degree turn)
+            else if ((pointIte->x() == prevPointIte->x() && pointIte->y() != prevPointIte->y() &&
+                      pointIte->x() != nextPointIte->x() && pointIte->y() == nextPointIte->y()) ||
+                     (pointIte->x() != prevPointIte->x() && pointIte->y() == prevPointIte->y() &&
+                      pointIte->x() == nextPointIte->x() && pointIte->y() != nextPointIte->y())) {
+                this->locBetweenOrthogonalAndOrthogonal(*prevPointIte, *pointIte, *nextPointIte, traceClr, traceDiagOffset, middleL, middleR);
+            } else {
+                if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
+                    std::cout << __FUNCTION__ << "(): Unexpected cases when separting middle points into two." << std::endl;
+                }
             }
 
             locsL.emplace_back(middleL);
@@ -340,6 +356,182 @@ void GridDiffPairNet::endLocByStartEndLocations(const Location &start, const Loc
         endL.m_y = startL.m_y + (end.m_y - start.m_y);
         endR.m_x = startR.m_x + (end.m_x - start.m_x);
         endR.m_y = startR.m_y + (end.m_y - start.m_y);
+    }
+}
+
+void GridDiffPairNet::locBetweenOrthogonalAndOrthogonal(const Location &orth1, const Location &middle, const Location &orth2,
+                                                        const int traceClr, const int traceDiagOffset,
+                                                        Location &middleL, Location &middleR) {
+    // 8 cases
+    // case 1:
+    //  <--
+    //     |
+    //   L | R
+
+    // case 2:
+    //      -->
+    //     |
+    //   L | R
+
+    // case 3:
+    //   R | L
+    //     |
+    //      -->
+
+    // case 4:
+    //   R | L
+    //     |
+    //  <--
+
+    // case 5:
+    // -->|
+    //    |
+    //  R v L
+
+    // case 6:
+    //    |<--
+    //    |
+    //  R v L
+
+    // case 7:
+    //  L ^ R
+    //    |
+    // -->|
+
+    // case 8:
+    //  L ^ R
+    //    |
+    //    |<--
+
+    if (orth1.m_x == middle.m_x) {
+        if (orth2.m_x < middle.m_x && orth2.m_y > orth1.m_y) {
+            //case 1
+            middleL.m_x -= traceClr;
+            middleL.m_y -= traceClr;
+            middleR.m_x += traceClr;
+            middleR.m_y += traceClr;
+        } else {
+            //case 4
+            middleL.m_x += traceClr;
+            middleL.m_y -= traceClr;
+            middleR.m_x -= traceClr;
+            middleR.m_y += traceClr;
+        }
+        if (orth2.m_x > middle.m_x && orth2.m_y > orth1.m_y) {
+            //case 2
+            middleL.m_x -= traceClr;
+            middleL.m_y += traceClr;
+            middleR.m_x += traceClr;
+            middleR.m_y -= traceClr;
+        } else {
+            //case 3
+            middleL.m_x += traceClr;
+            middleL.m_y += traceClr;
+            middleR.m_x -= traceClr;
+            middleR.m_y -= traceClr;
+        }
+    } else if (orth1.m_y == middle.m_y) {
+        if (orth2.m_x < orth1.m_x && orth2.m_y > middle.m_y) {
+            //case 8
+            middleL.m_x -= traceClr;
+            middleL.m_y -= traceClr;
+            middleR.m_x += traceClr;
+            middleR.m_y += traceClr;
+        } else {
+            //case 6
+            middleL.m_x += traceClr;
+            middleL.m_y -= traceClr;
+            middleR.m_x -= traceClr;
+            middleR.m_y += traceClr;
+        }
+        if (orth2.m_x > orth1.m_x && orth2.m_y > middle.m_y) {
+            //case 7
+            middleL.m_x -= traceClr;
+            middleL.m_y += traceClr;
+            middleR.m_x += traceClr;
+            middleR.m_y -= traceClr;
+        } else {
+            //case 5
+            middleL.m_x += traceClr;
+            middleL.m_y += traceClr;
+            middleR.m_x -= traceClr;
+            middleR.m_y -= traceClr;
+        }
+    } else {
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
+            std::cout << __FUNCTION__ << "(): Unexpected cases when separting two orthogonal segments's middle points." << std::endl;
+        }
+    }
+}
+void GridDiffPairNet::locBetweenDiagonalAndDiagonal(const Location &diag1, const Location &middle, const Location &diag2,
+                                                    const int traceClr, const int traceDiagOffset,
+                                                    Location &middleL, Location &middleR) {
+    // 8 cases
+    // Case 1:
+    //  R \ L
+    //     \
+    //     /
+    //    v
+
+    // Case 2:
+    //  R / L
+    //   /
+    //   \
+    //    v
+
+    // Case 3:
+    //    \
+    //     \
+    //     /
+    //  L ^ R
+
+    // Case 4:
+    //    /
+    //   /
+    //   \
+    //  L ^ R
+
+    // Case 5:
+    //       /\
+    //      /  \
+    //   L / R  v
+
+    // Case 6:
+    // R \ L  ^
+    //    \  /
+    //     \/
+
+    // Case 7:
+    //       /\
+    //      /  \
+    //     /  L ^ R
+
+    // Case 8:
+    //   \  R v L
+    //    \  /
+    //     \/
+    if (diag1.m_y > middle.m_y && middle.m_y > diag2.m_y) {
+        //case 1
+        //case 2
+        middleL.m_x += (traceClr + traceDiagOffset);
+        middleR.m_x -= (traceClr + traceDiagOffset);
+    } else if (diag1.m_y < middle.m_y && middle.m_y < diag2.m_y) {
+        //case 3
+        //case 4
+        middleL.m_x -= (traceClr + traceDiagOffset);
+        middleR.m_x += (traceClr + traceDiagOffset);
+    } else if (diag1.m_x < middle.m_x && middle.m_x < diag2.m_x) {
+        //case 5
+        //case 6
+        middleL.m_y += (traceClr + traceDiagOffset);
+        middleR.m_y -= (traceClr + traceDiagOffset);
+    } else if (diag1.m_x > middle.m_x && middle.m_x > diag2.m_x) {
+        //case 7
+        //case 8
+        middleL.m_y -= (traceClr + traceDiagOffset);
+        middleR.m_y += (traceClr + traceDiagOffset);
+    } else {
+        std::cout << __FUNCTION__ << "(): error cases of middle points between two diagonal segments."
     }
 }
 

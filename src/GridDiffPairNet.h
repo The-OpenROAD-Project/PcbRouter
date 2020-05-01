@@ -28,6 +28,10 @@ class GridDiffPairNet : public MultipinRoute {
                                          const int traceClr, const int traceDiagOffset, Location &middleL, Location &middleR);
     void locBetweenVerticalAndDiagonal(const Location &vertical, const Location &middle, const Location &diag,
                                        const int traceClr, const int traceDiagOffset, Location &middleL, Location &middleR);
+    void locBetweenDiagonalAndDiagonal(const Location &diag1, const Location &middle, const Location &diag2,
+                                       const int traceClr, const int traceDiagOffset, Location &middleL, Location &middleR);
+    void locBetweenOrthogonalAndOrthogonal(const Location &orth1, const Location &middle, const Location &orth2,
+                                           const int traceClr, const int traceDiagOffset, Location &middleL, Location &middleR);
     void endLocByStartEndLocations(const Location &start, const Location &end, const Location &startL, const Location &startR,
                                    const int traceClr, const int traceDiagOffset, Location &endL, Location &endR);
     void locsForStartEndLocationsWithoutMiddlePoints(const Location &start, const Location &end,
