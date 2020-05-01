@@ -531,7 +531,9 @@ void GridDiffPairNet::locBetweenDiagonalAndDiagonal(const Location &diag1, const
         middleL.m_y -= (traceClr + traceDiagOffset);
         middleR.m_y += (traceClr + traceDiagOffset);
     } else {
-        std::cout << __FUNCTION__ << "(): error cases of middle points between two diagonal segments."
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
+            std::cout << __FUNCTION__ << "(): error cases of middle points between two diagonal segments." << std::endl;
+        }
     }
 }
 
