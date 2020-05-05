@@ -647,6 +647,19 @@ void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, Grid
 }
 
 void GridBasedRouter::getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin) {
+    // set grid pin shape
+    if (pad.getPadShape() == padShape::RECT) {
+        gridPin.setPinShape(GridPin::PinShape::RECT);
+    } else if (pad.getPadShape() == padShape::ROUNDRECT) {
+        gridPin.setPinShape(GridPin::PinShape::ROUNDRECT);
+    } else if (pad.getPadShape() == padShape::OVAL) {
+        gridPin.setPinShape(GridPin::PinShape::OVAL);
+    } else if (pad.getPadShape() == padShape::CIRCLE) {
+        gridPin.setPinShape(GridPin::PinShape::CIRCLE);
+    } else if (pad.getPadShape() == padShape::TRAPEZOID) {
+        gridPin.setPinShape(GridPin::PinShape::TRAPEZOID);
+    }
+
     // Setup GridPin's location with layers
     Point_2D<double> pinDbLocation;
     mDb.getPinPosition(pad, inst, &pinDbLocation);
@@ -1016,6 +1029,10 @@ void GridBasedRouter::routeSignalNets(const bool ripupRoutedNet) {
     for (auto &net : nets) {
         //Diff Pair
         // if (net.getId() != 228 && net.getId() != 230 && net.getId() != 274 && net.getId() != 376)
+        //     continue;
+
+        //Acute Angle
+        // if (net.getId() != 31 && net.getId() != 28 && net.getId() != 27 && net.getId() != 34)
         //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
