@@ -20,5 +20,7 @@ using point_double_t = bg::model::point<double, 2, bg::cs::cartesian>;
 using box_int_t = bg::model::box<point_int_t>;
 using polygon_int_t = bg::model::polygon<point_int_t>;
 using polygon_double_t = bg::model::polygon<point_double_t>;
+using segment_double_t = bg::model::segment<point_double_t>;
+using linestring_double_t = bg::model::linestring<point_double_t>;
 
 #endif
