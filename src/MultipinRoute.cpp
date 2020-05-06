@@ -42,6 +42,11 @@ void MultipinRoute::gridPathLocationsToSegments() {
     }
 }
 
+void MultipinRoute::removeAcuteAngleBetweenGridPinsAndPaths() {
+    PostProcessing postprocessor;
+    postprocessor.removeAcuteAngleBetweenGridPinsAndPaths(this->mGridPins, this->mGridPaths);
+}
+
 void MultipinRoute::removeFirstGridPathRedudantLocations() {
     if (this->mGridPaths.size() != 3) {
         if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {

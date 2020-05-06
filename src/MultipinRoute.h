@@ -5,6 +5,7 @@
 
 #include "GridPath.h"
 #include "GridPin.h"
+#include "PostProcessing.h"
 #include "globalParam.h"
 #include "point.h"
 
@@ -29,6 +30,7 @@ class MultipinRoute {
     void gridPathLocationsToSegments();
     void gridPathSegmentsToLocations();
     void removeFirstGridPathRedudantLocations();
+    void removeAcuteAngleBetweenGridPinsAndPaths();
 
     int getGridNetclassId() const { return gridNetclassId; }
     int getNetId() const { return netId; }

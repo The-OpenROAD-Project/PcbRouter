@@ -1010,7 +1010,6 @@ void GridBasedRouter::route_all() {
         }
     }
 
-    /*
     std::cout << "\n\n======= Post Processing of the best solution =======" << std::endl;
     for (auto &&gridNet : this->bestSolution) {
         if (mDb.isNetId(gridNet.getNetId())) {
@@ -1018,8 +1017,7 @@ void GridBasedRouter::route_all() {
         }
         gridNet.removeAcuteAngleBetweenGridPinsAndPaths();
     }
-    */
-   
+
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
               << std::endl;
 
@@ -1090,8 +1088,8 @@ void GridBasedRouter::routeSignalNets(const bool ripupRoutedNet) {
         //     continue;
 
         //Acute Angle
-        if (net.getId() != 31 /*&& net.getId() != 28 && net.getId() != 27 && net.getId() != 34*/)
-            continue;
+        // if (net.getId() != 31 /*&& net.getId() != 28 && net.getId() != 27 && net.getId() != 34*/)
+        //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
