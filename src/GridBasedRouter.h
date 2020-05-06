@@ -11,6 +11,7 @@
 
 #include "BoardGrid.h"
 #include "GridDiffPairNet.h"
+#include "PcbRouterBoost.h"
 #include "globalParam.h"
 #include "kicadPcbDataBase.h"
 #include "util.h"
@@ -89,8 +90,9 @@ class GridBasedRouter {
     void setupGridNetclass();
     void setupGridDiffPairNetclass(const int netclassId1, const int netclassId2, int &gridDiffPairNetclassId);
     void setupGridNetsAndGridPins();
-    void getGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
-    void getGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);
+    void setupGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
+    void setupGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);
+    void setupGridPinExpandedPolygon(const padstack &pad, const instance &inst, const double polygonExpansion, GridPin &gridPin);
     float getOverallRouteCost(const std::vector<MultipinRoute> &gridNets);
 
     // Obastcle costs
