@@ -51,6 +51,7 @@ set (PCBROUTER_SRC
 set (PCBROUTER_HEADER
   src/BoardGrid.h
   src/GridBasedRouter.h
+  src/PcbRouterBoost.h
   src/GridNetclass.h
   src/GridDiffPairNetclass.h
   src/GridDiffPairNet.h
