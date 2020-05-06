@@ -39,6 +39,13 @@ class GridPin {
     const std::vector<Location> &getPinWithLayers() const { return pinWithLayers; }
     const std::vector<Point_2D<int>> &getPinShapeToGrids() const { return pinShapeToGrids; }
     const polygon_double_t &getExpandedPinPolygon() const { return mPinPolygon; }
+    const PinShape getPinShape() const { return mPinShape; }
+    bool isPinLayer(const int layerId) const {
+        for (const auto &loc : this->pinWithLayers) {
+            if (loc.z() == layerId) return true;
+        }
+        return false;
+    }
 
    private:
     // TODO:: Change to layer index only
