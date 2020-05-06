@@ -41,6 +41,7 @@ set (PCBROUTER_SRC
   src/GridNetclass.cpp
   src/GridPath.cpp
   src/MultipinRoute.cpp
+  src/PostProcessing.cpp
   src/GridDiffPairNet.cpp
   src/globalParam.cpp
   src/frTime.cpp
@@ -59,6 +60,7 @@ set (PCBROUTER_HEADER
   src/GridPin.h
   src/GridPath.h
   src/MultipinRoute.h
+  src/PostProcessing.h
   src/IncrementalSearchGrids.h
   src/Location.h
   src/globalParam.h
