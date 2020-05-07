@@ -31,6 +31,7 @@ class GridPin {
     void setPinUR(Point_2D<int> &point) { pinUR = point; }
     void setPinShape(const PinShape shape) { mPinShape = shape; }
     void setExpandedPinPolygon(const polygon_double_t poly) { mPinPolygon = poly; }
+    void setPinPolygon(const polygon_double_t poly) { mPinPolygon = poly; }
     void addPinWithLayer(const Location pt) { pinWithLayers.push_back(pt); }
     void addPinShapeGridPoint(const Point_2D<int> &pt) { pinShapeToGrids.push_back(pt); }
 
@@ -39,6 +40,7 @@ class GridPin {
     const std::vector<Location> &getPinWithLayers() const { return pinWithLayers; }
     const std::vector<Point_2D<int>> &getPinShapeToGrids() const { return pinShapeToGrids; }
     const polygon_double_t &getExpandedPinPolygon() const { return mPinPolygon; }
+    const polygon_double_t &getPinPolygon() const { return mPinPolygon; }
     const PinShape getPinShape() const { return mPinShape; }
     bool isPinLayer(const int layerId) const {
         for (const auto &loc : this->pinWithLayers) {
@@ -57,8 +59,9 @@ class GridPin {
     Point_2D<int> pinUR = Point_2D<int>(0, 0);
     PinShape mPinShape = PinShape::RECT;
 
-    // Boost Polygon (expanded with clearance), absolute coordinates
+    // Boost Polygon, absolute grid's coordinates 
     polygon_double_t mPinPolygon;
+    polygon_double_t mExpandedPinPolygon;
 };
 
 #endif

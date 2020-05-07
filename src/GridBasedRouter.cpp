@@ -624,7 +624,7 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             auto &gridPin = gridRoute.getNewGridPin();
             // Setup the GridPin
             this->setupGridPin(pad, inst, gridPin);
-            this->setupGridPinExpandedPolygon(pad, inst, polygonExpansion, gridPin);
+            this->setupGridPinPolygonAndExpandedPolygon(pad, inst, polygonExpansion, gridPin);
         }
     }
 
@@ -653,11 +653,12 @@ void GridBasedRouter::setupGridPin(const padstack &pad, const instance &inst, Gr
     setupGridPin(pad, inst, GridNetclass::getObstacleExpansion(), gridPin);
 }
 
-void GridBasedRouter::setupGridPinExpandedPolygon(const padstack &pad, const instance &inst, const double polygonExpansion, GridPin &gridPin) {
+void GridBasedRouter::setupGridPinPolygonAndExpandedPolygon(const padstack &pad, const instance &inst, const double polygonExpansion, GridPin &gridPin) {
     // Handle GridPin's pinPolygon, which should be expanded by clearance
     Point_2D<double> polyPadSize = pad.getSize();
-    polyPadSize.m_x += 2.0 * polygonExpansion;
-    polyPadSize.m_y += 2.0 * polygonExpansion;
+    Point_2D<double> expandedPolyPadSize = pad.getSize();
+    expandedPolyPadSize.m_x += 2.0 * polygonExpansion;
+    expandedPolyPadSize.m_y += 2.0 * polygonExpansion;
     Point_2D<double> pinDbLocation;
     mDb.getPinPosition(pad, inst, &pinDbLocation);
 
@@ -665,11 +666,14 @@ void GridBasedRouter::setupGridPinExpandedPolygon(const padstack &pad, const ins
 
     // Get a exact locations expanded polygon in db's coordinates
     std::vector<Point_2D<double>> exactDbLocExpandedPadPoly;
+    std::vector<Point_2D<double>> exactDbLocPadPoly;
     if (pad.getPadShape() == padShape::CIRCLE || pad.getPadShape() == padShape::OVAL) {
         // WARNING!! shape_to_coords's pos can be origin only!!! Otherwise the rotate function will be wrong
-        exactDbLocExpandedPadPoly = shape_to_coords(polyPadSize, point_2d{0, 0}, padShape::CIRCLE, inst.getAngle(), pad.getAngle(), pad.getRoundRectRatio(), 32);
+        exactDbLocExpandedPadPoly = shape_to_coords(expandedPolyPadSize, point_2d{0, 0}, padShape::CIRCLE, inst.getAngle(), pad.getAngle(), pad.getRoundRectRatio(), 32);
+        exactDbLocPadPoly = shape_to_coords(polyPadSize, point_2d{0, 0}, padShape::CIRCLE, inst.getAngle(), pad.getAngle(), pad.getRoundRectRatio(), 32);
     } else {
-        exactDbLocExpandedPadPoly = shape_to_coords(polyPadSize, point_2d{0, 0}, padShape::RECT, inst.getAngle(), pad.getAngle(), pad.getRoundRectRatio(), 32);
+        exactDbLocExpandedPadPoly = shape_to_coords(expandedPolyPadSize, point_2d{0, 0}, padShape::RECT, inst.getAngle(), pad.getAngle(), pad.getRoundRectRatio(), 32);
+        exactDbLocPadPoly = shape_to_coords(polyPadSize, point_2d{0, 0}, padShape::RECT, inst.getAngle(), pad.getAngle(), pad.getRoundRectRatio(), 32);
     }
 
     // Shift to exact location
@@ -677,17 +681,31 @@ void GridBasedRouter::setupGridPinExpandedPolygon(const padstack &pad, const ins
         pt.m_x += pinDbLocation.m_x;
         pt.m_y += pinDbLocation.m_y;
     }
+    for (auto &&pt : exactDbLocPadPoly) {
+        pt.m_x += pinDbLocation.m_x;
+        pt.m_y += pinDbLocation.m_y;
+    }
 
     // Transform this into Boost's polygon in router's grid coordinates
-    polygon_double_t exactLocGridPadShapePoly;
+    polygon_double_t exactLocGridPadExpandedShapePoly;
     for (const auto &pt : exactDbLocExpandedPadPoly) {
+        Point_2D<double> pinGridPt;
+        dbPointToGridPoint(pt, pinGridPt);
+        std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
+        bg::append(exactLocGridPadExpandedShapePoly.outer(), point_double_t(pinGridPt.x(), pinGridPt.y()));
+    }
+    bg::correct(exactLocGridPadExpandedShapePoly);
+    gridPin.setExpandedPinPolygon(exactLocGridPadExpandedShapePoly);
+
+    polygon_double_t exactLocGridPadShapePoly;
+    for (const auto &pt : exactDbLocPadPoly) {
         Point_2D<double> pinGridPt;
         dbPointToGridPoint(pt, pinGridPt);
         std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
         bg::append(exactLocGridPadShapePoly.outer(), point_double_t(pinGridPt.x(), pinGridPt.y()));
     }
     bg::correct(exactLocGridPadShapePoly);
-    gridPin.setExpandedPinPolygon(exactLocGridPadShapePoly);
+    gridPin.setPinPolygon(exactLocGridPadShapePoly);
 }
 
 void GridBasedRouter::setupGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin) {
@@ -1088,8 +1106,8 @@ void GridBasedRouter::routeSignalNets(const bool ripupRoutedNet) {
         //     continue;
 
         //Acute Angle
-        // if (net.getId() != 31 /*&& net.getId() != 28 && net.getId() != 27 && net.getId() != 34*/)
-        //     continue;
+        if (net.getId() != 31 && net.getId() != 34 /*&& net.getId() != 27 && net.getId() != 28*/)
+            continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)
