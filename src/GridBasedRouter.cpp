@@ -733,6 +733,7 @@ void GridBasedRouter::setupGridPin(const padstack &pad, const instance &inst, co
     if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG)
         std::cout << " location in grid: " << pinGridLocation << ", original db abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
 
+    gridPin.setPinCenter(pinGridLocation);
     for (auto layer : layers) {
         gridPin.pinWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
 
