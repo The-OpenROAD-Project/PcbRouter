@@ -15,9 +15,11 @@ class PostProcessing {
     PostProcessing() {
     }
 
-    void removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPin> gridPins, vector<GridPath> gridPaths);
+    void removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPin> &gridPins, vector<GridPath> &gridPaths);
 
    private:
+    bool isAcuteAngleBetweenPadAndSegment(const GridPin &gPin, const Location &inPt, const Location &outPt);
+    void findIntersectionPointAndGetIntraPadSegments(const GridPin &gPin, const linestring_double_t &bgSeg, const Location &inPt, const Location &outPt, list<Location> &ret);
 };
 
 #endif

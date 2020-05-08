@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     db.printInst();
     db.printNetclass();
     db.printNet();
-    db.printFile();
+    // db.printFile();
     db.printPcbRouterInfo();
     db.printDesignStatistics();
 
@@ -66,20 +66,24 @@ int main(int argc, char *argv[]) {
     router.initialization();
 
     // GND (20) to route on Bottom Layer
-    // router.set_net_all_layers_pref_weights(20, 10);
+    // router.set_net_all_layers_pref_weights(20, 1);
     // router.set_net_layer_pref_weight(20, "Bottom", 0);
 
     // // Differential pairs for BBBC
     // // PDDR_CLKN(228), PDDR_CLK(230)
-    router.set_diff_pair_net_id(228, 230);
+    // router.set_diff_pair_net_id(228, 230);
     // // DDR_CLKN(376), DDR_CLK(274)
-    router.set_diff_pair_net_id(274, 376);
-    // bm2
-    // router.set_diff_pair_net_id(27, 28);
+    // router.set_diff_pair_net_id(274, 376);
+
+    // bm2.unrouted.diffpair
+    // router.set_diff_pair_net_id(20, 21);
+    // router.set_diff_pair_net_id(11, 12);
+    // router.set_diff_pair_net_id(14, 16);
 
     // router.route_diff_pairs();
     // router.route();
     router.route_all();
+    // db.printKiCad();
 
     // db.printRoutedSegmentsWLAndNumVias();
 
