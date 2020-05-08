@@ -609,9 +609,11 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
         auto &gridRoute = mGridNets.back();
         auto &pins = net.getPins();
         double polygonExpansion = 0.0;
+        int boxContraction = 0;
         if (mDb.isNetclassId(net.getNetclassId())) {
             auto &dbNetclass = mDb.getNetclass(net.getNetclassId());
             polygonExpansion = dbNetclass.getClearance() + dbNetclass.getTraceWidth() / 2.0;
+            boxContraction = dbLengthToGridLengthCeil(dbNetclass.getTraceWidth() / 2.0);
         }
 
         for (auto &pin : pins) {
@@ -625,6 +627,7 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             // Setup the GridPin
             this->setupGridPin(pad, inst, gridPin);
             this->setupGridPinPolygonAndExpandedPolygon(pad, inst, polygonExpansion, gridPin);
+            this->setupGridPinContractedBox(pad, inst, boxContraction, gridPin);
         }
     }
 
@@ -687,6 +690,16 @@ void GridBasedRouter::setupGridPinPolygonAndExpandedPolygon(const padstack &pad,
     }
 
     // Transform this into Boost's polygon in router's grid coordinates
+    polygon_double_t exactLocGridPadShapePoly;
+    for (const auto &pt : exactDbLocPadPoly) {
+        Point_2D<double> pinGridPt;
+        dbPointToGridPoint(pt, pinGridPt);
+        std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
+        bg::append(exactLocGridPadShapePoly.outer(), point_double_t(pinGridPt.x(), pinGridPt.y()));
+    }
+    bg::correct(exactLocGridPadShapePoly);
+    gridPin.setPinPolygon(exactLocGridPadShapePoly);
+
     polygon_double_t exactLocGridPadExpandedShapePoly;
     for (const auto &pt : exactDbLocExpandedPadPoly) {
         Point_2D<double> pinGridPt;
@@ -697,15 +710,34 @@ void GridBasedRouter::setupGridPinPolygonAndExpandedPolygon(const padstack &pad,
     bg::correct(exactLocGridPadExpandedShapePoly);
     gridPin.setExpandedPinPolygon(exactLocGridPadExpandedShapePoly);
 
-    polygon_double_t exactLocGridPadShapePoly;
-    for (const auto &pt : exactDbLocPadPoly) {
-        Point_2D<double> pinGridPt;
-        dbPointToGridPoint(pt, pinGridPt);
-        std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
-        bg::append(exactLocGridPadShapePoly.outer(), point_double_t(pinGridPt.x(), pinGridPt.y()));
-    }
-    bg::correct(exactLocGridPadShapePoly);
-    gridPin.setPinPolygon(exactLocGridPadShapePoly);
+    // get the bounding box
+    box_double_t box;
+    bg::envelope(exactLocGridPadExpandedShapePoly, box);
+    gridPin.setExpandedPinLL(Point_2D<int>(round(bg::get<bg::min_corner, 0>(box)), round(bg::get<bg::min_corner, 1>(box))));
+    gridPin.setExpandedPinUR(Point_2D<int>(round(bg::get<bg::max_corner, 0>(box)), round(bg::get<bg::max_corner, 1>(box))));
+}
+
+void GridBasedRouter::setupGridPinContractedBox(const padstack &pad, const instance &inst, const int gridContraction, GridPin &gridPin) {
+    // Setup GridPin's location with layers
+    Point_2D<double> pinDbLocation;
+    mDb.getPinPosition(pad, inst, &pinDbLocation);
+    Point_2D<int> pinGridLocation;
+    dbPointToGridPointRound(pinDbLocation, pinGridLocation);
+
+    // Setup GridPin's LL,UR boundary
+    double width = 0, height = 0;
+    mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
+    Point_2D<double> pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
+    Point_2D<double> pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
+    Point_2D<int> pinGridLL, pinGridUR;
+    dbPointToGridPointRound(pinDbUR, pinGridUR);
+    dbPointToGridPointRound(pinDbLL, pinGridLL);
+    pinGridUR.m_x -= gridContraction;
+    pinGridUR.m_y -= gridContraction;
+    pinGridLL.m_x += gridContraction;
+    pinGridLL.m_y += gridContraction;
+    gridPin.setContractedPinLL(pinGridLL);
+    gridPin.setContractedPinUR(pinGridUR);
 }
 
 void GridBasedRouter::setupGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin) {
@@ -1107,8 +1139,8 @@ void GridBasedRouter::routeSignalNets(const bool ripupRoutedNet) {
         //     continue;
 
         //Acute Angle
-        if (net.getId() != 31 && net.getId() != 34 /*&& net.getId() != 27 && net.getId() != 28*/)
-            continue;
+        // if (net.getId() != 31 && net.getId() != 34 && net.getId() != 18 /*&& net.getId() != 28*/)
+        //     continue;
 
         std::cout << "\n\nRouting net: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         if (net.getPins().size() < 2)

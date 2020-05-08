@@ -93,6 +93,7 @@ class GridBasedRouter {
     void setupGridPin(const padstack &pad, const instance &inst, GridPin &gridPin);
     void setupGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin);
     void setupGridPinPolygonAndExpandedPolygon(const padstack &pad, const instance &inst, const double polygonExpansion, GridPin &gridPin);
+    void setupGridPinContractedBox(const padstack &pad, const instance &inst, const int gridContraction, GridPin &gridPin);
     float getOverallRouteCost(const std::vector<MultipinRoute> &gridNets);
 
     // Obastcle costs
