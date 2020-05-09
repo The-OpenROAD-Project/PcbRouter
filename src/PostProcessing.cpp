@@ -163,11 +163,15 @@ void PostProcessing::findIntersectionPointAndGetIntraPadSegments(const GridPin &
             if (intersectY < gPin.getContractedPinLL().y()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{gPin.getContractedPinLL().x() + (intersectY - gPin.getContractedPinLL().y()), intersectY, inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinLL().x() + (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinLL().x() + (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinLL().x(), gPin.getContractedPinLL().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinLL().y(), inPt.z()});
             } else if (intersectY > gPin.getContractedPinUR().y()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{gPin.getContractedPinLL().x() - (intersectY - gPin.getContractedPinUR().y()), intersectY, inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinLL().x() - (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinLL().x() - (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinLL().x(), gPin.getContractedPinUR().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinUR().y(), inPt.z()});
             } else {
                 // 90-degree turn
                 ret.emplace_back(Location{gPin.getPinCenter().x(), intersectY, inPt.z()});
@@ -178,11 +182,15 @@ void PostProcessing::findIntersectionPointAndGetIntraPadSegments(const GridPin &
             if (intersectX < gPin.getContractedPinLL().x()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{intersectX, gPin.getContractedPinLL().y() + (intersectX - gPin.getContractedPinLL().x()), inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinLL().x() + (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinLL().x() + (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinLL().x(), gPin.getContractedPinLL().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinLL().y(), inPt.z()});
             } else if (intersectX > gPin.getContractedPinUR().x()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{intersectX, gPin.getContractedPinLL().y() - (intersectX - gPin.getContractedPinUR().x()), inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinUR().x() - (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinUR().x() - (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinUR().x(), gPin.getContractedPinLL().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinLL().y(), inPt.z()});
             } else {
                 // 90-degree turn
                 ret.emplace_back(Location{intersectX, gPin.getPinCenter().y(), inPt.z()});
@@ -193,11 +201,15 @@ void PostProcessing::findIntersectionPointAndGetIntraPadSegments(const GridPin &
             if (intersectY < gPin.getContractedPinLL().y()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{gPin.getContractedPinUR().x() - (intersectY - gPin.getContractedPinLL().y()), intersectY, inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinUR().x() - (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinUR().x() - (gPin.getPinCenter().y() - gPin.getContractedPinLL().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinUR().x(), gPin.getContractedPinLL().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinLL().y(), inPt.z()});
             } else if (intersectY > gPin.getContractedPinUR().y()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{gPin.getContractedPinUR().x() + (intersectY - gPin.getContractedPinUR().y()), intersectY, inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinUR().x() + (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinUR().x() + (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinUR().x(), gPin.getContractedPinUR().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinUR().y(), inPt.z()});
             } else {
                 // 90-degree turn
                 ret.emplace_back(Location{gPin.getPinCenter().x(), intersectY, inPt.z()});
@@ -208,11 +220,15 @@ void PostProcessing::findIntersectionPointAndGetIntraPadSegments(const GridPin &
             if (intersectX < gPin.getContractedPinLL().x()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{intersectX, gPin.getContractedPinUR().y() - (intersectX - gPin.getContractedPinLL().x()), inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinLL().x() - (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinLL().x() - (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinLL().x(), gPin.getContractedPinUR().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinUR().y(), inPt.z()});
             } else if (intersectX > gPin.getContractedPinUR().x()) {
                 // Need to enter the pad by its corner
                 ret.emplace_back(Location{intersectX, gPin.getContractedPinUR().y() + (intersectX - gPin.getContractedPinUR().x()), inPt.z()});
-                ret.emplace_back(Location{gPin.getContractedPinUR().x() + (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                // ret.emplace_back(Location{gPin.getContractedPinUR().x() + (gPin.getPinCenter().y() - gPin.getContractedPinUR().y()), gPin.getPinCenter().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getContractedPinUR().x(), gPin.getContractedPinUR().y(), inPt.z()});
+                ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinUR().y(), inPt.z()});
             } else {
                 // 90-degree turn
                 ret.emplace_back(Location{intersectX, gPin.getPinCenter().y(), inPt.z()});
