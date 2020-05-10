@@ -43,6 +43,7 @@ set (PCBROUTER_SRC
   src/MultipinRoute.cpp
   src/PostProcessing.cpp
   src/GridDiffPairNet.cpp
+  src/DesignRuleChecker.cpp
   src/globalParam.cpp
   src/frTime.cpp
   src/frTime_helper.cpp
@@ -63,6 +64,7 @@ set (PCBROUTER_HEADER
   src/PostProcessing.h
   src/IncrementalSearchGrids.h
   src/Location.h
+  src/DesignRuleChecker.h
   src/globalParam.h
   src/frTime.h
   src/util.h
