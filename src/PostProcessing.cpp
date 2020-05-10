@@ -128,6 +128,7 @@ bool PostProcessing::isAcuteAngleBetweenPadAndSegment(const GridPin &gPin, const
             return true;
         }
     }
+    return true;
 }
 
 void PostProcessing::findIntersectionPointAndGetIntraPadSegments(const GridPin &gPin, const linestring_double_t &bgSeg,
