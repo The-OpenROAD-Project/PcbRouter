@@ -84,6 +84,7 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                 auto firstPtIte = segs.begin();
                 auto secondPtIte = ++segs.begin();
                 if (firstPtIte->z() == secondPtIte->z() &&
+                    !gPin.isConnectedToPin(*firstPtIte) &&
                     bg::within(point_double_t(firstPtIte->x(), firstPtIte->y()), gPin.getExpandedPinPolygon())) {
                     // Find the intersetct segment with the expanded pin polygon
                     for (; secondPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
@@ -158,6 +159,7 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                 auto secondLastPtIte = prev(lastPtIte);
 
                 if (lastPtIte->z() == secondLastPtIte->z() &&
+                    !gPin.isConnectedToPin(*lastPtIte) &&
                     bg::within(point_double_t(lastPtIte->x(), lastPtIte->y()), gPin.getExpandedPinPolygon())) {
                     // Find the intersetct segment with the expanded pin polygon
                     for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
