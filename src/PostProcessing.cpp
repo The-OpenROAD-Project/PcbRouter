@@ -7,100 +7,114 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
     }
     std::cout << "==========End of all gridPaths Segments==========" << std::endl;
 
+    unordered_set<int> processedFromHead;
+    unordered_set<int> processedFromTail;
+
     for (const auto &gPin : gridPins) {
         std::cout << "Pin's Polygon: " << boost::geometry::wkt(gPin.getPinPolygon()) << std::endl;
         std::cout << "Pin's Expanded Polygon: " << boost::geometry::wkt(gPin.getExpandedPinPolygon()) << std::endl;
+        std::cout << "Pin's LL: " << gPin.getPinLL() << ", UR: " << gPin.getPinUR() << std::endl;
+        std::cout << "Pin's Contracted LL: " << gPin.getContractedPinLL() << ", Contracted UR: " << gPin.getContractedPinUR() << std::endl;
+        std::cout << "Pin's Expanded LL: " << gPin.getExpandedPinLL() << ", Expanded UR: " << gPin.getExpandedPinUR() << std::endl;
 
-        for (auto &&gPath : gridPaths) {
+        for (int i = 0; i < gridPaths.size(); ++i) {
+            auto &gPath = gridPaths.at(i);
             if (gPath.getSegments().size() < 2) {
                 continue;
             }
             auto &segs = gPath.setSegments();
 
-            // See if the starting segment is within/crosses the polygon
-            // 1. its a segment but not via
-            // 2. start point is within pin polygon (return false when point on the polygon boundary)
-            // 3. (Skip) starting segments intersects pin polygon <= redundant /*bg::intersects(bgFirstLs, gPin.getExpandedPinPolygon()) &&*/
-            auto firstPtIte = segs.begin();
-            auto secondPtIte = ++segs.begin();
+            // Make sure process only once
+            if (processedFromHead.find(i) == processedFromHead.end()) {
+                // See if the starting segment is within/crosses the polygon
+                // 1. its a segment but not via
+                // 2. start point is within pin polygon (return false when point on the polygon boundary)
+                // 3. (Skip) starting segments intersects pin polygon <= redundant /*bg::intersects(bgFirstLs, gPin.getExpandedPinPolygon()) &&*/
+                auto firstPtIte = segs.begin();
+                auto secondPtIte = ++segs.begin();
 
-            if (firstPtIte->z() == secondPtIte->z() && bg::within(point_double_t(firstPtIte->x(), firstPtIte->y()), gPin.getPinPolygon())) {
-                // 3-Steps
-                // 1. Identify a pad entry violation happens to the PinPolygon
-                // 2. if is viloation, find a intersection point to the ExpandedPinPolygon
-                // 3. Based on intersection point and pin center, obtain the updated segments
+                if (firstPtIte->z() == secondPtIte->z() && bg::within(point_double_t(firstPtIte->x(), firstPtIte->y()), gPin.getExpandedPinPolygon())) {
+                    // 3-Steps
+                    // 1. Identify a pad entry violation happens to the PinPolygon
+                    // 2. if is viloation, find a intersection point to the ExpandedPinPolygon
+                    // 3. Based on intersection point and pin center, obtain the updated segments
 
-                // Jump to the segment that crosses the polygon outline
-                for (; secondPtIte != segs.end() && firstPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
-                    linestring_double_t bgFirstLs = linestring_double_t{point_double_t(firstPtIte->x(), firstPtIte->y()), point_double_t(secondPtIte->x(), secondPtIte->y())};
-                    // TODO: Change crosses to two points within or not to do early break
-                    // if two points are all outside of the pin polygon
-                    if (bg::crosses(bgFirstLs, gPin.getPinPolygon()) &&
-                        firstPtIte->z() == secondPtIte->z() &&
-                        gPin.isPinLayer(firstPtIte->z()) /*&&
+                    // Jump to the segment that crosses the polygon outline
+                    for (; secondPtIte != segs.end() && firstPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
+                        linestring_double_t bgFirstLs = linestring_double_t{point_double_t(firstPtIte->x(), firstPtIte->y()), point_double_t(secondPtIte->x(), secondPtIte->y())};
+                        // TODO: Change crosses to two points within or not to do early break
+                        // if two points are all outside of the pin polygon
+                        if (bg::crosses(bgFirstLs, gPin.getExpandedPinPolygon()) &&
+                            firstPtIte->z() == secondPtIte->z() &&
+                            gPin.isPinLayer(firstPtIte->z()) /*&&
                         isAcuteAngleBetweenPadAndSegment(gPin, *firstPtIte, *secondPtIte)*/
-                    ) {
-                        // Has an acute angle that need to be fixed
-                        // Find the intersetct segment with the expanded pin polygon
-                        for (; secondPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
-                            bgFirstLs = linestring_double_t{point_double_t(firstPtIte->x(), firstPtIte->y()), point_double_t(secondPtIte->x(), secondPtIte->y())};
-                            if (bg::crosses(bgFirstLs, gPin.getExpandedPinPolygon()) &&
-                                firstPtIte->z() == secondPtIte->z() &&
-                                gPin.isPinLayer(firstPtIte->z())) {
-                                // Calculate the update segments
-                                list<Location> updatedSegments;
-                                findIntersectionPointAndGetIntraPadSegments(gPin, bgFirstLs, *firstPtIte, *secondPtIte, updatedSegments);
+                        ) {
+                            // Has an acute angle that need to be fixed
+                            // Find the intersetct segment with the expanded pin polygon
+                            for (; secondPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
+                                bgFirstLs = linestring_double_t{point_double_t(firstPtIte->x(), firstPtIte->y()), point_double_t(secondPtIte->x(), secondPtIte->y())};
+                                if (bg::crosses(bgFirstLs, gPin.getExpandedPinPolygon()) &&
+                                    firstPtIte->z() == secondPtIte->z() &&
+                                    gPin.isPinLayer(firstPtIte->z())) {
+                                    // Calculate the update segments
+                                    list<Location> updatedSegments;
+                                    findIntersectionPointAndGetIntraPadSegments(gPin, bgFirstLs, *firstPtIte, *secondPtIte, updatedSegments);
 
-                                // Remove acute angle segments
-                                segs.erase(segs.begin(), secondPtIte);
-                                // Update the segments without acute angle
-                                while (!updatedSegments.empty()) {
-                                    segs.emplace_front(updatedSegments.front());
-                                    updatedSegments.pop_front();
+                                    // Remove acute angle segments
+                                    segs.erase(segs.begin(), secondPtIte);
+                                    // Update the segments without acute angle
+                                    while (!updatedSegments.empty()) {
+                                        segs.emplace_front(updatedSegments.front());
+                                        updatedSegments.pop_front();
+                                    }
+                                    processedFromHead.insert(i);
+                                    break;
                                 }
-                                break;
                             }
+                            break;
                         }
-                        break;
                     }
                 }
             }
 
-            // See if the ending segment is within/crosses the polygon
-            auto lastPtIte = prev(segs.end());
-            auto secondLastPtIte = prev(lastPtIte);
+            if (processedFromTail.find(i) == processedFromTail.end()) {
+                // See if the ending segment is within/crosses the polygon
+                auto lastPtIte = prev(segs.end());
+                auto secondLastPtIte = prev(lastPtIte);
 
-            if (lastPtIte->z() == secondLastPtIte->z() && bg::within(point_double_t(lastPtIte->x(), lastPtIte->y()), gPin.getPinPolygon())) {
-                // Jump to the segment that crosses the polygon outline
-                for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
-                    linestring_double_t bgLastLs{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
-                    if (bg::crosses(bgLastLs, gPin.getPinPolygon()) &&
-                        lastPtIte->z() == secondLastPtIte->z() &&
-                        gPin.isPinLayer(lastPtIte->z()) /*&&
+                if (lastPtIte->z() == secondLastPtIte->z() && bg::within(point_double_t(lastPtIte->x(), lastPtIte->y()), gPin.getExpandedPinPolygon())) {
+                    // Jump to the segment that crosses the polygon outline
+                    for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
+                        linestring_double_t bgLastLs{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
+                        if (bg::crosses(bgLastLs, gPin.getExpandedPinPolygon()) &&
+                            lastPtIte->z() == secondLastPtIte->z() &&
+                            gPin.isPinLayer(lastPtIte->z()) /*&&
                         isAcuteAngleBetweenPadAndSegment(gPin, *lastPtIte, *secondLastPtIte)*/
-                    ) {
-                        // Has an acute angle that need to be fixed
-                        // Find the intersetct segment with the expanded pin polygon
-                        for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
-                            bgLastLs = linestring_double_t{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
-                            if (bg::crosses(bgLastLs, gPin.getExpandedPinPolygon()) &&
-                                lastPtIte->z() == secondLastPtIte->z() &&
-                                gPin.isPinLayer(lastPtIte->z())) {
-                                // Calculate the update segments
-                                list<Location> updatedSegments;
-                                findIntersectionPointAndGetIntraPadSegments(gPin, bgLastLs, *lastPtIte, *secondLastPtIte, updatedSegments);
+                        ) {
+                            // Has an acute angle that need to be fixed
+                            // Find the intersetct segment with the expanded pin polygon
+                            for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
+                                bgLastLs = linestring_double_t{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
+                                if (bg::crosses(bgLastLs, gPin.getExpandedPinPolygon()) &&
+                                    lastPtIte->z() == secondLastPtIte->z() &&
+                                    gPin.isPinLayer(lastPtIte->z())) {
+                                    // Calculate the update segments
+                                    list<Location> updatedSegments;
+                                    findIntersectionPointAndGetIntraPadSegments(gPin, bgLastLs, *lastPtIte, *secondLastPtIte, updatedSegments);
 
-                                // Remove acute angle segments
-                                segs.erase(lastPtIte, segs.end());
-                                // Update the segments without acute angle
-                                while (!updatedSegments.empty()) {
-                                    segs.emplace_back(updatedSegments.front());
-                                    updatedSegments.pop_front();
+                                    // Remove acute angle segments
+                                    segs.erase(lastPtIte, segs.end());
+                                    // Update the segments without acute angle
+                                    while (!updatedSegments.empty()) {
+                                        segs.emplace_back(updatedSegments.front());
+                                        updatedSegments.pop_front();
+                                    }
+                                    processedFromTail.insert(i);
+                                    break;
                                 }
-                                break;
                             }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -137,7 +151,7 @@ void PostProcessing::findIntersectionPointAndGetIntraPadSegments(const GridPin &
     std::vector<point_double_t> intersectPts;
     bg::intersection(bgSeg, gPin.getExpandedPinPolygon(), intersectPts);
     for (const auto &pt : intersectPts) {
-        std::cout << "Interset from head: Seg: (" << bg::get<0>(bgSeg.front()) << ", " << bg::get<1>(bgSeg.front())
+        std::cout << "Seg: (" << bg::get<0>(bgSeg.front()) << ", " << bg::get<1>(bgSeg.front())
                   << "), (" << bg::get<0>(bgSeg.back()) << ", " << bg::get<1>(bgSeg.back())
                   << "), Intersetion Pt: " << bg::get<0>(pt) << ", " << bg::get<1>(pt) << std::endl;
     }

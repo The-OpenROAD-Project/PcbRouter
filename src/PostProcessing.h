@@ -1,6 +1,7 @@
 #ifndef PCBROUTER_POST_PROCESSING_H
 #define PCBROUTER_POST_PROCESSING_H
 
+#include <unordered_set>
 #include <vector>
 
 #include "GridPath.h"
