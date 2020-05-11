@@ -33,7 +33,9 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                 auto firstPtIte = segs.begin();
                 auto secondPtIte = ++segs.begin();
 
-                if (firstPtIte->z() == secondPtIte->z() && bg::within(point_double_t(firstPtIte->x(), firstPtIte->y()), gPin.getExpandedPinPolygon())) {
+                if (firstPtIte->z() == secondPtIte->z() &&
+                    gPin.isConnectedToPin(*firstPtIte)
+                    /*&& bg::within(point_double_t(firstPtIte->x(), firstPtIte->y()), gPin.getExpandedPinPolygon())*/) {
                     // 3-Steps
                     // 1. Identify a pad entry violation happens to the PinPolygon
                     // 2. if is viloation, find a intersection point to the ExpandedPinPolygon
@@ -44,11 +46,10 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                         linestring_double_t bgFirstLs = linestring_double_t{point_double_t(firstPtIte->x(), firstPtIte->y()), point_double_t(secondPtIte->x(), secondPtIte->y())};
                         // TODO: Change crosses to two points within or not to do early break
                         // if two points are all outside of the pin polygon
-                        if (bg::crosses(bgFirstLs, gPin.getExpandedPinPolygon()) &&
+                        if (bg::crosses(bgFirstLs, gPin.getPinPolygon()) &&
                             firstPtIte->z() == secondPtIte->z() &&
-                            gPin.isPinLayer(firstPtIte->z()) /*&&
-                        isAcuteAngleBetweenPadAndSegment(gPin, *firstPtIte, *secondPtIte)*/
-                        ) {
+                            gPin.isPinLayer(firstPtIte->z()) &&
+                            isAcuteAngleBetweenPadAndSegment(gPin, *firstPtIte, *secondPtIte)) {
                             // Has an acute angle that need to be fixed
                             // Find the intersetct segment with the expanded pin polygon
                             for (; secondPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
@@ -77,20 +78,52 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                 }
             }
 
+            // Make sure process only once
+            // Fix the lost connection due to fixing the acute angle violation
+            if (processedFromHead.find(i) == processedFromHead.end()) {
+                auto firstPtIte = segs.begin();
+                auto secondPtIte = ++segs.begin();
+                if (firstPtIte->z() == secondPtIte->z() &&
+                    bg::within(point_double_t(firstPtIte->x(), firstPtIte->y()), gPin.getExpandedPinPolygon())) {
+                    // Find the intersetct segment with the expanded pin polygon
+                    for (; secondPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
+                        linestring_double_t bgFirstLs = linestring_double_t{point_double_t(firstPtIte->x(), firstPtIte->y()), point_double_t(secondPtIte->x(), secondPtIte->y())};
+                        if (bg::crosses(bgFirstLs, gPin.getExpandedPinPolygon()) &&
+                            firstPtIte->z() == secondPtIte->z() &&
+                            gPin.isPinLayer(firstPtIte->z())) {
+                            // Calculate the update segments
+                            list<Location> updatedSegments;
+                            findIntersectionPointAndGetIntraPadSegments(gPin, bgFirstLs, *firstPtIte, *secondPtIte, updatedSegments);
+
+                            // Remove acute angle segments
+                            segs.erase(segs.begin(), secondPtIte);
+                            // Update the segments without acute angle
+                            while (!updatedSegments.empty()) {
+                                segs.emplace_front(updatedSegments.front());
+                                updatedSegments.pop_front();
+                            }
+                            processedFromHead.insert(i);
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (processedFromTail.find(i) == processedFromTail.end()) {
-                // See if the ending segment is within/crosses the polygon
                 auto lastPtIte = prev(segs.end());
                 auto secondLastPtIte = prev(lastPtIte);
 
-                if (lastPtIte->z() == secondLastPtIte->z() && bg::within(point_double_t(lastPtIte->x(), lastPtIte->y()), gPin.getExpandedPinPolygon())) {
+                if (lastPtIte->z() == secondLastPtIte->z() &&
+                    gPin.isConnectedToPin(*lastPtIte) /*&&
+                    bg::within(point_double_t(lastPtIte->x(), lastPtIte->y()), gPin.getExpandedPinPolygon())*/
+                ) {
                     // Jump to the segment that crosses the polygon outline
                     for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
                         linestring_double_t bgLastLs{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
-                        if (bg::crosses(bgLastLs, gPin.getExpandedPinPolygon()) &&
+                        if (bg::crosses(bgLastLs, gPin.getPinPolygon()) &&
                             lastPtIte->z() == secondLastPtIte->z() &&
-                            gPin.isPinLayer(lastPtIte->z()) /*&&
-                        isAcuteAngleBetweenPadAndSegment(gPin, *lastPtIte, *secondLastPtIte)*/
-                        ) {
+                            gPin.isPinLayer(lastPtIte->z()) &&
+                            isAcuteAngleBetweenPadAndSegment(gPin, *lastPtIte, *secondLastPtIte)) {
                             // Has an acute angle that need to be fixed
                             // Find the intersetct segment with the expanded pin polygon
                             for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
@@ -113,6 +146,37 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                                     break;
                                 }
                             }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Fix the lost connection due to fixing the acute angle violation
+            if (processedFromTail.find(i) == processedFromTail.end()) {
+                auto lastPtIte = prev(segs.end());
+                auto secondLastPtIte = prev(lastPtIte);
+
+                if (lastPtIte->z() == secondLastPtIte->z() &&
+                    bg::within(point_double_t(lastPtIte->x(), lastPtIte->y()), gPin.getExpandedPinPolygon())) {
+                    // Find the intersetct segment with the expanded pin polygon
+                    for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
+                        linestring_double_t bgLastLs{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
+                        if (bg::crosses(bgLastLs, gPin.getExpandedPinPolygon()) &&
+                            lastPtIte->z() == secondLastPtIte->z() &&
+                            gPin.isPinLayer(lastPtIte->z())) {
+                            // Calculate the update segments
+                            list<Location> updatedSegments;
+                            findIntersectionPointAndGetIntraPadSegments(gPin, bgLastLs, *lastPtIte, *secondLastPtIte, updatedSegments);
+
+                            // Remove acute angle segments
+                            segs.erase(lastPtIte, segs.end());
+                            // Update the segments without acute angle
+                            while (!updatedSegments.empty()) {
+                                segs.emplace_back(updatedSegments.front());
+                                updatedSegments.pop_front();
+                            }
+                            processedFromTail.insert(i);
                             break;
                         }
                     }

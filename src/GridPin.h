@@ -58,6 +58,12 @@ class GridPin {
         }
         return false;
     }
+    bool isConnectedToPin(const Location &l) const {
+        for (const auto &loc : this->pinWithLayers) {
+            if(l==loc) return true;
+        }
+        return false;
+    }
 
    private:
     // TODO:: Change to layer index only
