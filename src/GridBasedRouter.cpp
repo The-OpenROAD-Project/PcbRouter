@@ -610,12 +610,16 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
         auto &pins = net.getPins();
         double polygonExpansion = 0.0;
         int boxContraction = 0;
+        int pseudoPinExpansion = 0;
         if (mDb.isNetclassId(net.getNetclassId())) {
             auto &dbNetclass = mDb.getNetclass(net.getNetclassId());
             // polygonExpansion = dbNetclass.getClearance() + dbNetclass.getTraceWidth() / 2.0;
             // boxContraction = dbLengthToGridLengthCeil(dbNetclass.getTraceWidth() / 2.0);
             boxContraction = (int)floor((double)dbLengthToGridLengthCeil(dbNetclass.getTraceWidth()) / 2.0);
             polygonExpansion = dbNetclass.getClearance();
+            // pseudoPinExpansion = dbLengthToGridLengthCeil(dbNetclass.getClearance());
+            pseudoPinExpansion = dbLengthToGridLengthCeil(dbNetclass.getClearance() + dbNetclass.getTraceWidth() / 2.0);
+            pseudoPinExpansion = min(pseudoPinExpansion, dbLengthToGridLengthCeil(dbNetclass.getClearance()) + (int)floor((double)dbLengthToGridLengthCeil(dbNetclass.getTraceWidth()) / 2.0));
             // boxContraction = 0;
         }
 
@@ -629,6 +633,7 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             auto &gridPin = gridRoute.getNewGridPin();
             // Setup the GridPin
             this->setupGridPin(pad, inst, gridPin);
+            // this->setupGridPinPseudoPins(pad, inst, pseudoPinExpansion, gridPin);
             this->setupGridPinPolygonAndExpandedPolygon(pad, inst, polygonExpansion, gridPin);
             this->setupGridPinContractedBox(pad, inst, boxContraction, gridPin);
         }
@@ -668,7 +673,7 @@ void GridBasedRouter::setupGridPinPolygonAndExpandedPolygon(const padstack &pad,
     Point_2D<double> pinDbLocation;
     mDb.getPinPosition(pad, inst, &pinDbLocation);
 
-    std::cout << "pinDbLocation: " << pinDbLocation << ", padSize: " << polyPadSize << std::endl;
+    // std::cout << "pinDbLocation: " << pinDbLocation << ", padSize: " << polyPadSize << std::endl;
 
     // Get a exact locations expanded polygon in db's coordinates
     std::vector<Point_2D<double>> exactDbLocExpandedPadPoly;
@@ -697,7 +702,7 @@ void GridBasedRouter::setupGridPinPolygonAndExpandedPolygon(const padstack &pad,
     for (const auto &pt : exactDbLocPadPoly) {
         Point_2D<double> pinGridPt;
         dbPointToGridPoint(pt, pinGridPt);
-        std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
+        // std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
         bg::append(exactLocGridPadShapePoly.outer(), point_double_t(pinGridPt.x(), pinGridPt.y()));
     }
     bg::correct(exactLocGridPadShapePoly);
@@ -707,7 +712,7 @@ void GridBasedRouter::setupGridPinPolygonAndExpandedPolygon(const padstack &pad,
     for (const auto &pt : exactDbLocExpandedPadPoly) {
         Point_2D<double> pinGridPt;
         dbPointToGridPoint(pt, pinGridPt);
-        std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
+        // std::cout << " db's pt: " << pt << ", grid's pt: " << pinGridPt << std::endl;
         bg::append(exactLocGridPadExpandedShapePoly.outer(), point_double_t(pinGridPt.x(), pinGridPt.y()));
     }
     bg::correct(exactLocGridPadExpandedShapePoly);
@@ -743,6 +748,62 @@ void GridBasedRouter::setupGridPinContractedBox(const padstack &pad, const insta
     gridPin.setContractedPinUR(pinGridUR);
 }
 
+void GridBasedRouter::setupGridPinPseudoPins(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin) {
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG)
+        std::cout << __FUNCTION__ << "(): Starting..." << std::endl;
+
+    if (gridPin.getPinShape() == GridPin::PinShape::CIRCLE) {
+        return;
+    }
+
+    // Setup GridPin's location with layers
+    Point_2D<double> pinDbLocation;
+    mDb.getPinPosition(pad, inst, &pinDbLocation);
+    Point_2D<int> pinGridLocation;
+    dbPointToGridPointRound(pinDbLocation, pinGridLocation);
+    std::vector<int> layers;
+    this->getGridLayers(pad, inst, layers);
+
+    // Setup GridPin's LL,UR boundary
+    double width = 0, height = 0;
+    mDb.getPadstackRotatedWidthAndHeight(inst, pad, width, height);
+    Point_2D<double> pinDbUR{pinDbLocation.m_x + width / 2.0, pinDbLocation.m_y + height / 2.0};
+    Point_2D<double> pinDbLL{pinDbLocation.m_x - width / 2.0, pinDbLocation.m_y - height / 2.0};
+    Point_2D<int> pinGridLL, pinGridUR;
+    dbPointToGridPointRound(pinDbUR, pinGridUR);
+    dbPointToGridPointRound(pinDbLL, pinGridLL);
+
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG)
+        std::cout << "PinGridLL: " << pinGridLL << ", PinGridUR: " << pinGridUR << std::endl;
+
+    // Handle Pseudo Pins
+    gridPin.pinWithLayers.clear();
+    vector<Point_2D<int>> pseudoPins;
+    pseudoPins.emplace_back(pinGridLL.x() - gridExpansion, pinGridLocation.y());            //L
+    pseudoPins.emplace_back(pinGridUR.x() + gridExpansion, pinGridLocation.y());            //R
+    pseudoPins.emplace_back(pinGridLocation.x(), pinGridUR.y() + gridExpansion);            //U
+    pseudoPins.emplace_back(pinGridLocation.x(), pinGridLL.y() - gridExpansion);            //Lower
+    pseudoPins.emplace_back(pinGridLL.x() - gridExpansion, pinGridLL.y() - gridExpansion);  //LL
+    pseudoPins.emplace_back(pinGridUR.x() + gridExpansion, pinGridLL.y() - gridExpansion);  //LR
+    pseudoPins.emplace_back(pinGridUR.x() + gridExpansion, pinGridUR.y() + gridExpansion);  //UR
+    pseudoPins.emplace_back(pinGridLL.x() - gridExpansion, pinGridUR.y() + gridExpansion);  //UL
+
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG)
+        std::cout << " location in grid: " << pinGridLocation << ", original db abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
+
+    for (const auto &pt : pseudoPins) {
+        for (auto layer : layers) {
+            gridPin.pinWithLayers.push_back(Location(pt.m_x, pt.m_y, layer));
+
+            if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG)
+                std::cout << " " << layer;
+        }
+    }
+
+    if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG)
+        std::cout << ", #layers:" << gridPin.pinWithLayers.size() << " " << layers.size() << std::endl;
+}
+
 void GridBasedRouter::setupGridPin(const padstack &pad, const instance &inst, const int gridExpansion, GridPin &gridPin) {
     // set grid pin shape
     if (pad.getPadShape() == padShape::RECT) {
@@ -769,10 +830,11 @@ void GridBasedRouter::setupGridPin(const padstack &pad, const instance &inst, co
         std::cout << " location in grid: " << pinGridLocation << ", original db abs. loc. : " << pinDbLocation.m_x << " " << pinDbLocation.m_y << ", layers:";
 
     gridPin.setPinCenter(pinGridLocation);
+    gridPin.setPinLayers(layers);
     for (auto layer : layers) {
         gridPin.pinWithLayers.push_back(Location(pinGridLocation.m_x, pinGridLocation.m_y, layer));
 
-        if (GlobalParam::gVerboseLevel <= VerboseLevel::NOTSET)
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG)
             std::cout << " " << layer;
     }
 
@@ -1064,18 +1126,18 @@ void GridBasedRouter::route_all() {
         }
     }
 
-    std::cout << "\n\n======= Post Processing of the best solution =======" << std::endl;
-    for (auto &&gridNet : this->bestSolution) {
-        if (mDb.isNetId(gridNet.getNetId())) {
-            cout << "\n\nNet: " << mDb.getNet(gridNet.getNetId()).getName() << ", netId: " << gridNet.getNetId() << std::endl;
-        }
-        double wireWidth = 0.0;
-        if (mDb.isNetclassId(gridNet.getGridNetclassId())) {
-            auto &dbNetclass = mDb.getNetclass(gridNet.getGridNetclassId());
-            wireWidth = dbLengthToGridLength(dbNetclass.getTraceWidth());
-        }
-        gridNet.removeAcuteAngleBetweenGridPinsAndPaths(wireWidth);
-    }
+    // std::cout << "\n\n======= Post Processing of the best solution =======" << std::endl;
+    // for (auto &&gridNet : this->bestSolution) {
+    //     if (mDb.isNetId(gridNet.getNetId())) {
+    //         cout << "\n\nNet: " << mDb.getNet(gridNet.getNetId()).getName() << ", netId: " << gridNet.getNetId() << std::endl;
+    //     }
+    //     double wireWidth = 0.0;
+    //     if (mDb.isNetclassId(gridNet.getGridNetclassId())) {
+    //         auto &dbNetclass = mDb.getNetclass(gridNet.getGridNetclassId());
+    //         wireWidth = dbLengthToGridLength(dbNetclass.getTraceWidth());
+    //     }
+    //     gridNet.removeAcuteAngleBetweenGridPinsAndPaths(wireWidth);
+    // }
 
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
               << std::endl;
@@ -1455,10 +1517,10 @@ void GridBasedRouter::addPinAvoidingCostToGrid(const GridPin &gridPin, const flo
     std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR
               << ", inflate: " << inflate << std::endl;
 
-    for (auto &location : gridPin.getPinWithLayers()) {
+    for (int layerId : gridPin.getPinLayers()) {
         for (int x = pinGridLL.m_x; x <= pinGridUR.m_x; ++x) {
             for (int y = pinGridLL.m_y; y <= pinGridUR.m_y; ++y) {
-                Location gridPt{x, y, location.z()};
+                Location gridPt{x, y, layerId};
                 if (!mBg.validate_location(gridPt)) {
                     //std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
                     continue;
