@@ -1,6 +1,6 @@
 #include "PostProcessing.h"
 
-void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPin> &gridPins, vector<GridPath> &gridPaths) {
+void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPin> &gridPins, vector<GridPath> &gridPaths, const double gridWireWidth) {
     std::cout << "==========Start of all gridPaths Segments==========" << std::endl;
     for (const auto &gPath : gridPaths) {
         gPath.printSegments();
@@ -9,6 +9,7 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
 
     unordered_set<int> processedFromHead;
     unordered_set<int> processedFromTail;
+    this->mGridWireWidth = gridWireWidth;
 
     for (const auto &gPin : gridPins) {
         std::cout << "Pin's Polygon: " << boost::geometry::wkt(gPin.getPinPolygon()) << std::endl;
@@ -49,7 +50,7 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                         if (bg::crosses(bgFirstLs, gPin.getPinPolygon()) &&
                             firstPtIte->z() == secondPtIte->z() &&
                             gPin.isPinLayer(firstPtIte->z()) &&
-                            isAcuteAngleBetweenPadAndSegment(gPin, *firstPtIte, *secondPtIte)) {
+                            isAcuteAngleBetweenPadAndSegment(gPin, *firstPtIte, *secondPtIte, bgFirstLs)) {
                             // Has an acute angle that need to be fixed
                             // Find the intersetct segment with the expanded pin polygon
                             for (; secondPtIte != segs.end(); ++firstPtIte, ++secondPtIte) {
@@ -124,7 +125,7 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                         if (bg::crosses(bgLastLs, gPin.getPinPolygon()) &&
                             lastPtIte->z() == secondLastPtIte->z() &&
                             gPin.isPinLayer(lastPtIte->z()) &&
-                            isAcuteAngleBetweenPadAndSegment(gPin, *lastPtIte, *secondLastPtIte)) {
+                            isAcuteAngleBetweenPadAndSegment(gPin, *lastPtIte, *secondLastPtIte, bgLastLs)) {
                             // Has an acute angle that need to be fixed
                             // Find the intersetct segment with the expanded pin polygon
                             for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
@@ -188,7 +189,16 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
     }
 }
 
-bool PostProcessing::isAcuteAngleBetweenPadAndSegment(const GridPin &gPin, const Location &inPt, const Location &outPt) {
+bool PostProcessing::isIntersectionPointOnTheBoxCorner(const point_double_t &point, const polygon_double_t &poly, const double wireWidth) {
+    //See if minimum distance to the corner is within half wire width
+    double minDis = numeric_limits<double>::max();
+    for (auto it = boost::begin(bg::exterior_ring(poly)); it != boost::end(bg::exterior_ring(poly)); ++it) {
+        minDis = min(minDis, bg::distance(point, *it));
+    }
+    return minDis < (wireWidth / 2.0) * GlobalParam::gSqrt2;
+}
+
+bool PostProcessing::isAcuteAngleBetweenPadAndSegment(const GridPin &gPin, const Location &inPt, const Location &outPt, const linestring_double_t &bgLs) {
     // Several cases that needs to check if is a drc
     if (gPin.getPinShape() == GridPin::PinShape::RECT) {
         // Orthogonal segments
@@ -198,8 +208,15 @@ bool PostProcessing::isAcuteAngleBetweenPadAndSegment(const GridPin &gPin, const
         }
         // Diagonal segments
         if (inPt.x() != outPt.x() && inPt.y() != outPt.y()) {
-            std::cout << __FUNCTION__ << "(): Is Acute Angle" << std::endl;
-            return true;
+            std::vector<point_double_t> intersectPts;
+            bg::intersection(bgLs, gPin.getPinPolygon(), intersectPts);
+
+            if (!intersectPts.empty() && !isIntersectionPointOnTheBoxCorner(intersectPts.front(), gPin.getPinPolygon(), this->mGridWireWidth)) {
+                std::cout << __FUNCTION__ << "(): Is Acute Angle" << std::endl;
+                return true;
+            } else {
+                return false;
+            }
         }
     } else if (gPin.getPinShape() == GridPin::PinShape::CIRCLE) {
         if (inPt.x() == gPin.getPinCenter().x() && inPt.y() == gPin.getPinCenter().y()) {

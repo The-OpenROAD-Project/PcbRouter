@@ -30,7 +30,7 @@ class MultipinRoute {
     void gridPathLocationsToSegments();
     void gridPathSegmentsToLocations();
     void removeFirstGridPathRedudantLocations();
-    void removeAcuteAngleBetweenGridPinsAndPaths();
+    void removeAcuteAngleBetweenGridPinsAndPaths(const double gridWireWidth);
 
     int getGridNetclassId() const { return gridNetclassId; }
     int getNetId() const { return netId; }

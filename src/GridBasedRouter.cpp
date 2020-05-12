@@ -613,7 +613,8 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
         if (mDb.isNetclassId(net.getNetclassId())) {
             auto &dbNetclass = mDb.getNetclass(net.getNetclassId());
             // polygonExpansion = dbNetclass.getClearance() + dbNetclass.getTraceWidth() / 2.0;
-            boxContraction = dbLengthToGridLengthCeil(dbNetclass.getTraceWidth() / 2.0);
+            // boxContraction = dbLengthToGridLengthCeil(dbNetclass.getTraceWidth() / 2.0);
+            boxContraction = (int)floor((double)dbLengthToGridLengthCeil(dbNetclass.getTraceWidth()) / 2.0);
             polygonExpansion = dbNetclass.getClearance();
             // boxContraction = 0;
         }
@@ -1068,7 +1069,12 @@ void GridBasedRouter::route_all() {
         if (mDb.isNetId(gridNet.getNetId())) {
             cout << "\n\nNet: " << mDb.getNet(gridNet.getNetId()).getName() << ", netId: " << gridNet.getNetId() << std::endl;
         }
-        gridNet.removeAcuteAngleBetweenGridPinsAndPaths();
+        double wireWidth = 0.0;
+        if (mDb.isNetclassId(gridNet.getGridNetclassId())) {
+            auto &dbNetclass = mDb.getNetclass(gridNet.getGridNetclassId());
+            wireWidth = dbLengthToGridLength(dbNetclass.getTraceWidth());
+        }
+        gridNet.removeAcuteAngleBetweenGridPinsAndPaths(wireWidth);
     }
 
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
