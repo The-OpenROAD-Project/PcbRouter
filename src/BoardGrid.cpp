@@ -519,6 +519,10 @@ void BoardGrid::aStarSearching(MultipinRoute &route, Location &finalEnd, float &
             pr::prIntCost layerPrefCost = getLayerPrefCost(route, next.second);
             new_cost += layerPrefCost;
 
+            // std::cout << "Neighbor with estCost = " << estCost << ", currentCost = " << current_cost
+            //           << ", Walked+ObstableCost = " << next.first << ", bend Cost: " << bendCost
+            //           << ", currentLoc: " << current << ", nextLoc: " << next.second << std::endl;
+
             if (new_cost + bendCost < this->working_cost_at(next.second) + this->bending_cost_at(next.second)) {
                 this->working_cost_set(new_cost, next.second);
                 this->bending_cost_set(bendCost, next.second);
@@ -549,6 +553,13 @@ void BoardGrid::initializeFrontiers(const MultipinRoute &route, LocationQueue<Lo
         //         // For incremental cost update of trace
         //         this->cached_trace_cost_set(sized_trace_cost_at(pt, traceRelativeSearchGrids), pt);
         //     }
+
+        //Debugging
+        std::cout << __FUNCTION__ << "(): A* Start from: " << std::endl;
+        for (const auto &pt : route.mGridPins.front().pinWithLayers) {
+            std::cout << "  " << pt << std::endl;
+        }
+
         return;
     }
 
@@ -590,6 +601,14 @@ void BoardGrid::initializeFrontiers(const MultipinRoute &route, LocationQueue<Lo
 
             ++pointIte;
             ++prevPointIte;
+        }
+    }
+
+    // Add Pin locations to avoid additional via nearby through hole pins
+    int numConnectedPins = route.getGridPaths().size() + 1;
+    for (int i = 0; i < numConnectedPins && i < route.getGridPins().size(); ++i) {
+        for (const auto &location : route.getGridPins().at(i).getPinWithLayers()) {
+            initializeLocationToFrontier(location, frontier);
         }
     }
 }
@@ -2074,9 +2093,9 @@ void BoardGrid::addPinShapeObstacleCostToGrid(const GridPin &gridPin, const floa
         std::cout << ", cost:" << value << ", LLatgrid:" << pinGridLL << ", URatgrid:" << pinGridUR << ", pinShape.size(): " << gridPin.getPinShapeToGrids().size() << std::endl;
     }
 
-    for (auto &location : gridPin.getPinWithLayers()) {
+    for (int layerId : gridPin.getPinLayers()) {
         for (const auto &pt : gridPin.getPinShapeToGrids()) {
-            Location gridPt{pt.x(), pt.y(), location.z()};
+            Location gridPt{pt.x(), pt.y(), layerId};
             if (!this->validate_location(gridPt)) {
                 // std::cout << "\tWarning: Out of bound, pin cost at " << gridPt << std::endl;
                 continue;
