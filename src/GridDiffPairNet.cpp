@@ -25,8 +25,8 @@ void GridDiffPairNet::setupDiffPairGridPins(const int startLayerId, const int en
         int nearestPinId2 = -1;
         for (unsigned int j = 0; j < gridPins2.size(); ++j) {
             const auto &gp2 = gridPins2.at(j);
-            Location gp1center = gp1.getPinWithLayers().front();
-            Location gp2center = gp2.getPinWithLayers().front();
+            Point_2D<int> gp1center = gp1.getPinCenter();
+            Point_2D<int> gp2center = gp2.getPinCenter();
 
             int HPWL = abs(gp1center.m_x - gp2center.m_x) + abs(gp1center.m_y - gp2center.m_y);
             if (HPWL < minHPWL) {
@@ -45,11 +45,11 @@ void GridDiffPairNet::setupDiffPairGridPins(const int startLayerId, const int en
         const auto &gp2 = gridPins2.at(pinPairIds.second);
 
         GridPin &gridPin = this->getNewGridPin();
-        int halfDiffX = abs(gp1.getPinWithLayers().front().m_x - gp2.getPinWithLayers().front().m_x) / 2;
-        int halfDiffY = abs(gp1.getPinWithLayers().front().m_y - gp2.getPinWithLayers().front().m_y) / 2;
+        int halfDiffX = abs(gp1.getPinCenter().m_x - gp2.getPinCenter().m_x) / 2;
+        int halfDiffY = abs(gp1.getPinCenter().m_y - gp2.getPinCenter().m_y) / 2;
 
-        int medianPtX = (gp1.getPinWithLayers().front().m_x + gp2.getPinWithLayers().front().m_x) / 2;
-        int medianPtY = (gp1.getPinWithLayers().front().m_y + gp2.getPinWithLayers().front().m_y) / 2;
+        int medianPtX = (gp1.getPinCenter().m_x + gp2.getPinCenter().m_x) / 2;
+        int medianPtY = (gp1.getPinCenter().m_y + gp2.getPinCenter().m_y) / 2;
 
         for (int layerId = startLayerId; layerId <= endLayerId; ++layerId) {
             gridPin.addPinWithLayer(Location(medianPtX, medianPtY, layerId));
@@ -61,7 +61,7 @@ void GridDiffPairNet::setupDiffPairGridPins(const int startLayerId, const int en
 
         // Debugging
         if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
-            std::cout << "GP1: " << gp1.getPinWithLayers().front() << ", GP2: " << gp2.getPinWithLayers().front() << std::endl;
+            std::cout << "GP1: " << gp1.getPinCenter() << ", GP2: " << gp2.getPinCenter() << std::endl;
             std::cout << "Median Point: (" << medianPtX << ", " << medianPtY << "), GridPins: " << std::endl;
             for (const auto &gp : gridPin.getPinWithLayers()) {
                 std::cout << gp << std::endl;
