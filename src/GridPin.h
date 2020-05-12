@@ -38,6 +38,7 @@ class GridPin {
     void setPinPolygon(const polygon_double_t poly) { mPinPolygon = poly; }
     void addPinWithLayer(const Location pt) { pinWithLayers.push_back(pt); }
     void setPinCenter(const Point_2D<int> pt) { mPinCenter = pt; }
+    void setPinLayers(const vector<int> &layers) { mPinLayers = layers; }
     void addPinShapeGridPoint(const Point_2D<int> &pt) { pinShapeToGrids.push_back(pt); }
 
     const Point_2D<int> &getPinLL() const { return pinLL; }
@@ -47,6 +48,7 @@ class GridPin {
     const Point_2D<int> &getContractedPinLL() const { return mContractedPinLL; }
     const Point_2D<int> &getContractedPinUR() const { return mContractedPinUR; }
     const std::vector<Location> &getPinWithLayers() const { return pinWithLayers; }
+    const std::vector<int> &getPinLayers() const { return mPinLayers; }
     const std::vector<Point_2D<int>> &getPinShapeToGrids() const { return pinShapeToGrids; }
     const polygon_double_t &getExpandedPinPolygon() const { return mExpandedPinPolygon; }
     const polygon_double_t &getPinPolygon() const { return mPinPolygon; }
@@ -60,7 +62,7 @@ class GridPin {
     }
     bool isConnectedToPin(const Location &l) const {
         for (const auto &loc : this->pinWithLayers) {
-            if(l==loc) return true;
+            if (l == loc) return true;
         }
         return false;
     }
@@ -68,6 +70,7 @@ class GridPin {
    private:
     // TODO:: Change to layer index only
     std::vector<Location> pinWithLayers;
+    std::vector<int> mPinLayers;
     Point_2D<int> mPinCenter;
 
     // Pin Shape
