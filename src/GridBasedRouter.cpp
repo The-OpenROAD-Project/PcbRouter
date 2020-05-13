@@ -1126,6 +1126,11 @@ void GridBasedRouter::route_all() {
         }
     }
 
+    // Output final result to KiCad file
+    std::string nameTag = "bestSolutionWithMerging";
+    nameTag = nameTag + "." + this->getParamsNameTag();
+    writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
+
     std::cout << "\n\n======= Post Processing of the best solution =======" << std::endl;
     for (auto &&gridNet : this->bestSolution) {
         if (mDb.isNetId(gridNet.getNetId())) {
@@ -1143,8 +1148,7 @@ void GridBasedRouter::route_all() {
               << std::endl;
 
     // Output final result to KiCad file
-    std::string nameTag = "bestSolutionWithMerging";
-    nameTag = nameTag + "." + this->getParamsNameTag();
+    nameTag = "afterPostProcessing." + this->getParamsNameTag();
     writeSolutionBackToDbAndSaveOutput(nameTag, this->bestSolution);
 }
 
