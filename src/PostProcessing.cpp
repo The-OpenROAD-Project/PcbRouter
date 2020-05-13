@@ -367,7 +367,7 @@ void PostProcessing::rectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin
     int intersectX = round(bg::get<0>(intersectPts.front()));
     int intersectY = round(bg::get<1>(intersectPts.front()));
 
-    if (intersectX == gPin.getPinLL().x() || intersectX == gPin.getExpandedPinUR().x()) {
+    if (intersectX == gPin.getPinLL().x() || intersectX == gPin.getPinUR().x()) {
         // Intersection pt at left/right
         // Two horizontal lines
         linestring_double_t bgTopLs = linestring_double_t{point_double_t(gPin.getExpandedPinLL().x(), gPin.getContractedPinUR().y()), point_double_t(gPin.getExpandedPinUR().x(), gPin.getContractedPinUR().y())};
@@ -388,7 +388,7 @@ void PostProcessing::rectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin
             // Pin Center
             ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getPinCenter().y(), inPt.z()});
         }
-    } else if (intersectY == gPin.getExpandedPinLL().y() || intersectY == gPin.getExpandedPinUR().y()) {
+    } else if (intersectY == gPin.getPinLL().y() || intersectY == gPin.getPinUR().y()) {
         //Intersection pt at bottom/top
         // Two vertical lines
         linestring_double_t bgLeftLs = linestring_double_t{point_double_t(gPin.getContractedPinLL().x(), gPin.getExpandedPinLL().y()), point_double_t(gPin.getContractedPinLL().x(), gPin.getExpandedPinUR().y())};
