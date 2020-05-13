@@ -1126,18 +1126,18 @@ void GridBasedRouter::route_all() {
         }
     }
 
-    // std::cout << "\n\n======= Post Processing of the best solution =======" << std::endl;
-    // for (auto &&gridNet : this->bestSolution) {
-    //     if (mDb.isNetId(gridNet.getNetId())) {
-    //         cout << "\n\nNet: " << mDb.getNet(gridNet.getNetId()).getName() << ", netId: " << gridNet.getNetId() << std::endl;
-    //     }
-    //     double wireWidth = 0.0;
-    //     if (mDb.isNetclassId(gridNet.getGridNetclassId())) {
-    //         auto &dbNetclass = mDb.getNetclass(gridNet.getGridNetclassId());
-    //         wireWidth = dbLengthToGridLength(dbNetclass.getTraceWidth());
-    //     }
-    //     gridNet.removeAcuteAngleBetweenGridPinsAndPaths(wireWidth);
-    // }
+    std::cout << "\n\n======= Post Processing of the best solution =======" << std::endl;
+    for (auto &&gridNet : this->bestSolution) {
+        if (mDb.isNetId(gridNet.getNetId())) {
+            cout << "\n\nNet: " << mDb.getNet(gridNet.getNetId()).getName() << ", netId: " << gridNet.getNetId() << std::endl;
+        }
+        double wireWidth = 0.0;
+        if (mDb.isNetclassId(gridNet.getGridNetclassId())) {
+            auto &dbNetclass = mDb.getNetclass(gridNet.getGridNetclassId());
+            wireWidth = dbLengthToGridLength(dbNetclass.getTraceWidth());
+        }
+        gridNet.removeAcuteAngleBetweenGridPinsAndPaths(wireWidth);
+    }
 
     std::cout << "\n\n======= Finished Routing all nets. =======\n\n"
               << std::endl;
