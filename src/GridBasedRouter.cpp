@@ -637,6 +637,8 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             this->setupGridPinPolygonAndExpandedPolygon(pad, inst, polygonExpansion, gridPin);
             this->setupGridPinContractedBox(pad, inst, boxContraction, gridPin);
         }
+
+        gridRoute.setupGridPinsRoutingOrder();
     }
 
     // Iterate instances

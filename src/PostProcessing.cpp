@@ -301,6 +301,79 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                 }
             }
             //*/
+
+            /*
+            // Fix the lost connection due to fixing the acute angle violation
+            if (processedFromTail.find(i) == processedFromTail.end()) {
+                auto lastPtIte = prev(segs.end());
+                auto secondLastPtIte = prev(lastPtIte);
+
+                if (lastPtIte->z() == secondLastPtIte->z() &&
+                    !gPin.isConnectedToPin(*lastPtIte) &&
+                    //!gPin.isConnectedToPin(segs.front()) &&  //!!!!!!
+                    gPin.isPinLayer(lastPtIte->z()) &&
+                    bg::within(point_double_t(lastPtIte->x(), lastPtIte->y()), gPin.getPinPolygon())) {
+                    // Jump to the segment that crosses the polygon outline/expoutline
+                    for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
+                        linestring_double_t bgLastLs{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
+
+                        // Encounter an via break;
+                        if (lastPtIte->z() != secondLastPtIte->z()) {
+                            break;
+                        }
+
+                        if ((bg::crosses(bgLastLs, gPin.getPinPolygon()) || bg::crosses(bgLastLs, gPin.getExpandedPinPolygon())) &&
+                            gPin.isPinLayer(lastPtIte->z())) {
+                            // Because the segment it connected might be fixed, so needs fixed as well
+                            if (gPin.getPinShape() == GridPin::PinShape::CIRCLE) {
+                                // Need to find intersection at the expanded polygon
+                                for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
+                                    bgLastLs = linestring_double_t{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
+                                    if (bg::crosses(bgLastLs, gPin.getExpandedPinPolygon()) &&
+                                        lastPtIte->z() == secondLastPtIte->z() &&
+                                        gPin.isPinLayer(lastPtIte->z())) {
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Calculate the update segments
+                            list<Location> updatedSegments;
+                            if (gPin.getPinShape() == GridPin::PinShape::CIRCLE) {
+                                expCirclePadFindIntersectPtAndGetNewSegments(gPin, bgLastLs, *lastPtIte, *secondLastPtIte, updatedSegments);
+                            } else if (gPin.getPinShape() == GridPin::PinShape::RECT) {
+                                rectPadFindIntersectPtAndGetNewSegments(gPin, bgLastLs, *lastPtIte, *secondLastPtIte, updatedSegments);
+
+                                if (updatedSegments.empty()) {
+                                    // Need to find intersection at the expanded polygon
+                                    for (; lastPtIte != segs.begin(); --lastPtIte, --secondLastPtIte) {
+                                        bgLastLs = linestring_double_t{point_double_t(lastPtIte->x(), lastPtIte->y()), point_double_t(secondLastPtIte->x(), secondLastPtIte->y())};
+                                        if (bg::crosses(bgLastLs, gPin.getExpandedPinPolygon()) &&
+                                            lastPtIte->z() == secondLastPtIte->z() &&
+                                            gPin.isPinLayer(lastPtIte->z())) {
+                                            expRectPadFindIntersectPtAndGetNewSegments(gPin, bgLastLs, *lastPtIte, *secondLastPtIte, updatedSegments);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!updatedSegments.empty()) {
+                                // Remove acute angle segments
+                                segs.erase(lastPtIte, segs.end());
+                                // Update the segments without acute angle
+                                while (!updatedSegments.empty()) {
+                                    segs.emplace_back(updatedSegments.front());
+                                    updatedSegments.pop_front();
+                                }
+                                processedFromTail.insert(i);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            //*/
         }
     }
 }
