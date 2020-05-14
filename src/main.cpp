@@ -1,4 +1,5 @@
 
+#include "DesignRuleChecker.h"
 #include "GridBasedRouter.h"
 #include "frTime.h"
 #include "kicadPcbDataBase.h"
@@ -37,6 +38,10 @@ int main(int argc, char *argv[]) {
     GlobalParam::showCurrentUsage("Parser");
     GlobalParam::setUsageStart();
 
+    // std::cout << "Starting design rule checker..." << std::endl;
+    // DesignRuleChecker checker(db);
+    // checker.checkAcuteAngleViolationBetweenTracesAndPads();
+
     std::cout << "Starting router..." << std::endl;
     srand(GlobalParam::gSeed);
     GridBasedRouter router(db);
@@ -62,6 +67,9 @@ int main(int argc, char *argv[]) {
     if (argc >= 9) {
         router.set_via_obstacle_step_size(atof(argv[8]));
     }
+    if (argc >= 10) {
+        router.set_pad_obstacle_weight(atof(argv[9]));
+    }
     // router.testRouterWithPinShape();
     router.initialization();
 
@@ -83,7 +91,6 @@ int main(int argc, char *argv[]) {
     // router.route_diff_pairs();
     // router.route();
     router.route_all();
-    // db.printKiCad();
 
     // db.printRoutedSegmentsWLAndNumVias();
 
