@@ -24,6 +24,7 @@ class PostProcessing {
     void expRectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin, const linestring_double_t &bgSeg, const Location &inPt, const Location &outPt, list<Location> &ret);
     void rectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin, const linestring_double_t &bgSeg, const Location &inPt, const Location &outPt, list<Location> &ret);
     void expCirclePadFindIntersectPtAndGetNewSegments(const GridPin &gPin, const linestring_double_t &bgSeg, const Location &inPt, const Location &outPt, list<Location> &ret);
+    void getCorrectIntersectionPoint(const Location &outPt, const std::vector<point_double_t> &intersectPts, Point_2D<int> &intersectPt);
 
    private:
     double mGridWireWidth = 0.0;

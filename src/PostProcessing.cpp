@@ -417,6 +417,22 @@ bool PostProcessing::isAcuteAngleBetweenPadAndSegment(const GridPin &gPin, const
     return true;
 }
 
+void PostProcessing::getCorrectIntersectionPoint(const Location &outPt, const std::vector<point_double_t> &intersectPts, Point_2D<int> &intersectPt) {
+    if (intersectPts.empty()) {
+        return;
+    }
+
+    intersectPt = Point_2D<int>(llround(bg::get<0>(intersectPts.front())), llround(bg::get<1>(intersectPts.front())));
+    double minDis = bg::distance(intersectPts.front(), point_double_t{outPt.x(), outPt.y()});
+    for (int i = 1; i < intersectPts.size(); ++i) {
+        double dis = bg::distance(intersectPts.at(i), point_double_t{outPt.x(), outPt.y()});
+        if (dis < minDis) {
+            intersectPt = Point_2D<int>(llround(bg::get<0>(intersectPts.at(i))), llround(bg::get<1>(intersectPts.at(i))));
+            minDis = dis;
+        }
+    }
+}
+
 void PostProcessing::rectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin, const linestring_double_t &bgSeg,
                                                              const Location &inPt, const Location &outPt, list<Location> &ret) {
     // Get the intersection point by bg::intersection
@@ -431,14 +447,12 @@ void PostProcessing::rectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin
     if (intersectPts.empty()) {
         return;
     }
-    if (intersectPts.size() > 1) {
-        if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
-            std::cout << __FUNCTION__ << "(): have multiple intersection points. Will use the first point to update segments." << std::endl;
-        }
-    }
 
-    int intersectX = round(bg::get<0>(intersectPts.front()));
-    int intersectY = round(bg::get<1>(intersectPts.front()));
+    Point_2D<int> intersectPt;
+    this->getCorrectIntersectionPoint(outPt, intersectPts, intersectPt);
+
+    int intersectX = intersectPt.x();
+    int intersectY = intersectPt.y();
 
     if (intersectX == gPin.getPinLL().x() || intersectX == gPin.getPinUR().x()) {
         // Intersection pt at left/right
@@ -451,12 +465,16 @@ void PostProcessing::rectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin
         bg::intersection(bgSeg, bgBottomLs, intersectToBottom);
 
         if (!intersectToTop.empty()) {
-            ret.emplace_back(Location{(int)round(bg::get<0>(intersectToTop.front())), (int)round(bg::get<1>(intersectToTop.front())), inPt.z()});
+            Point_2D<int> intersectToTopPt;
+            this->getCorrectIntersectionPoint(outPt, intersectToTop, intersectToTopPt);
+            ret.emplace_back(Location{intersectToTopPt.x(), intersectToTopPt.y(), inPt.z()});
             ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinUR().y(), inPt.z()});
             // Pin Center
             ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getPinCenter().y(), inPt.z()});
         } else if (!intersectToBottom.empty()) {
-            ret.emplace_back(Location{(int)round(bg::get<0>(intersectToBottom.front())), (int)round(bg::get<1>(intersectToBottom.front())), inPt.z()});
+            Point_2D<int> intersectToBottomPt;
+            this->getCorrectIntersectionPoint(outPt, intersectToBottom, intersectToBottomPt);
+            ret.emplace_back(Location{intersectToBottomPt.x(), intersectToBottomPt.y(), inPt.z()});
             ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getContractedPinLL().y(), inPt.z()});
             // Pin Center
             ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getPinCenter().y(), inPt.z()});
@@ -472,12 +490,16 @@ void PostProcessing::rectPadFindIntersectPtAndGetNewSegments(const GridPin &gPin
         bg::intersection(bgSeg, bgRightLs, intersectToRight);
 
         if (!intersectToLeft.empty()) {
-            ret.emplace_back(Location{(int)round(bg::get<0>(intersectToLeft.front())), (int)round(bg::get<1>(intersectToLeft.front())), inPt.z()});
+            Point_2D<int> intersectToLeftPt;
+            this->getCorrectIntersectionPoint(outPt, intersectToLeft, intersectToLeftPt);
+            ret.emplace_back(Location{intersectToLeftPt.x(), intersectToLeftPt.y(), inPt.z()});
             ret.emplace_back(Location{gPin.getContractedPinLL().x(), gPin.getPinCenter().y(), inPt.z()});
             // Pin Center
             ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getPinCenter().y(), inPt.z()});
         } else if (!intersectToRight.empty()) {
-            ret.emplace_back(Location{(int)round(bg::get<0>(intersectToRight.front())), (int)round(bg::get<1>(intersectToRight.front())), inPt.z()});
+            Point_2D<int> intersectToRightPt;
+            this->getCorrectIntersectionPoint(outPt, intersectToRight, intersectToRightPt);
+            ret.emplace_back(Location{intersectToRightPt.x(), intersectToRightPt.y(), inPt.z()});
             ret.emplace_back(Location{gPin.getContractedPinUR().x(), gPin.getPinCenter().y(), inPt.z()});
             // Pin Center
             ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getPinCenter().y(), inPt.z()});
@@ -499,14 +521,12 @@ void PostProcessing::expRectPadFindIntersectPtAndGetNewSegments(const GridPin &g
     if (intersectPts.empty()) {
         return;
     }
-    if (intersectPts.size() > 1) {
-        if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
-            std::cout << __FUNCTION__ << "(): have multiple intersection points. Will use the first point to update segments." << std::endl;
-        }
-    }
 
-    int intersectX = round(bg::get<0>(intersectPts.front()));
-    int intersectY = round(bg::get<1>(intersectPts.front()));
+    Point_2D<int> intersectPt;
+    this->getCorrectIntersectionPoint(outPt, intersectPts, intersectPt);
+
+    int intersectX = intersectPt.x();
+    int intersectY = intersectPt.y();
 
     // Intersection pt
     ret.emplace_back(Location{intersectX, intersectY, inPt.z()});
@@ -606,14 +626,12 @@ void PostProcessing::expCirclePadFindIntersectPtAndGetNewSegments(const GridPin 
     if (intersectPts.empty()) {
         return;
     }
-    if (intersectPts.size() > 1) {
-        if (GlobalParam::gVerboseLevel <= VerboseLevel::WARNING) {
-            std::cout << __FUNCTION__ << "(): have multiple intersection points. Will use the first point to update segments." << std::endl;
-        }
-    }
+
+    Point_2D<int> intersectPt;
+    this->getCorrectIntersectionPoint(outPt, intersectPts, intersectPt);
 
     // Any angle segment from intersection point to the pin center
-    ret.emplace_back(Location{(int)round(bg::get<0>(intersectPts.front())), (int)round(bg::get<1>(intersectPts.front())), inPt.z()});
+    ret.emplace_back(Location{intersectPt.x(), intersectPt.y(), inPt.z()});
     ret.emplace_back(Location{gPin.getPinCenter().x(), gPin.getPinCenter().y(), inPt.z()});
 
     // if (GlobalParam::gVerboseLevel <= VerboseLevel::CRITICAL) {
