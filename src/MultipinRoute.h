@@ -31,6 +31,8 @@ class MultipinRoute {
     void gridPathSegmentsToLocations();
     void removeFirstGridPathRedudantLocations();
     void removeAcuteAngleBetweenGridPinsAndPaths(const double gridWireWidth);
+    void setupGridPinsRoutingOrder();
+    double getGridPinsDistance(const GridPin &gp1, const GridPin &gp2);
 
     int getGridNetclassId() const { return gridNetclassId; }
     int getNetId() const { return netId; }
@@ -82,7 +84,8 @@ class MultipinRoute {
     std::vector<GridPin> mGridPins;
     std::vector<GridPath> mGridPaths;
     std::vector<pr::prIntCost> mLayerCosts;  //Layer preferences for this net, align with board grid layer
-                                             // std::vector<Location> vias; //TODO
+    std::vector<int> mGridPinsRoutingOrder;
+    // std::vector<Location> vias; //TODO
 
     // deprecated, will clean up later
     /*[[deprecated]]*/ std::vector<Location> features;  // Make this obsolete, please

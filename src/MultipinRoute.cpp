@@ -152,3 +152,72 @@ void MultipinRoute::featuresToGridPaths() {
 
     // std::cout << "End of " << __FUNCTION__ << "()" << std::endl;
 }
+
+void MultipinRoute::setupGridPinsRoutingOrder() {
+    if (this->mGridPins.empty()) {
+        return;
+    } else if (this->mGridPins.size() == 1) {
+        this->mGridPinsRoutingOrder = {0};
+        return;
+    } else if (this->mGridPins.size() == 2) {
+        this->mGridPinsRoutingOrder = {0, 1};
+        return;
+    }
+
+    double minLength = std::numeric_limits<double>::max();
+    int minLengthId1 = -1;
+    int minLengthId2 = -1;
+    for (int i = 0; i < this->mGridPins.size(); ++i) {
+        for (int j = i + 1; j < this->mGridPins.size(); ++j) {
+            double dis = getGridPinsDistance(this->mGridPins[i], this->mGridPins[j]);
+            if (dis < minLength) {
+                minLength = dis;
+                minLengthId1 = i;
+                minLengthId2 = j;
+            }
+        }
+    }
+
+    this->mGridPinsRoutingOrder.push_back(minLengthId1);
+    this->mGridPinsRoutingOrder.push_back(minLengthId2);
+
+    while (mGridPinsRoutingOrder.size() < this->mGridPins.size()) {
+        double minLength = std::numeric_limits<double>::max();
+        int minLengthId = -1;
+        for (const auto id : mGridPinsRoutingOrder) {
+            for (int i = 0; i < this->mGridPins.size(); ++i) {
+                auto it = std::find(mGridPinsRoutingOrder.begin(), mGridPinsRoutingOrder.end(), i);
+                if (it != mGridPinsRoutingOrder.end()) {
+                    continue;
+                }
+
+                double dis = getGridPinsDistance(this->mGridPins[i], this->mGridPins[id]);
+                if (dis < minLength) {
+                    minLength = dis;
+                    minLengthId = i;
+                }
+            }
+        }
+        this->mGridPinsRoutingOrder.push_back(minLengthId);
+    }
+
+    std::vector<GridPin> tempGridPins = this->mGridPins;
+    this->mGridPins.clear();
+    for (const auto id : this->mGridPinsRoutingOrder) {
+        //this->mGridPins.emplace_back(std::move(tempGridPins.at(id)));
+        this->mGridPins.push_back(tempGridPins.at(id));
+    }
+    if (tempGridPins.size() != this->mGridPins.size()) {
+        if (GlobalParam::gVerboseLevel <= VerboseLevel::CRITICAL) {
+            std::cout << __FUNCTION__ << "(): Failed # of GridPins after reordering..." << std::endl;
+        }
+    }
+}
+
+double MultipinRoute::getGridPinsDistance(const GridPin &gp1, const GridPin &gp2) {
+    int absDiffX = abs(gp1.getPinCenter().x() - gp2.getPinCenter().x());
+    int absDiffY = abs(gp1.getPinCenter().y() - gp2.getPinCenter().y());
+    int minDiff = min(absDiffX, absDiffY);
+    int maxDiff = max(absDiffX, absDiffY);
+    return (double)minDiff * GlobalParam::gDiagonalCost + maxDiff - minDiff;
+}
