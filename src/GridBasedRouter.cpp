@@ -615,7 +615,7 @@ void GridBasedRouter::setupGridNetsAndGridPins() {
             auto &dbNetclass = mDb.getNetclass(net.getNetclassId());
             // polygonExpansion = dbNetclass.getClearance() + dbNetclass.getTraceWidth() / 2.0;
             // boxContraction = dbLengthToGridLengthCeil(dbNetclass.getTraceWidth() / 2.0);
-            boxContraction = (int)floor((double)dbLengthToGridLengthCeil(dbNetclass.getTraceWidth()) / 2.0);
+            boxContraction = 1 + (int)floor((double)dbLengthToGridLengthCeil(dbNetclass.getTraceWidth()) / 2.0);  //Notes the +1 here is needed
             polygonExpansion = dbNetclass.getClearance();
             // pseudoPinExpansion = dbLengthToGridLengthCeil(dbNetclass.getClearance());
             pseudoPinExpansion = dbLengthToGridLengthCeil(dbNetclass.getClearance() + dbNetclass.getTraceWidth() / 2.0);
