@@ -82,6 +82,12 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                                         }
                                     }
                                 }
+                                //i.e. no crosses with expanded Pin Polygon
+                                if (updatedSegments.empty()) {
+                                    // Connect to Pin center from the last point directly
+                                    getSegmentsFromPointWithinExpPinPolygonToPinCenter(gPin, segs.back(), updatedSegments);
+                                    secondPtIte = prev(segs.end());
+                                }
                             }
 
                             // Remove acute angle segments
@@ -213,6 +219,13 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
                                             break;
                                         }
                                     }
+                                }
+
+                                //i.e. no crosses with expanded Pin Polygon
+                                if (updatedSegments.empty()) {
+                                    // Connect to Pin center from the last point directly
+                                    getSegmentsFromPointWithinExpPinPolygonToPinCenter(gPin, segs.front(), updatedSegments);
+                                    lastPtIte = next(segs.begin());
                                 }
                             }
 
@@ -376,6 +389,26 @@ void PostProcessing::removeAcuteAngleBetweenGridPinsAndPaths(const vector<GridPi
             //*/
         }
     }
+}
+
+void PostProcessing::getSegmentsFromPointWithinExpPinPolygonToPinCenter(const GridPin &gPin, const Location &lastPt, list<Location> &ret) {
+    // Assume the lastPt is outside of PinPolygon and within ExpPinPolygon
+
+    if (lastPt.y() >= gPin.getPinUR().y()) {
+        // Top
+        ret.emplace_back(lastPt.x(), gPin.getPinCenter().y(), lastPt.z());
+    } else if (lastPt.y() <= gPin.getPinLL().y()) {
+        // Bottom
+        ret.emplace_back(lastPt.x(), gPin.getPinCenter().y(), lastPt.z());
+    } else if (lastPt.x() <= gPin.getPinLL().x()) {
+        // Left
+        ret.emplace_back(gPin.getPinCenter().x(), lastPt.y(), lastPt.z());
+    } else if (lastPt.x() >= gPin.getPinUR().y()) {
+        // Right
+        ret.emplace_back(gPin.getPinCenter().x(), lastPt.y(), lastPt.z());
+    }
+    //Pin Center
+    ret.emplace_back(gPin.getPinCenter().x(), gPin.getPinCenter().y(), lastPt.z());
 }
 
 bool PostProcessing::isIntersectionPointOnTheBoxCorner(const point_double_t &point, const polygon_double_t &poly, const double wireWidth) {
