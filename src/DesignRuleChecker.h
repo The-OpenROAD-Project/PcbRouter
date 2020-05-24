@@ -16,10 +16,13 @@ class DesignRuleChecker {
     ~DesignRuleChecker() {}
 
     int checkAcuteAngleViolationBetweenTracesAndPads();
+    int checkTJunctionViolation();
+    void setAcuteAngleTol(double _tol) { mAcuteAngleTol = _tol; }
+    void setInputPrecision(int _ip) { mInputPrecision = _ip; }
 
    private:
     bool isPadstackAndSegmentHaveSameLayer(instance &inst, padstack &pad, Segment &seg);
-    bool isIntersectionPointOnTheBoxCorner(point_double_t &point, polygon_double_t &poly, double wireWidth);
+    bool isIntersectionPointOnTheBoxCorner(point_double_t &point, polygon_double_t &poly, double wireWidth, double tol = 0.0);
     bool isSegmentTouchAPoint(linestring_double_t &ls, point_double_t &point, double wireWidth);
     bool isOrthogonalSegment(points_2d &points);
     bool isDiagonalSegment(points_2d &points);
@@ -28,6 +31,9 @@ class DesignRuleChecker {
 
    private:
     kicadPcbDataBase &mDb;
+
+    double mAcuteAngleTol = 0.1;
+    int mInputPrecision = 1000;  //1000 for DeepPCB cases
 };
 
 #endif
