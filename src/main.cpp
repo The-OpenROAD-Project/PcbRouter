@@ -5,6 +5,8 @@
 #include "kicadPcbDataBase.h"
 #include "util.h"
 
+#define DRV_CHECKER
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         std::cout << "Please provide input testcase filename." << std::endl;
@@ -32,15 +34,27 @@ int main(int argc, char *argv[]) {
     // Report current WL & # vias
     db.printRoutedSegmentsWLAndNumVias();
 
-    // Remove all the routed nets
-    db.removeRoutedSegmentsAndVias();
-
     GlobalParam::showCurrentUsage("Parser");
     GlobalParam::setUsageStart();
 
-    // std::cout << "Starting design rule checker..." << std::endl;
-    // DesignRuleChecker checker(db);
+#ifdef DRV_CHECKER
+
+    std::cout << "Starting design rule checker..." << std::endl;
+    DesignRuleChecker checker(db);
+
+    if (argc >= 3) {
+        checker.setInputPrecision(atoi(argv[2]));
+    }
+    if (argc >= 4) {
+        checker.setAcuteAngleTol(atof(argv[3]));
+    }
+
     // checker.checkAcuteAngleViolationBetweenTracesAndPads();
+    checker.checkTJunctionViolation();
+
+#else
+    // Remove all the routed nets
+    db.removeRoutedSegmentsAndVias();
 
     std::cout << "Starting router..." << std::endl;
     srand(GlobalParam::gSeed);
@@ -102,6 +116,8 @@ int main(int argc, char *argv[]) {
     GlobalParam::showFinalUsage("End of Program");
 
     timeObj.print();
+
+#endif
 
     return 0;
 }
