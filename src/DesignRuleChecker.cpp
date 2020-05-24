@@ -111,9 +111,12 @@ int DesignRuleChecker::checkTJunctionViolation() {
     std::cout << std::fixed << std::setprecision((int)round(std::log(mInputPrecision)));
 
     int numViolations = 0;
+    std::vector<TJunctionPatch> patches;
 
     // Iterate nets
     for (auto &net : mDb.getNets()) {
+        // if (net.getId() != 27) continue;
+
         if (GlobalParam::gVerboseLevel <= VerboseLevel::DEBUG) {
             std::cout << "\nNet: " << net.getName() << ", netId: " << net.getId() << ", netDegree: " << net.getPins().size() << "..." << std::endl;
         }
@@ -134,14 +137,122 @@ int DesignRuleChecker::checkTJunctionViolation() {
                     continue;
                 }
                 linestring_double_t bgLs1{point_double_t(ptsSeg1[0].x(), ptsSeg1[0].y()), point_double_t(ptsSeg1[1].x(), ptsSeg1[1].y())};
-                linestring_double_t bgLs2{point_double_t(ptsSeg1[0].x(), ptsSeg1[0].y()), point_double_t(ptsSeg1[1].x(), ptsSeg1[1].y())};
+                linestring_double_t bgLs2{point_double_t(ptsSeg2[0].x(), ptsSeg2[0].y()), point_double_t(ptsSeg2[1].x(), ptsSeg2[1].y())};
+
+                if (areConnectedSegments(bgLs1, bgLs2)) {
+                    continue;
+                }
+
+                // Check if is T-Junction
+                ++numViolations;
+                double patchSize = seg1.getWidth() * 2.0;
+                polygon_double_t patchPoly;
+
+                if (bg::distance(bgLs1.back(), bgLs2) < mTJunctionEpsilon) {
+                    std::cout << __FUNCTION__ << "(): Violation at point: (" << ptsSeg1[1].x() << ", " << ptsSeg1[1].y() << ")" << std::endl;
+                    addTJunctionPatch(bgLs1.back(), bgLs1, bgLs2, patchSize, patchPoly);
+                } else if (bg::distance(bgLs1.front(), bgLs2) < mTJunctionEpsilon) {
+                    std::cout << __FUNCTION__ << "(): Violation at point: (" << ptsSeg1[0].x() << ", " << ptsSeg1[0].y() << ")" << std::endl;
+                    addTJunctionPatch(bgLs1.front(), bgLs1, bgLs2, patchSize, patchPoly);
+                } else if (bg::distance(bgLs2.front(), bgLs1) < mTJunctionEpsilon) {
+                    std::cout << __FUNCTION__ << "(): Violation at point: (" << ptsSeg2[0].x() << ", " << ptsSeg2[0].y() << ")" << std::endl;
+                    addTJunctionPatch(bgLs2.front(), bgLs2, bgLs1, patchSize, patchPoly);
+                } else if (bg::distance(bgLs2.back(), bgLs1) < mTJunctionEpsilon) {
+                    std::cout << __FUNCTION__ << "(): Violation at point: (" << ptsSeg2[1].x() << ", " << ptsSeg2[1].y() << ")" << std::endl;
+                    addTJunctionPatch(bgLs2.back(), bgLs2, bgLs1, patchSize, patchPoly);
+                } else {
+                    --numViolations;
+                }
+
+                if (!bg::is_empty(patchPoly)) {
+                    patches.emplace_back(TJunctionPatch{patchPoly, seg1.getLayer(), seg1.getNetId()});
+                }
             }
         }
     }
 
-    std::cout << "Total # acute angle violations: " << numViolations << std::endl;
+    printTJunctionPatchToKiCadZone(patches);
+
+    std::cout << "Total # T-Junction violations: " << numViolations << std::endl;
     std::cout << "End of " << __FUNCTION__ << "()..." << std::endl;
     return numViolations;
+}
+
+void DesignRuleChecker::printTJunctionPatchToKiCadZone(std::vector<TJunctionPatch> &patches) {
+    // Print all the patches in KiCadPcbFormat
+    for (const auto &patch : patches) {
+        std::cout << "( zone ( net 0 )";
+        std::cout << "( polygon ( pts ";
+
+        // ( xy 148.9585 131.8135 )
+        for (auto it = boost::begin(bg::exterior_ring(patch.poly)); it != boost::end(bg::exterior_ring(patch.poly)); ++it) {
+            auto x = bg::get<0>(*it);
+            auto y = bg::get<1>(*it);
+            std::cout << "( xy " << x << " " << y << ") ";
+        }
+        std::cout << ")";
+        std::cout << ")";
+        std::cout << ")";
+        std::cout << std::endl;
+    }
+}
+
+void DesignRuleChecker::addTJunctionPatch(const point_double_t &point, const linestring_double_t &bgLs1, const linestring_double_t &bgLs2, const double size, polygon_double_t &patchPoly) {
+    std::cout << "Add T-Junction Patch at: " << std::endl;
+    std::cout << "Seg1: (" << bg::get<0>(bgLs1.front()) << ", " << bg::get<1>(bgLs1.front())
+              << "), (" << bg::get<0>(bgLs1.back()) << ", " << bg::get<1>(bgLs1.back()) << ")" << std::endl;
+    std::cout << "Seg2: (" << bg::get<0>(bgLs2.front()) << ", " << bg::get<1>(bgLs2.front())
+              << "), (" << bg::get<0>(bgLs2.back()) << ", " << bg::get<1>(bgLs2.back()) << ")" << std::endl;
+
+    std::cout << "bg::distance(bgLs1.back(), bgLs2): " << bg::distance(bgLs1.back(), bgLs2) << std::endl;
+    std::cout << "bg::distance(bgLs1.front(), bgLs2): " << bg::distance(bgLs1.front(), bgLs2) << std::endl;
+    std::cout << "bg::distance(bgLs2.front(), bgLs1): " << bg::distance(bgLs2.front(), bgLs1) << std::endl;
+    std::cout << "bg::distance(bgLs2.back(), bgLs1): " << bg::distance(bgLs2.back(), bgLs1) << std::endl;
+
+    // First Point
+    point_2d vec{bg::get<0>(bgLs2.front()) - bg::get<0>(point), bg::get<1>(bgLs2.front()) - bg::get<1>(point)};
+    double vecLen = sqrt(vec.x() * vec.x() + vec.y() * vec.y());
+    point_2d unitVec{vec.x() / vecLen, vec.y() / vecLen};
+    double length = (size / 2.0);
+    if (length < vecLen) {
+        bg::append(patchPoly.outer(), point_double_t(bg::get<0>(point) + unitVec.x() * length, bg::get<1>(point) + unitVec.y() * length));
+    } else {
+        bg::append(patchPoly.outer(), bgLs2.front());
+    }
+
+    // Seoncd Point
+    vec = point_2d{bg::get<0>(bgLs2.back()) - bg::get<0>(point), bg::get<1>(bgLs2.back()) - bg::get<1>(point)};
+    vecLen = sqrt(vec.x() * vec.x() + vec.y() * vec.y());
+    unitVec = point_2d{vec.x() / vecLen, vec.y() / vecLen};
+    length = (size / 2.0);
+    if (length < vecLen) {
+        bg::append(patchPoly.outer(), point_double_t(bg::get<0>(point) + unitVec.x() * length, bg::get<1>(point) + unitVec.y() * length));
+    } else {
+        bg::append(patchPoly.outer(), bgLs2.back());
+    }
+
+    // Third Point
+    point_double_t point2 = bg::distance(bgLs1.front(), point) > bg::distance(bgLs1.back(), point) ? bgLs1.front() : bgLs1.back();
+    vec = point_2d{bg::get<0>(point2) - bg::get<0>(point), bg::get<1>(point2) - bg::get<1>(point)};
+    vecLen = sqrt(vec.x() * vec.x() + vec.y() * vec.y());
+    unitVec = point_2d{vec.x() / vecLen, vec.y() / vecLen};
+    length = ((size / 2.0) * sqrt(3));
+    if (length < vecLen) {
+        bg::append(patchPoly.outer(), point_double_t(bg::get<0>(point) + unitVec.x() * length, bg::get<1>(point) + unitVec.y() * length));
+    } else {
+        bg::append(patchPoly.outer(), point2);
+    }
+
+    bg::correct(patchPoly);
+}
+
+bool DesignRuleChecker::areConnectedSegments(linestring_double_t &ls1, linestring_double_t &ls2) {
+    double minDis = numeric_limits<double>::max();
+    minDis = min(minDis, bg::distance(ls1.front(), ls2.front()));
+    minDis = min(minDis, bg::distance(ls1.front(), ls2.back()));
+    minDis = min(minDis, bg::distance(ls1.back(), ls2.back()));
+    minDis = min(minDis, bg::distance(ls1.back(), ls2.front()));
+    return minDis < this->mEpsilon;
 }
 
 bool DesignRuleChecker::isSegmentTouchAPoint(linestring_double_t &ls, point_double_t &point, double wireWidth) {
