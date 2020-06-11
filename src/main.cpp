@@ -5,7 +5,7 @@
 #include "kicadPcbDataBase.h"
 #include "util.h"
 
-#define DRV_CHECKER
+//#define DRV_CHECKER
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -49,8 +49,8 @@ int main(int argc, char *argv[]) {
         checker.setAcuteAngleTol(atof(argv[3]));
     }
 
-    // checker.checkAcuteAngleViolationBetweenTracesAndPads();
-    checker.checkTJunctionViolation();
+    checker.checkAcuteAngleViolationBetweenTracesAndPads();
+    // checker.checkTJunctionViolation();
 
 #else
     // Remove all the routed nets
