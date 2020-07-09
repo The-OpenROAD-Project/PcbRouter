@@ -1719,6 +1719,11 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
         cout << __FUNCTION__ << "(): traceCost: " << traceCost << ", viaCost: " << viaCost << ", # Segments: " << segs.size() << std::endl;
     }
 
+    vector<float> orthTraceCosts;
+    vector<float> diagTraceCosts;
+    this->getCostsVecByRadius(traceCost, traceRadius, orthTraceCosts);
+    this->getCostsVecByRadius(traceCost, diagonalTraceRadius, diagTraceCosts);
+
     // Add costs for traces
     auto pointIte = segs.begin();
     auto nextPointIte = ++segs.begin();
