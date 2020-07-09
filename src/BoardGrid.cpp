@@ -1705,6 +1705,11 @@ void BoardGrid::add_route_to_base_cost(const MultipinRoute &route, const int tra
     }
 }
 
+void BoardGrid::getCostsVecByRadius(const float centerCost, const int radius, vector<float> &costVec) {
+    costVec.clear();
+    costVec.resize(radius + 1, centerCost);
+}
+
 void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost) {
     const auto &segs = path.getSegments();
     if (segs.empty())

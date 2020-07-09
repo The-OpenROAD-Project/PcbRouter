@@ -122,9 +122,6 @@ class BoardGrid {
     //Constraints
     void setCurrentGridNetclassId(const int id) { currentGridNetclassId = id; }
 
-    // Frontiers
-    //bool isABetterFrontierOfNext();
-
     // Various costs
     int getBendingCostOfNext(const Location &current, const Location &next) const;
     pr::prIntCost getLayerPrefCost(const MultipinRoute &route, const Location &pt) const;
@@ -153,6 +150,7 @@ class BoardGrid {
     void add_route_to_base_cost(const MultipinRoute &route, const int traceRadius, const float traceCost, const int viaRadius, const float viaCost);
     void remove_route_from_base_cost(const MultipinRoute &route);
     void addGridPathToBaseCost(const GridPath &route, const int gridNetclassId, const int traceRadius, const int diagonalTraceRadius, const float traceCost, const int viaRadius, const float viaCost);
+    void getCostsVecByRadius(const float centerCost, const int radius, vector<float> &costVec);
 
     // void came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end, std::vector<Location> &features) const;
     // std::vector<Location> came_from_to_features(const std::unordered_map<Location, Location> &came_from, const Location &end) const;
