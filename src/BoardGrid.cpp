@@ -1745,11 +1745,11 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                 for (auto curY = startY; curY <= endY; ++curY) {
                     Location loc{curX + curRadius, curY, curZ};
                     if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                        this->base_cost_add(orthTraceCosts[curRadius], loc);
                     }
                     Location loc2{curX - curRadius, curY, curZ};
                     if (this->validate_location(loc2)) {
-                        this->base_cost_add(traceCost, loc2);
+                        this->base_cost_add(orthTraceCosts[curRadius], loc2);
                     }
                 }
             }
@@ -1769,11 +1769,11 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                 for (auto curX = startX; curX <= endX; ++curX) {
                     Location loc{curX, curY + curRadius, curZ};
                     if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                        this->base_cost_add(orthTraceCosts[curRadius], loc);
                     }
                     Location loc2{curX, curY - curRadius, curZ};
                     if (this->validate_location(loc2)) {
-                        this->base_cost_add(traceCost, loc2);
+                        this->base_cost_add(orthTraceCosts[curRadius], loc2);
                     }
                 }
             }
@@ -1795,20 +1795,20 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                 for (int curX = startX, curY = startY; curX <= endX && curY <= endY; ++curX, ++curY) {
                     Location loc{curX + curRadius, curY - curRadius, curZ};
                     if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                        this->base_cost_add(diagTraceCosts[curRadius], loc);
                     }
                     Location loc2{curX - curRadius, curY + curRadius, curZ};
                     if (this->validate_location(loc2)) {
-                        this->base_cost_add(traceCost, loc2);
+                        this->base_cost_add(diagTraceCosts[curRadius], loc2);
                     }
                     if (curX < endX && curY < endY) {
                         Location loc3{curX + curRadius, curY - curRadius + 1, curZ};
                         if (this->validate_location(loc3)) {
-                            this->base_cost_add(traceCost, loc3);
+                            this->base_cost_add(diagTraceCosts[curRadius], loc3);
                         }
                         Location loc4{curX - curRadius + 1, curY + curRadius, curZ};
                         if (this->validate_location(loc4)) {
-                            this->base_cost_add(traceCost, loc4);
+                            this->base_cost_add(diagTraceCosts[curRadius], loc4);
                         }
                     }
                 }
@@ -1831,20 +1831,20 @@ void BoardGrid::addGridPathToBaseCost(const GridPath &path, const int gridNetcla
                 for (int curX = startX, curY = endY; curX <= endX && curY >= startY; ++curX, --curY) {
                     Location loc{curX + curRadius, curY + curRadius, curZ};
                     if (this->validate_location(loc)) {
-                        this->base_cost_add(traceCost, loc);
+                        this->base_cost_add(diagTraceCosts[curRadius], loc);
                     }
                     Location loc2{curX - curRadius, curY - curRadius, curZ};
                     if (this->validate_location(loc2)) {
-                        this->base_cost_add(traceCost, loc2);
+                        this->base_cost_add(diagTraceCosts[curRadius], loc2);
                     }
                     if (curX < endX && curY > startY) {
                         Location loc3{curX + curRadius, curY + curRadius - 1, curZ};
                         if (this->validate_location(loc3)) {
-                            this->base_cost_add(traceCost, loc3);
+                            this->base_cost_add(diagTraceCosts[curRadius], loc3);
                         }
                         Location loc4{curX - curRadius + 1, curY - curRadius, curZ};
                         if (this->validate_location(loc4)) {
-                            this->base_cost_add(traceCost, loc4);
+                            this->base_cost_add(diagTraceCosts[curRadius], loc4);
                         }
                     }
                 }
