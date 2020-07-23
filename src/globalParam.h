@@ -58,6 +58,7 @@ class GlobalParam {
     static double gViaTouchBoundaryCost;
     static double gTraceTouchBoundaryCost;
     static double gViaForbiddenCost;
+    static double gObstacleCurveParam;
 
     //Grid Setup
     static unsigned int inputScale;

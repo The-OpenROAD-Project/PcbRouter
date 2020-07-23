@@ -18,6 +18,7 @@ double GlobalParam::gStepTraObsCost = 0.0;  //2.5;
 double GlobalParam::gViaTouchBoundaryCost = 1000.0;
 double GlobalParam::gTraceTouchBoundaryCost = 100000.0;
 double GlobalParam::gViaForbiddenCost = 2000.0;
+double GlobalParam::gObstacleCurveParam = 10000.0;
 // Grid Setup
 unsigned int GlobalParam::inputScale = 10;
 unsigned int GlobalParam::enlargeBoundary = 0;  //from 10 -> 50
