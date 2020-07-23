@@ -69,6 +69,7 @@ class GlobalParam {
     static bool gViaUnderPad;
     static bool gUseMircoVia;
     static bool gAllowViaForRouting;
+    static bool gCurvingObstacleCost;
     static unsigned int gNumRipUpReRouteIteration;
 
     //Outputfile

@@ -27,6 +27,7 @@ float GlobalParam::gridFactor = 0.1;            // 1/inputScale
 bool GlobalParam::gViaUnderPad = false;
 bool GlobalParam::gUseMircoVia = true;
 bool GlobalParam::gAllowViaForRouting = true;
+bool GlobalParam::gCurvingObstacleCost = true;
 unsigned int GlobalParam::gNumRipUpReRouteIteration = 5;
 // Outputfile
 int GlobalParam::gOutputPrecision = 5;
